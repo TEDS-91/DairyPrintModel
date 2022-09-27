@@ -33,7 +33,7 @@ mod_animal_server <- function(id){
 
     output$grafico <- renderPlot({
 
-      hist(rnorm(input$n_cows))
+      graphics::hist(stats::rnorm(input$n_cows))
 
     })
 
