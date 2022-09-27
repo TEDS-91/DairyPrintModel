@@ -2,7 +2,7 @@ Package: EZMoneyTool
 Title: Easy Money Tool
 Version: 0.0.0.9000
 Authors@R: person('Tadeu', 'Silva', email = 'tdasilva2@wisc.edu', role = c('cre', 'aut'))
-Description: Package to perform high level enviromental farm assessement
+Description: Package to perform high level enviromental farm assessement.
 License: MIT + file LICENSE
 Imports: 
     config (>= 0.3.1),
