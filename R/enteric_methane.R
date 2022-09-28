@@ -1,12 +1,12 @@
 
 #' Methane Emissions from lactating cows.
 #'
-#' @param dry_matter_intake_kg dry matter inatake.
-#' @param ndf_perc Neutral detergent Fiber.
-#' @param milk_fat_perc Milk Fat.
-#' @param bw_kg Body Weight.
+#' @param dry_matter_intake_kg Dry matter intake (kg/day).
+#' @param ndf_perc Diet neutral detergent Fiber (%).
+#' @param milk_fat_perc Milk fat content (%).
+#' @param bw_kg Cow body weight (kg).
 #'
-#' @return g of methane per day.
+#' @return g of methane (cow/day).
 #' @export
 #'
 enteric_methane_lactating <- function(dry_matter_intake_kg, ndf_perc, milk_fat_perc, bw_kg){
