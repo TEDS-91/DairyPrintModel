@@ -1,9 +1,9 @@
 
-#' Methane Emissions from lactating cows.
+#' Methane Emissions from Lactating Cows.
 #'
 #' @param dry_matter_intake_kg Dry matter intake (kg/day).
-#' @param ndf_perc Diet neutral detergent Fiber (%).
-#' @param milk_fat_perc Milk fat content (%).
+#' @param ndf_perc Diet neutral detergent Fiber percentage.
+#' @param milk_fat_perc Milk fat content percentage.
 #' @param bw_kg Cow body weight (kg).
 #'
 #' @return g of methane (cow/day).

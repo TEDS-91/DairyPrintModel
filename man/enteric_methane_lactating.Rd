@@ -2,22 +2,22 @@
 % Please edit documentation in R/enteric_methane.R
 \name{enteric_methane_lactating}
 \alias{enteric_methane_lactating}
-\title{Methane Emissions from lactating cows.}
+\title{Methane Emissions from Lactating Cows.}
 \usage{
 enteric_methane_lactating(dry_matter_intake_kg, ndf_perc, milk_fat_perc, bw_kg)
 }
 \arguments{
-\item{dry_matter_intake_kg}{dry matter inatake.}
+\item{dry_matter_intake_kg}{Dry matter intake (kg/day).}
 
-\item{ndf_perc}{Neutral detergent Fiber.}
+\item{ndf_perc}{Diet neutral detergent Fiber percentage.}
 
-\item{milk_fat_perc}{Milk Fat.}
+\item{milk_fat_perc}{Milk fat content percentage.}
 
-\item{bw_kg}{Body Weight.}
+\item{bw_kg}{Cow body weight (kg).}
 }
 \value{
-g of methane per day.
+g of methane (cow/day).
 }
 \description{
-Methane Emissions from lactating cows.
+Methane Emissions from Lactating Cows.
 }
