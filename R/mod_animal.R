@@ -19,7 +19,8 @@ mod_animal_ui <- function(id){
     numericInput(ns("heifer_calf_born"),    "Percentage Heifers (%):",    value = 50,  min = 45, max = 55),
     numericInput(ns("time_first_calv"),     "First Calving (mo):",        value = 24,  min = 22, max = 36),
 
-    plotOutput(ns("grafico"))
+    plotOutput(ns("grafico")),
+    echarts4r::echarts4rOutput(ns("grafico2"))
 
   )
 }
@@ -35,6 +36,21 @@ mod_animal_server <- function(id){
 
       graphics::hist(stats::rnorm(input$n_cows))
 
+    })
+
+    output$grafico2 <- echarts4r::renderEcharts4r({
+
+      df <- data.frame(
+        KPI = c("KPI_1", "KPI_2", "KPI_3", "KPI_4", "KPI_5"),
+        FARM_1 = runif(5, 4, 6),
+        FARM_2 = runif(5, 3, 7)
+      )
+
+      df |>
+        echarts4r::e_charts(KPI) |>
+        echarts4r::e_radar(FARM_1, max = 7, name = "Farm 2") |>
+        echarts4r::e_radar(FARM_2, max = 7, name = "Farm 1") |>
+        echarts4r::e_tooltip(trigger = "item")
     })
 
   })
