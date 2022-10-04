@@ -1,18 +1,21 @@
 Package: EZMoneyTool
 Title: Easy Money Tool
 Version: 0.0.0.9000
-Authors@R: person('Tadeu', 'Silva', email = 'tdasilva2@wisc.edu', role = c('cre', 'aut'))
+Authors@R: 
+    person("Tadeu", "Silva", , "tdasilva2@wisc.edu", role = c("cre", "aut"))
 Description: Package to perform high level enviromental farm assessement.
 License: MIT + file LICENSE
+URL: https://github.com/TEDS-91/EZMoneyTool
+BugReports: https://github.com/TEDS-91/EZMoneyTool/issues
 Imports: 
     config (>= 0.3.1),
     golem (>= 0.3.4),
-    shiny (>= 1.7.1)
-Encoding: UTF-8
-LazyData: true
-RoxygenNote: 7.2.1
+    graphics,
+    shiny (>= 1.7.1),
+    stats
 Suggests: 
     testthat (>= 3.0.0)
 Config/testthat/edition: 3
-URL: https://github.com/TEDS-91/EZMoneyTool
-BugReports: https://github.com/TEDS-91/EZMoneyTool/issues
+Encoding: UTF-8
+LazyData: true
+RoxygenNote: 7.2.1
