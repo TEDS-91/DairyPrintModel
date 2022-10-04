@@ -19,5 +19,5 @@ enteric_methane_lactating(dry_matter_intake_kg, ndf_perc, milk_fat_perc, bw_kg)
 g of methane (cow/day).
 }
 \description{
-Methane Emissions from Lactating Cows.
+Bla Bla Bla
 }
