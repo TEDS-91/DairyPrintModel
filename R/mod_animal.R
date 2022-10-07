@@ -17,9 +17,10 @@ mod_animal_ui <- function(id){
     numericInput(ns("calves_heifers_cul"),  "Heifers Culling Rate (%):",  value = 20,  min = 10, max = 50),
     numericInput(ns("stillbirth_rate"),     "Stillbirth Rate (%):",       value = 7,   min = 0,  max = 15),
     numericInput(ns("heifer_calf_born"),    "Percentage Heifers (%):",    value = 50,  min = 45, max = 55),
-    numericInput(ns("time_first_calv"),     "First Calving (mo):",        value = 24,  min = 22, max = 36),
+    numericInput(ns("time_first_calv"),     "First Calving (mo):",        value = 24,  min = 18, max = 36),
 
-    plotOutput(ns("grafico"))
+    tableOutput(ns("herd_stab")),
+    tableOutput(ns("herd_stab2"))
 
   )
 }
@@ -31,11 +32,45 @@ mod_animal_server <- function(id){
   moduleServer( id, function(input, output, session){
     ns <- session$ns
 
-    output$grafico <- renderPlot({
+    herd_matrix <- reactive({
 
-      graphics::hist(stats::rnorm(input$n_cows))
+      herd_matrix <- herd_stabilization(time_first_calv    = input$time_first_calv,
+                                        heifer_calf_born   = input$heifer_calf_born,
+                                        stillbirth_rate    = input$stillbirth_rate,
+                                        calves_heifers_cul = input$calves_heifers_cul,
+                                        cow_rep_rate       = input$cow_rep_rate,
+                                        cow_calving_int    = input$cow_calving_int,
+                                        n_adult_cows       = input$n_cows)
 
     })
+
+    herd_matrix2 <- reactive({
+
+      herd_matrix2 <- herd_projection(time_first_calv    = input$time_first_calv,
+                                      heifer_calf_born   = input$heifer_calf_born,
+                                      stillbirth_rate    = input$stillbirth_rate,
+                                      calves_heifers_cul = input$calves_heifers_cul,
+                                      cow_rep_rate       = input$cow_rep_rate,
+                                      cow_calving_int    = input$cow_calving_int,
+                                      n_adult_cows       = input$n_cows,
+                                      months_to_project  = 12)
+
+    })
+
+    output$herd_stab <- renderTable({
+
+      length(herd_matrix())
+
+    })
+
+    output$herd_stab2 <- renderTable({
+
+      herd_matrix2()[1]
+
+    })
+
+
+
   })
 }
 
