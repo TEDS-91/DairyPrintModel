@@ -18,3 +18,6 @@ enteric_methane_lactating <- function(dry_matter_intake_kg, ndf_perc, milk_fat_p
   return(enteric_methane_lac_cows_g_day)
 
 }
+
+
+# bla bla
