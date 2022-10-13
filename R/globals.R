@@ -1,0 +1,10 @@
+utils::globalVariables(
+  c(
+    "MonthSimulated",
+    "HeiOpenGrowMonth1",
+    "GeneralCategories",
+    "Others",
+    "MonthLac",
+    "Garbage"
+  )
+)

@@ -12,7 +12,7 @@ app_ui <- function(request) {
     fluidPage(
       h1("EZMoneyTool"),
 
-      mod_animal_ui("animal")
+      mod_animal_ui("animal_1")
 
     )
   )

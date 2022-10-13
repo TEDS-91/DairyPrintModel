@@ -32,40 +32,58 @@ mod_animal_server <- function(id){
   moduleServer( id, function(input, output, session){
     ns <- session$ns
 
+    herd_stab_matrix <- reactive({
+
+      herd_stab_matrix <- herd_stabilization(time_first_calv    = input$time_first_calv,
+                                             heifer_calf_born   = input$heifer_calf_born,
+                                             stillbirth_rate    = input$stillbirth_rate,
+                                             calves_heifers_cul = input$calves_heifers_cul,
+                                             cow_rep_rate       = input$cow_rep_rate,
+                                             cow_calving_int    = input$cow_calving_int,
+                                             n_adult_cows       = input$n_cows)
+
+    })
+
     herd_matrix <- reactive({
 
-      herd_matrix <- herd_stabilization(time_first_calv    = input$time_first_calv,
-                                        heifer_calf_born   = input$heifer_calf_born,
-                                        stillbirth_rate    = input$stillbirth_rate,
-                                        calves_heifers_cul = input$calves_heifers_cul,
-                                        cow_rep_rate       = input$cow_rep_rate,
-                                        cow_calving_int    = input$cow_calving_int,
-                                        n_adult_cows       = input$n_cows)
-
-    })
-
-    herd_matrix2 <- reactive({
-
-      herd_matrix2 <- herd_projection(time_first_calv    = input$time_first_calv,
-                                      heifer_calf_born   = input$heifer_calf_born,
-                                      stillbirth_rate    = input$stillbirth_rate,
-                                      calves_heifers_cul = input$calves_heifers_cul,
-                                      cow_rep_rate       = input$cow_rep_rate,
-                                      cow_calving_int    = input$cow_calving_int,
-                                      n_adult_cows       = input$n_cows,
-                                      months_to_project  = 12)
-
-    })
-
-    output$herd_stab <- renderTable({
-
-      length(herd_matrix())
+      herd_matrix <- herd_projection(time_first_calv    = input$time_first_calv,
+                                     heifer_calf_born   = input$heifer_calf_born,
+                                     stillbirth_rate    = input$stillbirth_rate,
+                                     calves_heifers_cul = input$calves_heifers_cul,
+                                     cow_rep_rate       = input$cow_rep_rate,
+                                     cow_calving_int    = input$cow_calving_int,
+                                     n_adult_cows       = input$n_cows,
+                                     months_to_project  = 12)
 
     })
 
     output$herd_stab2 <- renderTable({
 
-      herd_matrix2()[1]
+      # converting the herd_matrix to tibble
+      herd_demographics_raw <- herd_matrix()[[1]] %>%
+        tibble::as_tibble()
+
+       herd_demographics_raw %>%
+         tibble::as_tibble() %>%
+         dplyr::mutate(MonthSimulated = seq(1, dim(herd_demographics_raw)[1])) %>%
+         dplyr::relocate(MonthSimulated, .before = HeiOpenGrowMonth1) %>%
+         tidyr::pivot_longer(-MonthSimulated,
+                      names_to = "GeneralCategories",
+                      values_to = "NumberAnimals") %>%
+         tidyr::separate(GeneralCategories, into = c("Categories", "Others"), 3) %>%
+         tidyr::separate(Others, into = c("ReproductiveStatus", "Others"), 4) %>%
+         tidyr::separate(Others, into = c("Phase", "MonthLac"), 4) %>%
+         tidyr::separate(MonthLac, into = c("Garbage", "Month"), 5) %>%
+         dplyr::select(-Garbage)
+
+
+
+
+
+
+
+
+
 
     })
 
