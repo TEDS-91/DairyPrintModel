@@ -93,7 +93,7 @@ mod_animal_server <- function(id){
 }
 
 ## To be copied in the UI
-# mod_animal_ui("animal_1")
+# mod_animal_ui("animal")
 
 ## To be copied in the server
-# mod_animal_server("animal_1")
+# mod_animal_server("animal")

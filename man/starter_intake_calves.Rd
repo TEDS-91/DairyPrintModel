@@ -18,7 +18,7 @@ Starter intake (kg).
 Estimates the average calf starter intake in a given day.
 }
 \examples{
-# Estimate the average starter intake of a group of calves 50 days old calf consuming 6 l of milk
+# Estimate the average starter intake of calves 50 days old calf consuming 6 l of milk
 starter_intake_calves(milk_intake = 6, age = 50)
 }
 \seealso{

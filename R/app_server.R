@@ -8,7 +8,7 @@ app_server <- function(input, output, session) {
 
   # Your application server logic
 
-  mod_animal_server("animal_1")
+  mod_animal_server("animal")
 
 
 }

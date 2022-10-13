@@ -12,6 +12,7 @@ Imports:
     dplyr,
     golem (>= 0.3.4),
     magrittr,
+    purrr,
     shiny (>= 1.7.1),
     stats,
     tibble,
