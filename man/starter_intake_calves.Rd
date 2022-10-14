@@ -7,7 +7,7 @@
 starter_intake_calves(milk_intake, age)
 }
 \arguments{
-\item{milk_intake}{Calf milk intake in liters.}
+\item{milk_intake}{Calf milk intake (l).}
 
 \item{age}{Calf age in days.}
 }

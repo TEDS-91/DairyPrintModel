@@ -1,6 +1,6 @@
 #' Estimates the average calf starter intake in a given day.
 #'
-#' @param milk_intake Calf milk intake in liters.
+#' @param milk_intake Calf milk intake (l).
 #' @param age Calf age in days.
 #'
 #' @return Starter intake (kg).
@@ -23,11 +23,11 @@ starter_intake_calves <- function(milk_intake, age) {
 
 }
 
-#' Estimates the average calf starter intake in an user defined range of days
+#' Estimates the average calf starter intake in an user defined range of days.
 #'
 #' @param day_min First day.
 #' @param day_max Last day.
-#' @param milk_intake Average milk intake in liters.
+#' @param milk_intake Average milk intake (l ).
 #'
 #' @return Average starter intake for the user defined period of days (kg/day).
 #' @export
