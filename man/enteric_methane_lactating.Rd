@@ -2,22 +2,41 @@
 % Please edit documentation in R/enteric_methane.R
 \name{enteric_methane_lactating}
 \alias{enteric_methane_lactating}
-\title{Methane Emissions from Lactating Cows.}
+\title{Estimates the daily enteric methane emission for lactating cows.}
 \usage{
-enteric_methane_lactating(dry_matter_intake_kg, ndf_perc, milk_fat_perc, bw_kg)
+enteric_methane_lactating(
+  gross_energy_intake,
+  neutral_detergent_fiber,
+  ether_extract,
+  body_weight,
+  milk_fat
+)
 }
 \arguments{
-\item{dry_matter_intake_kg}{Dry matter intake (kg/day).}
+\item{gross_energy_intake}{Gross energy intake (MJ/day).}
 
-\item{ndf_perc}{Diet neutral detergent Fiber percentage.}
+\item{neutral_detergent_fiber}{Diet neutral detergent fiber concentration (\%).}
 
-\item{milk_fat_perc}{Milk fat content percentage.}
+\item{ether_extract}{Diet ether extract concentration (\%).}
 
-\item{bw_kg}{Cow body weight (kg).}
+\item{body_weight}{Body weight (kg).}
+
+\item{milk_fat}{Milk fat content (\%).}
 }
 \value{
-g of methane (cow/day).
+Lactating cow enteric methane emission (g/day).
 }
 \description{
-Bla Bla Bla
+Estimates the daily enteric methane emission for lactating cows.
+}
+\examples{
+enteric_methane_lactating(gross_energy_intake = 465,
+                         neutral_detergent_fiber = 30,
+                         ether_extract = 4,
+                         body_weight = 650,
+                         milk_fat = 4)
+
+}
+\seealso{
+The equation used here is also available in \href{https://onlinelibrary.wiley.com/doi/full/10.1111/gcb.12471}{Moraes et al. (2014)}.
 }
