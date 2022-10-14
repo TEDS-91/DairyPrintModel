@@ -7,9 +7,9 @@
 starter_intake_calves_interval_days(day_min, day_max, milk_intake)
 }
 \arguments{
-\item{day_min}{First day.}
+\item{day_min}{First day for starter intake estimation.}
 
-\item{day_max}{Last day.}
+\item{day_max}{Last day for starter intake estimation.}
 
 \item{milk_intake}{Average milk intake (l ).}
 }

@@ -2,7 +2,7 @@
 % Please edit documentation in R/calf_adg.R
 \name{calf_body_weight}
 \alias{calf_body_weight}
-\title{Estimates the calf body weight}
+\title{Estimates the calf body weight.}
 \usage{
 calf_body_weight(birth_weight, calf_adg, day_max, type)
 }
@@ -19,7 +19,7 @@ calf_body_weight(birth_weight, calf_adg, day_max, type)
 Average calf weight or final calf weight (kg).
 }
 \description{
-Estimates the calf body weight
+Estimates the calf body weight.
 }
 \examples{
 calf_body_weight(birth_weight = 40, calf_adg = 0.5, day_max = 50, type = "final")

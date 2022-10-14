@@ -30,7 +30,7 @@ heifer_body_weight <- function(birth_weight,
                                age_first_calving,
                                mature_body_weight,
                                month,
-                               type){
+                               type) {
 
   # Assuming first calving weight as 82% of the mature body weight - kg
 

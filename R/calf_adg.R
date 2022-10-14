@@ -4,7 +4,7 @@
 #' @param starter_intake Average starter intake (kg).
 #'
 #' @return Calf average daily gain in a given day (kg).
-#' @seealso The equation used here is also available in \href{https://www.simleite.com.br/arquivosAnais/arquivo118}{Silva et al. (2019)}.#TODO
+#' @seealso The equation used here is also available in \href{https://www.simleite.com.br/arquivosAnais/arquivo118}{Silva et al. (2015)}.
 #' @export
 #'
 #' @examples
@@ -18,7 +18,7 @@ calf_adg <- function(milk_intake, starter_intake){
 
 }
 
-#' Estimates the calf body weight
+#' Estimates the calf body weight.
 #'
 #'@param birth_weight Birth weight (kg).
 #'@param calf_adg Calf average daily gain (kg).
@@ -32,7 +32,7 @@ calf_adg <- function(milk_intake, starter_intake){
 #' calf_body_weight(birth_weight = 40, calf_adg = 0.5, day_max = 50, type = "final")
 #' calf_body_weight(birth_weight = 40, calf_adg = 0.5, day_max = 50, type = "mean")
 #'
-calf_body_weight <- function(birth_weight, calf_adg, day_max, type){
+calf_body_weight <- function(birth_weight, calf_adg, day_max, type) {
 
   if (type == "final") {
     calf_body_weight <- birth_weight + calf_adg * day_max

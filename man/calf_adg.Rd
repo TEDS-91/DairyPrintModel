@@ -22,5 +22,5 @@ Estimates the average calf daily gain.
 calf_adg(milk_intake = 6, starter_intake = 0.2)
 }
 \seealso{
-The equation used here is also available in \href{https://www.simleite.com.br/arquivosAnais/arquivo118}{Silva et al. (2019)}.#TODO
+The equation used here is also available in \href{https://www.simleite.com.br/arquivosAnais/arquivo118}{Silva et al. (2015)}.
 }
