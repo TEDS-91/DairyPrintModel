@@ -43,3 +43,18 @@ calf_body_weight <- function(birth_weight, calf_adg, day_max, type) {
   return(calf_body_weight)
 
 }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
