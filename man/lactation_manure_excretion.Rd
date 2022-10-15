@@ -18,3 +18,6 @@ Estimates the daily total manure excretion of lactating cows.
 \examples{
 lactation_manure_excretion(dry_matter_intake = 25)
 }
+\seealso{
+The equation used here is also available in \href{https://pubmed.ncbi.nlm.nih.gov/16162547/}{Nennich et al. (2005)}.
+}
