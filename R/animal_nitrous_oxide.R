@@ -9,7 +9,7 @@
 #'
 #' @examples
 #'animal_n2o_emissions(dry_matter_intake = 25, crude_protein = 16)
-animal_n2o_emissions <- function(dry_matter_intake, crude_protein){
+animal_n2o_emissions <- function(dry_matter_intake, crude_protein) {
 
   animal_n2o_emissions <- ((dry_matter_intake * crude_protein / 100) * 0.8) / 6.25
 
