@@ -108,10 +108,3 @@ lactation_dm_manure_excretion <- function(dry_matter_intake) {
   return(lactation_dm_manure_excretion)
 
 }
-
-
-
-
-
-
-

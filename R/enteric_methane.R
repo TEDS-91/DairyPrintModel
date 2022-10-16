@@ -100,14 +100,3 @@ enteric_methane_heifer <- function(gross_energy_intake, neutral_detergent_fiber,
   return(enteric_methane_heifer)
 
 }
-
-
-
-
-
-
-
-
-
-
-

@@ -11,7 +11,7 @@ starter_intake_calves_interval_days(day_min, day_max, milk_intake)
 
 \item{day_max}{Last day for starter intake estimation.}
 
-\item{milk_intake}{Average milk intake (l ).}
+\item{milk_intake}{Average milk intake (l).}
 }
 \value{
 Average starter intake for the user defined period of days (kg/day).

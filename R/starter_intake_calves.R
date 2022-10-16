@@ -27,7 +27,7 @@ starter_intake_calves <- function(milk_intake, age) {
 #'
 #' @param day_min First day for starter intake estimation.
 #' @param day_max Last day for starter intake estimation.
-#' @param milk_intake Average milk intake (l ).
+#' @param milk_intake Average milk intake (l).
 #'
 #' @return Average starter intake for the user defined period of days (kg/day).
 #' @export
