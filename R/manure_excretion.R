@@ -1,37 +1,23 @@
-#' Estimates the daily total manure excretion of heifers from 86 to 205 kg of body weight.
-#'
-#' @param dry_matter_intake Dry matter intake (kg).
-#'
-#' @return Daily total manure excretion (kg).
-#' @seealso The equation used here is also available in \href{https://pubmed.ncbi.nlm.nih.gov/16162547/}{Nennich et al. (2005)}.
-#' @export
-#'
-#' @examples
-#' heifer_manure_excretion_86_to_205(dry_matter_intake = 4)
-heifer_manure_excretion_86_to_205 <- function(dry_matter_intake) {
-
-  heifer_manure_excretion_86_to_205 <- dry_matter_intake * 3.45
-
-  return(heifer_manure_excretion_86_to_205)
-
-}
-
-#' Estimates the daily total manure excretion of heifers from 206 of body weight to calving.
+#' Estimates the daily total manure excretion of heifers.
 #'
 #' @param dry_matter_intake Dry matter intake (kg).
 #' @param body_weight Body weight (kg).
 #'
 #' @return Daily total manure excretion (kg).
-#' @seealso The equation used here is also available in \href{https://pubmed.ncbi.nlm.nih.gov/16162547/}{Nennich et al. (2005)}.
+#' @seealso The equations used here are also available in \href{https://pubmed.ncbi.nlm.nih.gov/16162547/}{Nennich et al. (2005)}.
 #' @export
 #'
 #' @examples
-#' heifer_manure_excretion_206_to_calving(dry_matter_intake = 6, body_weight = 260)
-heifer_manure_excretion_206_to_calving <- function(dry_matter_intake, body_weight) {
+#' heifer_manure_excretion(dry_matter_intake = 6, body_weight = 250)
+heifer_manure_excretion <- function(dry_matter_intake, body_weight) {
 
-  heifer_manure_excretion_206_to_calving <- 4.158 * dry_matter_intake - body_weight * 0.0246
+  if (body_weight < 205) {
+    heifer_manure_excretion <- dry_matter_intake * 3.45
+  } else {
+    heifer_manure_excretion <- 4.158 * dry_matter_intake - body_weight * 0.0246
+  }
 
-  return(heifer_manure_excretion_206_to_calving)
+  return(heifer_manure_excretion)
 
 }
 
