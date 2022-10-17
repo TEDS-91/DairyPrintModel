@@ -5,6 +5,7 @@
 #' @param neutral_detergent_fiber Diet neutral detergent fiber (\%).
 #'
 #' @return Daily total volatile solids (kg).
+#' @seealso The equation used here is also available in \href{https://nap.nationalacademies.org/catalog/25806/nutrient-requirements-of-dairy-cattle-eighth-revised-edition}{NASEM (2021)}.
 #' @export
 #'
 #' @examples
@@ -28,6 +29,7 @@ volatile_solids <- function(dry_matter_intake, crude_protein, neutral_detergent_
 #' @param acid_detergent_fiber Diet acid detergent fiber (\%).
 #'
 #' @return Digestible volatile solids (kg).
+#' @seealso The equation used here is also available in \href{https://nap.nationalacademies.org/catalog/25806/nutrient-requirements-of-dairy-cattle-eighth-revised-edition}{NASEM (2021)}.
 #' @export
 #'
 #' @examples

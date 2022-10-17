@@ -33,3 +33,6 @@ digestible_volatile_solids(dry_matter_intake = 25,
                           acid_detergent_fiber = 15)
 
 }
+\seealso{
+The equation used here is also available in \href{https://nap.nationalacademies.org/catalog/25806/nutrient-requirements-of-dairy-cattle-eighth-revised-edition}{NASEM (2021)}.
+}
