@@ -9,6 +9,7 @@
 #'
 #' @examples
 #' animal_co2_emissions(dry_matter_intake = 25, body_weight = 680)
+#'
 animal_co2_emissions <- function(dry_matter_intake, body_weight) {
 
   animal_co2_emissions <- -1.4 + 0.42 * dry_matter_intake + 0.045 * body_weight ^ 0.75

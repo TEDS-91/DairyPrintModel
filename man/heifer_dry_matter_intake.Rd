@@ -19,4 +19,5 @@ Estimates the daily dry matter intake of heifers.
 }
 \examples{
 heifer_dry_matter_intake(mature_body_weight = 680, body_weight = 300)
+
 }

@@ -17,6 +17,7 @@ Estimates the manure dry matter content of lactating cows.
 }
 \examples{
 lactation_dm_manure_excretion(dry_matter_intake = 25)
+
 }
 \seealso{
 The equation used here is also available in \href{https://pubmed.ncbi.nlm.nih.gov/16162547/}{Nennich et al. (2005)}.

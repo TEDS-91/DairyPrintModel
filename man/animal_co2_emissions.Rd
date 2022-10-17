@@ -19,6 +19,7 @@ Estimates de daily carbon dioxide respired emissions from the animals.
 }
 \examples{
 animal_co2_emissions(dry_matter_intake = 25, body_weight = 680)
+
 }
 \seealso{
 The equation used here is also available in \href{https://www.osti.gov/etdeweb/biblio/6065141}{Kirchgessner et al. (1991)}.

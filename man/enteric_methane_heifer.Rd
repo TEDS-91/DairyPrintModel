@@ -25,6 +25,7 @@ Estimates the daily enteric methane emission for heifers.
 }
 \examples{
 enteric_methane_heifer(gross_energy_intake = 110, neutral_detergent_fiber = 40, body_weight = 260)
+
 }
 \seealso{
 The equation used here is also available in \href{https://onlinelibrary.wiley.com/doi/full/10.1111/gcb.12471}{Moraes et al. (2014)}.

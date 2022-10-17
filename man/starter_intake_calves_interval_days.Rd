@@ -22,4 +22,5 @@ Estimates the average calf starter intake in an user defined range of days.
 \examples{
 # Estimate the average starter intake of calves between 1 and 30 days consuming 6 l of milk
 starter_intake_calves_interval_days(day_min = 1, day_max = 30, milk_intake = 6)
+
 }

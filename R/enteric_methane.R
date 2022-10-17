@@ -73,6 +73,7 @@ enteric_methane_lactating <- function(gross_energy_intake,
 #'
 #' @examples
 #' enteric_methane_dry(gross_energy_intake = 221, ether_extract = 3)
+#'
 enteric_methane_dry <- function(gross_energy_intake, ether_extract) {
 
   enteric_methane_dry <- (2.88 + 0.053 * gross_energy_intake - 0.190 * ether_extract) / 0.05
@@ -93,6 +94,7 @@ enteric_methane_dry <- function(gross_energy_intake, ether_extract) {
 #'
 #' @examples
 #' enteric_methane_heifer(gross_energy_intake = 110, neutral_detergent_fiber = 40, body_weight = 260)
+#'
 enteric_methane_heifer <- function(gross_energy_intake, neutral_detergent_fiber, body_weight) {
 
   enteric_methane_heifer <- (-1.487 + 0.046 * gross_energy_intake + 0.032 * neutral_detergent_fiber + 0.006 * body_weight) / 0.05

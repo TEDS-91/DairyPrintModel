@@ -9,6 +9,7 @@
 #'
 #' @examples
 #' heifer_manure_excretion(dry_matter_intake = 6, body_weight = 250)
+#'
 heifer_manure_excretion <- function(dry_matter_intake, body_weight) {
 
   if (body_weight < 205) {
@@ -31,6 +32,7 @@ heifer_manure_excretion <- function(dry_matter_intake, body_weight) {
 #'
 #' @examples
 #' heifer_dm_manure_excretion(dry_matter_intake = 6)
+#'
 heifer_dm_manure_excretion <- function(dry_matter_intake) {
 
   heifer_dm_manure_excretion <- 0.393 * dry_matter_intake
@@ -51,6 +53,7 @@ heifer_dm_manure_excretion <- function(dry_matter_intake) {
 #'
 #' @examples
 #' dry_manure_excretion(body_weight = 650, crude_protein = 12, neutral_detergent_fiber = 40)
+#'
 dry_manure_excretion <- function(body_weight, crude_protein, neutral_detergent_fiber) {
 
   dry_manure_excretion <- 0.00711 * body_weight + 0.324 * crude_protein + 0.259 * neutral_detergent_fiber + 8.05
@@ -69,6 +72,7 @@ dry_manure_excretion <- function(body_weight, crude_protein, neutral_detergent_f
 #'
 #' @examples
 #' lactation_manure_excretion(dry_matter_intake = 25)
+#'
 lactation_manure_excretion <- function(dry_matter_intake) {
 
   lactation_manure_excretion <- 2.63 * dry_matter_intake + 9.4
@@ -87,6 +91,7 @@ lactation_manure_excretion <- function(dry_matter_intake) {
 #'
 #' @examples
 #'lactation_dm_manure_excretion(dry_matter_intake = 25)
+#'
 lactation_dm_manure_excretion <- function(dry_matter_intake) {
 
   lactation_dm_manure_excretion <- 0.8 + 0.356 * dry_matter_intake

@@ -17,4 +17,5 @@ Estimates the daily dry matter intake of dry cows.
 }
 \examples{
 dry_cow_dry_matter_intake(680)
+
 }

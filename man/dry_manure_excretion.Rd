@@ -21,6 +21,7 @@ Estimates the daily total manure excretion of dry cows.
 }
 \examples{
 dry_manure_excretion(body_weight = 650, crude_protein = 12, neutral_detergent_fiber = 40)
+
 }
 \seealso{
 The equation used here is also available in \href{https://pubmed.ncbi.nlm.nih.gov/16162547/}{Nennich et al. (2005)}.

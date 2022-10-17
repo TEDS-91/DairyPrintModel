@@ -10,6 +10,7 @@
 #'
 #' @examples
 #'lactating_dry_matter_intake(days_milk = 60, body_weight = 680, milk_yield = 40)
+#'
 lactating_dry_matter_intake <- function(days_milk, body_weight, milk_yield) {
 
   lactating_dry_matter_intake <- (0.372 * milk_yield + 0.0968 * body_weight ^ 0.75) * (1 - exp(-0.192 * (days_milk / 7 + 3.67)))
@@ -28,6 +29,7 @@ lactating_dry_matter_intake <- function(days_milk, body_weight, milk_yield) {
 #'
 #' @examples
 #' heifer_dry_matter_intake(mature_body_weight = 680, body_weight = 300)
+#'
 heifer_dry_matter_intake <- function(mature_body_weight, body_weight) {
 
   heifer_dry_matter_intake <- 0.022 * mature_body_weight * (1 - exp(-1.54 *( body_weight / mature_body_weight)))
@@ -45,6 +47,7 @@ heifer_dry_matter_intake <- function(mature_body_weight, body_weight) {
 #'
 #' @examples
 #' dry_cow_dry_matter_intake(680)
+#'
 dry_cow_dry_matter_intake <- function(body_weight) {
 
   dry_cow_dry_matter_intake <- body_weight * 0.02

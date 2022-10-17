@@ -20,6 +20,7 @@ Estimates the average calf daily gain.
 \examples{
 # Estimate the average daily gain of a calf consuming 6 l/day of milk and 0.2 kg/day of starter
 calf_adg(milk_intake = 6, starter_intake = 0.2)
+
 }
 \seealso{
 The equation used here is also available in \href{https://www.simleite.com.br/arquivosAnais/arquivo118}{Silva et al. (2015)}.

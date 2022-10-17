@@ -21,6 +21,7 @@ Estimates the daily dry matter intake of lactating cows.
 }
 \examples{
 lactating_dry_matter_intake(days_milk = 60, body_weight = 680, milk_yield = 40)
+
 }
 \seealso{
 The equation used here is also available in \href{https://nap.nationalacademies.org/catalog/9825/nutrient-requirements-of-dairy-cattle-seventh-revised-edition-2001}{NRC (2001)}.

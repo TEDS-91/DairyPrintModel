@@ -16,21 +16,21 @@ milk_yield <- function(days_milk, parity, milk_freq, lambda_milk) {
 
   # first lactation prms a, b, c
 
-  lac1_a <- -4.18 + 1.4           # 1.4 due to WI difference
-  lac1_b <- -0.0037 - 0.0083      # -0.0083 due to WI difference
-  lac1_c <- -0.000931 - 0.00002   # -0.00002 due to WI difference
+  lac1_a <- -4.18 + 1.4           # 1.4 due to Wisconsin deviation
+  lac1_b <- -0.0037 - 0.0083      # -0.0083 due to Wisconsin deviation
+  lac1_c <- -0.000931 - 0.00002   # -0.00002 due to Wisconsin deviation
 
   # second lactation prms a, b, c
 
-  lac2_a <- 2.16 + 1.4            # 1.4 due to WI difference
-  lac2_b <- -0.012 - 0.0083       # -0.0083 due to WI difference
-  lac2_c <- 0.000266 - 0.00002    # -0.00002 due to WI difference
+  lac2_a <- 2.16 + 1.4            # 1.4 due to Wisconsin deviation
+  lac2_b <- -0.012 - 0.0083       # -0.0083 due to Wisconsin deviation
+  lac2_c <- 0.000266 - 0.00002    # -0.00002 due to Wisconsin deviation
 
   # third lactation prms a, b, c
 
-  lac3_a <- 2.02 + 1.4            # 1.4 due to WI difference
-  lac3_b <- 0.0157 - 0.0083       # -0.0083 due to WI difference
-  lac3_c <- 0.000665 - 0.00002    # -0.00002 due to WI difference
+  lac3_a <- 2.02 + 1.4            # 1.4 due to Wisconsin deviation
+  lac3_b <- 0.0157 - 0.0083       # -0.0083 due to Wisconsin deviation
+  lac3_c <- 0.000665 - 0.00002    # -0.00002 due to Wisconsin deviation
 
   # milk_freq = 2
 

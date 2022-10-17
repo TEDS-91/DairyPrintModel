@@ -10,6 +10,7 @@
 #' @examples
 #' # Estimate the average daily gain of a calf consuming 6 l/day of milk and 0.2 kg/day of starter
 #' calf_adg(milk_intake = 6, starter_intake = 0.2)
+#'
 calf_adg <- function(milk_intake, starter_intake) {
 
   calf_adg <- 0.0952 * milk_intake + 0.0425 * starter_intake

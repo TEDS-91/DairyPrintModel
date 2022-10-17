@@ -19,6 +19,7 @@ Estimates the daily enteric methane emission for dry cows.
 }
 \examples{
 enteric_methane_dry(gross_energy_intake = 221, ether_extract = 3)
+
 }
 \seealso{
 The equation used here is also available in \href{https://onlinelibrary.wiley.com/doi/full/10.1111/gcb.12471}{Moraes et al. (2014)}.

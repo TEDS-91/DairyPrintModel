@@ -19,6 +19,7 @@ Estimates the daily total manure excretion of heifers.
 }
 \examples{
 heifer_manure_excretion(dry_matter_intake = 6, body_weight = 250)
+
 }
 \seealso{
 The equations used here are also available in \href{https://pubmed.ncbi.nlm.nih.gov/16162547/}{Nennich et al. (2005)}.

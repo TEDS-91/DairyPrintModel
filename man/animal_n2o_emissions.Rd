@@ -19,6 +19,7 @@ Estimates the nitrous oxide emissions from the animals.
 }
 \examples{
 animal_n2o_emissions(dry_matter_intake = 25, crude_protein = 16)
+
 }
 \seealso{
 The equation used here is also available in \href{https://www.ars.usda.gov/northeast-area/up-pa/pswmru/docs/dairy-gas-emissions-model/}{Rotz et al. (2016)}.

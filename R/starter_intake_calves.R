@@ -10,7 +10,7 @@
 #' @examples
 #' # Estimate the average starter intake of calves 50 days old calf consuming 6 l of milk
 #'starter_intake_calves(milk_intake = 6, age = 50)
-
+#'
 starter_intake_calves <- function(milk_intake, age) {
 
   starter_intake <- ifelse(milk_intake <= 5,
@@ -35,7 +35,7 @@ starter_intake_calves <- function(milk_intake, age) {
 #' @examples
 #' # Estimate the average starter intake of calves between 1 and 30 days consuming 6 l of milk
 #' starter_intake_calves_interval_days(day_min = 1, day_max = 30, milk_intake = 6)
-
+#'
 starter_intake_calves_interval_days <- function(day_min, day_max, milk_intake) {
 
   starter_intake_interval_days <- seq(day_min, day_max) %>%
