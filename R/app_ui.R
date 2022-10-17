@@ -10,7 +10,7 @@ app_ui <- function(request) {
     golem_add_external_resources(),
     # Your application UI logic
     fluidPage(
-      h1("EZMoneyTool"),
+      h1("EZMoneyTool", align = "center"),
 
       mod_animal_ui("animal")
 

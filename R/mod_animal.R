@@ -11,13 +11,47 @@ mod_animal_ui <- function(id){
   ns <- NS(id)
   tagList(
 
-    numericInput(ns("n_cows"),              "Number of cows:",            value = 120, min = 0,  max = 30000),
-    numericInput(ns("cow_calving_int"),     "Calving Interval (mo):",     value = 14,  min = 10, max = 20),
-    numericInput(ns("cow_rep_rate"),        "Cow Culling Rate (%):",      value = 30,  min = 20, max = 50),
-    numericInput(ns("calves_heifers_cul"),  "Heifers Culling Rate (%):",  value = 20,  min = 10, max = 50),
-    numericInput(ns("stillbirth_rate"),     "Stillbirth Rate (%):",       value = 7,   min = 0,  max = 15),
-    numericInput(ns("heifer_calf_born"),    "Percentage Heifers (%):",    value = 50,  min = 45, max = 55),
-    numericInput(ns("time_first_calv"),     "First Calving (mo):",        value = 24,  min = 18, max = 36),
+    wellPanel(
+
+    h3(icon("fa-duotone fa-cow"), strong("Herd Information"), align = "center"),
+
+    style = "background-color:#E2EBF4",
+
+    fluidRow(
+      column(3,
+    numericInput(ns("n_cows"),              "Number of cows:",            value = 120, min = 0,  max = 30000)),
+      column(3,
+    numericInput(ns("cow_calving_int"),     "Calving Interval (mo):",     value = 14,  min = 10, max = 20)),
+      column(3,
+    numericInput(ns("cow_rep_rate"),        "Cow Culling Rate (%):",      value = 30,  min = 20, max = 50)),
+      column(3,
+    numericInput(ns("time_first_calv"),     "First Calving (mo):",        value = 24,  min = 18, max = 36))),
+
+    fluidRow(
+      column(3,
+    numericInput(ns("calves_heifers_cul"),  "Heifers Culling Rate (%):",  value = 20,  min = 10, max = 50)),
+      column(3,
+    numericInput(ns("stillbirth_rate"),     "Stillbirth Rate (%):",       value = 7,   min = 0,  max = 15)),
+      column(3,
+    numericInput(ns("heifer_calf_born"),    "Percentage Heifers (%):",    value = 50,  min = 45, max = 55)),
+      column(3,
+    numericInput(ns("average_milk_yield"),  "Average Milk Yield (kg):",   value = 40,  min = 30, max = 60))),
+
+    br(),
+
+    fluidRow(
+    column(6,
+    h3(strong("Milk composition"), align = "center")),
+
+    column(6,
+    h3(strong("Diet Information"), align = "center")),
+
+    br(),
+
+    column(3,
+    actionButton(ns("button"),
+                 "Run!",
+                 style = "color: #fff; background-color: #007582; border-color: #007582; height:40px; width:80px")))),
 
     tableOutput(ns("herd_stab")),
     tableOutput(ns("herd_stab2"))
@@ -57,39 +91,40 @@ mod_animal_server <- function(id){
 
     })
 
-    output$herd_stab2 <- renderTable({
+    df <- eventReactive(input$button, {
 
       # converting the herd_matrix to tibble
       herd_demographics_raw <- herd_matrix()[[1]] %>%
         tibble::as_tibble()
 
-       herd_demographics_raw %>%
-         tibble::as_tibble() %>%
-         dplyr::mutate(MonthSimulated = seq(1, dim(herd_demographics_raw)[1])) %>%
-         dplyr::relocate(MonthSimulated, .before = HeiOpenGrowMonth1) %>%
-         tidyr::pivot_longer(-MonthSimulated,
-                      names_to = "GeneralCategories",
-                      values_to = "NumberAnimals") %>%
-         tidyr::separate(GeneralCategories, into = c("Categories", "Others"), 3) %>%
-         tidyr::separate(Others, into = c("ReproductiveStatus", "Others"), 4) %>%
-         tidyr::separate(Others, into = c("Phase", "MonthLac"), 4) %>%
-         tidyr::separate(MonthLac, into = c("Garbage", "Month"), 5) %>%
-         dplyr::select(-Garbage)
+      df <- herd_demographics_raw %>%
+        tibble::as_tibble() %>%
+        dplyr::mutate(MonthSimulated = seq(1, dim(herd_demographics_raw)[1])) %>%
+        dplyr::relocate(MonthSimulated, .before = HeiOpenGrowMonth1) %>%
+        tidyr::pivot_longer(-MonthSimulated,
+                            names_to = "GeneralCategories",
+                            values_to = "NumberAnimals") %>%
+        tidyr::separate(GeneralCategories, into = c("Categories", "Others"), 3) %>%
+        tidyr::separate(Others, into = c("ReproductiveStatus", "Others"), 4) %>%
+        tidyr::separate(Others, into = c("Phase", "MonthLac"), 4) %>%
+        tidyr::separate(MonthLac, into = c("Garbage", "Month"), 5) %>%
+        dplyr::select(-Garbage)
 
-
-
-
-
-
-
-
-
+      df
 
     })
 
 
 
-  })
+    output$herd_stab2 <- renderTable({
+
+
+      df()
+
+    })
+
+    })
+
 }
 
 ## To be copied in the UI
