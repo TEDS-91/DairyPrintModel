@@ -13,7 +13,7 @@ mod_animal_ui <- function(id){
 
     wellPanel(
 
-    h3(icon("fa-duotone fa-cow"), strong("Herd Information"), align = "center"),
+    h3(icon("fa-duotone fa-cow", verify_fa = FALSE), strong("Herd Information"), align = "center"),
 
     style = "background-color:#E2EBF4",
 
