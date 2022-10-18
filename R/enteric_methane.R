@@ -44,21 +44,21 @@ gross_energy_intake <- function(dry_matter_intake,
 #' @export
 #'
 #' @examples
-#' enteric_methane_lactating(gross_energy_intake = 465,
+#' lactating_enteric_methane(gross_energy_intake = 465,
 #'                          neutral_detergent_fiber = 30,
 #'                          ether_extract = 4,
 #'                          body_weight = 650,
 #'                          milk_fat = 4)
 #'
-enteric_methane_lactating <- function(gross_energy_intake,
+lactating_enteric_methane <- function(gross_energy_intake,
                                       neutral_detergent_fiber,
                                       ether_extract,
                                       body_weight,
                                       milk_fat) {
 
-  enteric_methane_lactating <- (-9.311 + 0.042 * gross_energy_intake + 0.094 * neutral_detergent_fiber - 0.381 * ether_extract + 0.008 * body_weight + 1.621 * milk_fat) / 0.05
+  lactating_enteric_methane <- (-9.311 + 0.042 * gross_energy_intake + 0.094 * neutral_detergent_fiber - 0.381 * ether_extract + 0.008 * body_weight + 1.621 * milk_fat) / 0.05
 
-  return(enteric_methane_lactating)
+  return(lactating_enteric_methane)
 
 }
 
@@ -72,13 +72,13 @@ enteric_methane_lactating <- function(gross_energy_intake,
 #' @export
 #'
 #' @examples
-#' enteric_methane_dry(gross_energy_intake = 221, ether_extract = 3)
+#' dry_enteric_methane(gross_energy_intake = 221, ether_extract = 3)
 #'
-enteric_methane_dry <- function(gross_energy_intake, ether_extract) {
+dry_enteric_methane <- function(gross_energy_intake, ether_extract) {
 
-  enteric_methane_dry <- (2.88 + 0.053 * gross_energy_intake - 0.190 * ether_extract) / 0.05
+  dry_enteric_methane <- (2.88 + 0.053 * gross_energy_intake - 0.190 * ether_extract) / 0.05
 
-  return(enteric_methane_dry)
+  return(dry_enteric_methane)
 
 }
 
@@ -93,12 +93,12 @@ enteric_methane_dry <- function(gross_energy_intake, ether_extract) {
 #' @export
 #'
 #' @examples
-#' enteric_methane_heifer(gross_energy_intake = 110, neutral_detergent_fiber = 40, body_weight = 260)
+#' heifer_enteric_methane(gross_energy_intake = 110, neutral_detergent_fiber = 40, body_weight = 260)
 #'
-enteric_methane_heifer <- function(gross_energy_intake, neutral_detergent_fiber, body_weight) {
+heifer_enteric_methane <- function(gross_energy_intake, neutral_detergent_fiber, body_weight) {
 
-  enteric_methane_heifer <- (-1.487 + 0.046 * gross_energy_intake + 0.032 * neutral_detergent_fiber + 0.006 * body_weight) / 0.05
+  heifer_enteric_methane <- (-1.487 + 0.046 * gross_energy_intake + 0.032 * neutral_detergent_fiber + 0.006 * body_weight) / 0.05
 
-  return(enteric_methane_heifer)
+  return(heifer_enteric_methane)
 
 }

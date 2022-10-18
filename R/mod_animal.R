@@ -53,8 +53,8 @@ mod_animal_ui <- function(id){
                  "Run!",
                  style = "color: #fff; background-color: #007582; border-color: #007582; height:40px; width:80px")))),
 
-    tableOutput(ns("herd_stab")),
-    tableOutput(ns("herd_stab2"))
+    tableOutput(ns("herd_stab2")),
+    plotOutput(ns("graphic"))
 
   )
 }
@@ -119,11 +119,35 @@ mod_animal_server <- function(id){
     output$herd_stab2 <- renderTable({
 
 
-      df()
+      df() %>%
+        utils::head(50)
 
     })
 
+      observeEvent(input$button, {
+
+        output$graphic <- renderPlot({
+
+        tibble::tibble(
+          milk_intake = c(rep(4, 60), rep(6, 60)),
+          age = c(seq(1, 60), seq(1, 60))
+        ) %>%
+          dplyr::mutate(dmi = purrr::map2_dbl(milk_intake, age, starter_intake_calves)) %>%
+          ggplot2::ggplot( ggplot2::aes ( x = age, y = dmi, color = as.factor(milk_intake))) +
+          ggplot2::geom_point() +
+          ggplot2::theme(legend.position = "bottom") +
+          ggplot2::labs(
+            x = "Age (days)",
+            y = "Starter Intake (kg)",
+            color = "Milk Ingested (L/d)"
+          )
+
+      })
+
     })
+
+
+ })
 
 }
 

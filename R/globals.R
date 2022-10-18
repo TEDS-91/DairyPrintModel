@@ -5,6 +5,10 @@ utils::globalVariables(
     "GeneralCategories",
     "Others",
     "MonthLac",
-    "Garbage"
+    "Garbage",
+
+    "milk_intake",
+    "age",
+    "dmi"
   )
 )

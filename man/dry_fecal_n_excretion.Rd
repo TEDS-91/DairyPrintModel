@@ -19,3 +19,6 @@ Estimates the daily fecal nitrogen excretion of dry cows.
 dry_fecal_n_excretion(nitrogen_intake = 230)
 
 }
+\seealso{
+The equations used here are also available in \href{https://www.journalofdairyscience.org/article/S0022-0302(15)00147-2/fulltext}{Reed et al. (2015)}.
+}

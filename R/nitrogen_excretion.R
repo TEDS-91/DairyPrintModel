@@ -60,6 +60,7 @@ lactating_n_total_excretion <- function(nitrogen_intake) {
 #' @param nitrogen_intake Nitrogen intake (g/day).
 #'
 #' @return Daily fecal nitrogen excretion (g).
+#' @seealso The equations used here are also available in \href{https://www.journalofdairyscience.org/article/S0022-0302(15)00147-2/fulltext}{Reed et al. (2015)}.
 #' @export
 #'
 #' @examples
@@ -78,6 +79,7 @@ dry_fecal_n_excretion <- function(nitrogen_intake) {
 #' @param nitrogen_intake Nitrogen intake (g/day).
 #'
 #' @return Daily total nitrogen excretion (g).
+#' @seealso The equations used here are also available in \href{https://www.journalofdairyscience.org/article/S0022-0302(15)00147-2/fulltext}{Reed et al. (2015)}.
 #' @export
 #'
 #' @examples
@@ -85,11 +87,50 @@ dry_fecal_n_excretion <- function(nitrogen_intake) {
 #'
 dry_n_total_excretion <- function(nitrogen_intake) {
 
-  dry_n_total_excretion <- 0.345 + 0.317 * nitrogen_intake
+  dry_n_total_excretion <- 15.1 + 0.828 * nitrogen_intake
 
   return(dry_n_total_excretion)
 
 }
+
+#' Estimates the daily fecal nitrogen excretion of heifers.
+#'
+#' @param nitrogen_intake Nitrogen intake (g/day).
+#'
+#' @return Daily fecal nitrogen excretion (g).
+#' @seealso The equations used here are also available in \href{https://www.journalofdairyscience.org/article/S0022-0302(15)00147-2/fulltext}{Reed et al. (2015)}.
+#' @export
+#'
+#' @examples
+#' heifer_n_fecal_excretion(nitrogen_intake = 120)
+#'
+heifer_n_fecal_excretion <- function(nitrogen_intake) {
+
+  heifer_n_fecal_excretion <- 0.345 + 0.317 * nitrogen_intake
+
+  return(heifer_n_fecal_excretion)
+
+}
+
+#' Estimates the daily total nitrogen excretion of heifers.
+#'
+#' @param nitrogen_intake Nitrogen intake (g/day).
+#'
+#' @return Daily total nitrogen excretion (g).
+#' @seealso The equations used here are also available in \href{https://www.journalofdairyscience.org/article/S0022-0302(15)00147-2/fulltext}{Reed et al. (2015)}.
+#' @export
+#'
+#' @examples
+#' heifer_n_total_excretion(nitrogen_intake = 230)
+#'
+heifer_n_total_excretion <- function(nitrogen_intake) {
+
+  heifer_n_total_excretion <- 15.1 + 0.828 * nitrogen_intake
+
+  return(heifer_n_total_excretion)
+
+}
+
 
 
 
