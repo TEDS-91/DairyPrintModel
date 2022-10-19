@@ -51,7 +51,11 @@ mod_animal_ui <- function(id){
     column(3,
     actionButton(ns("button"),
                  "Run!",
-                 style = "color: #fff; background-color: #007582; border-color: #007582; height:40px; width:80px")))),
+                 style = "color: #fff; background-color: #007582; border-color: #007582; height:40px; width:80px")),
+
+    column(9,
+    downloadButton("relatorio", "Report.html",
+                   style = "color: #fff; background-color: #007582; border-color: #007582")))),
 
     tableOutput(ns("herd_stab2")),
     plotOutput(ns("graphic"))

@@ -1,0 +1,29 @@
+---
+title: "Untitled"
+author: "Tadeu E da Silva"
+date: '2022-10-19'
+output: html_document
+params:
+  dry_matter_intake: 'NULL'
+---
+
+# This is just a test for report generation
+
+```{r}
+
+params$dry_matter_intake %>% 
+  tibble::as_tibble() %>% 
+  head()
+
+```
+
+## Ploting Dry Matter Intake (testing)
+
+```{r, message = FALSE, warning = FALSE, error = FALSE}
+
+ggplot2::ggplot(NULL, ggplot2::aes(x = params$dry_matter_intake)) +
+  ggplot2::geom_histogram(fill = "blue") +
+  ggplot2::xlab("Dry matter Intake (kg)")
+
+```
+
