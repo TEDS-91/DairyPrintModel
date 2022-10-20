@@ -116,11 +116,9 @@ mod_animal_server <- function(id){
         dplyr::mutate(Categories = dplyr::if_else(Categories == "Hei" & Month == "1", "Cal",
                                            dplyr::if_else(Categories == "Hei" & Month == "2", "Cal", Categories)))
 
-      df
 
-    })
 
-    output$herd_stab2 <- renderTable({
+
 
       # additional inputs
 
@@ -137,9 +135,9 @@ mod_animal_server <- function(id){
 
 
 
-      df() %>%
+      df <- df %>%
         dplyr::mutate(
-          Month = as.numeric(Month),
+          Month   = as.numeric(Month),
           day_min = Month * 30 - 29,
           day_max = Month * 30,
           mean_body_weight =
@@ -151,12 +149,12 @@ mod_animal_server <- function(id){
                                           age_first_calving  = input$time_first_calv,
                                           mature_body_weight = mature_body_weight,
                                           type               = "mean"),
-            dplyr::if_else(Categories == "Cal",
-                           purrr::map_dbl(day_max,
-                                          calf_body_weight,
-                                          birth_weight       = birth_weight_kg,
-                                          calf_adg           = calf_adg_kg,
-                                          type               = "mean"), 0)),
+                           dplyr::if_else(Categories == "Cal",
+                                          purrr::map_dbl(day_max,
+                                                         calf_body_weight,
+                                                         birth_weight       = birth_weight_kg,
+                                                         calf_adg           = calf_adg_kg,
+                                                         type               = "mean"), 0)),
           final_body_weight =
             dplyr::if_else(Categories == "Hei",
                            purrr::map_dbl(Month,
@@ -166,13 +164,44 @@ mod_animal_server <- function(id){
                                           age_first_calving  = input$time_first_calv,
                                           mature_body_weight = mature_body_weight,
                                           type               = "final"),
-            dplyr::if_else(Categories == "Cal",
-                          purrr::map_dbl(day_max,
-                                        calf_body_weight,
-                                        birth_weight       = birth_weight_kg,
-                                        calf_adg           = calf_adg_kg,
-                                        type               = "final"), 0))
+                           dplyr::if_else(Categories == "Cal",
+                                          purrr::map_dbl(day_max,
+                                                         calf_body_weight,
+                                                         birth_weight       = birth_weight_kg,
+                                                         calf_adg           = calf_adg_kg,
+                                                         type               = "final"), 0))
+        ) %>%
+        dplyr::group_by(MonthSimulated) %>%
+        dplyr::mutate(
+          cow_bw_parturium_kg = dplyr::if_else(Phase == "Grow", 0,
+                                               dplyr::if_else(Phase == 'Lac1', mature_body_weight * 0.82,
+                                                              dplyr::if_else(Phase == 'Lac2', mature_body_weight * 0.92, mature_body_weight))),
+          bw_change_total_kg  = dplyr::if_else(Phase == "Grow", 0,
+                                               dplyr::if_else(Phase == "Lac1",
+                                                              purrr::map2_dbl(day_min,
+                                                                              day_max,
+                                                                              cow_body_weight,
+                                                                              parity = "primiparous"),
+                                                              purrr::map2_dbl(day_min,
+                                                                              day_max,
+                                                                              cow_body_weight,
+                                                                              parity = "multiparous"))),
+          bw_change_acum_kg    = cumsum(bw_change_total_kg),
+          mean_cow_weight_kg   = cow_bw_parturium_kg + bw_change_acum_kg - 0.5 * bw_change_total_kg,
+          mean_body_weight_kg  = mean_body_weight + mean_cow_weight_kg,
+          final_body_weight_kg = final_body_weight + bw_change_total_kg + cow_bw_parturium_kg
+
         )
+
+
+
+
+
+    })
+
+    output$herd_stab2 <- renderTable({
+
+      df()
 
     })
 
@@ -180,19 +209,11 @@ mod_animal_server <- function(id){
 
         output$graphic <- renderPlot({
 
-        tibble::tibble(
-          milk_intake = c(rep(4, 60), rep(6, 60)),
-          age = c(seq(1, 60), seq(1, 60))
-        ) %>%
-          dplyr::mutate(dmi = purrr::map2_dbl(milk_intake, age, starter_intake_calves)) %>%
-          ggplot2::ggplot( ggplot2::aes ( x = age, y = dmi, color = as.factor(milk_intake))) +
-          ggplot2::geom_point() +
-          ggplot2::theme(legend.position = "bottom") +
-          ggplot2::labs(
-            x = "Age (days)",
-            y = "Starter Intake (kg)",
-            color = "Milk Ingested (L/d)"
-          )
+          df() %>%
+          ggplot2::ggplot(ggplot2::aes(x = Month, mean_body_weight_kg, col = Phase)) +
+            ggplot2::geom_line() +
+            ggplot2::facet_wrap(~Phase, scales = "free") +
+            ggplot2::theme(legend.position = "bottom")
 
       })
 

@@ -8,12 +8,12 @@
 #' @export
 #'
 #' @examples
-#' body_weight_loss_lactation(days_milk = 30, parity = "multi")
+#' body_weight_loss_lactation(days_milk = 30, parity = "multiparous")
 body_weight_loss_lactation <- function(days_milk, parity) {
 
-  if (parity == "multi") {
+  if (parity == "multiparous") {
     body_weight_change <- (- 40 / 75 * exp(1 - days_milk / 75) + 40 / 75 ^ 2 * days_milk * exp(1 - days_milk / 75))
-  } else if (parity != "multi") {
+  } else if (parity != "multiparous") {
     body_weight_change <- (- 20 / 65 * exp(1 - days_milk / 65) + 20 / 65 ^ 2 * days_milk * exp(1 - days_milk / 65))
   }
 
@@ -31,7 +31,7 @@ body_weight_loss_lactation <- function(days_milk, parity) {
 #' @export
 #'
 #' @examples
-#' cow_body_weight(min_value = 1, max_value = 30, parity = "multi")
+#' cow_body_weight(min_value = 1, max_value = 30, parity = "multiparous")
 cow_body_weight <- function(min_value, max_value, parity) {
 
   cow_body_weight <- seq(min_value, max_value) %>%

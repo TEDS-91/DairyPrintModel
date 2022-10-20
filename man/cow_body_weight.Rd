@@ -20,5 +20,5 @@ Accumulate body weight losses (kg).
 Estimates the accumulate body weight losses in an user defined range of days in milk.
 }
 \examples{
-cow_body_weight(min_value = 1, max_value = 30, parity = "multi")
+cow_body_weight(min_value = 1, max_value = 30, parity = "multiparous")
 }

@@ -18,7 +18,7 @@ Body weight loss at given day in milk (kg).
 Estimates the body weight losses daily over the lactation.
 }
 \examples{
-body_weight_loss_lactation(days_milk = 30, parity = "multi")
+body_weight_loss_lactation(days_milk = 30, parity = "multiparous")
 }
 \seealso{
 The equations used here are also available in \href{https://pubmed.ncbi.nlm.nih.gov/23415521/}{Galvão et al. (2013)}.
