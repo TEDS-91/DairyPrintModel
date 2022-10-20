@@ -54,7 +54,7 @@ mod_animal_ui <- function(id){
                  style = "color: #fff; background-color: #007582; border-color: #007582; height:40px; width:80px")),
 
     column(9,
-    downloadButton("relatorio", "Report.html",
+    downloadButton("rmd_report", "Report.html",
                    style = "color: #fff; background-color: #007582; border-color: #007582")))),
 
     tableOutput(ns("herd_stab2")),
@@ -112,19 +112,67 @@ mod_animal_server <- function(id){
         tidyr::separate(Others, into = c("ReproductiveStatus", "Others"), 4) %>%
         tidyr::separate(Others, into = c("Phase", "MonthLac"), 4) %>%
         tidyr::separate(MonthLac, into = c("Garbage", "Month"), 5) %>%
-        dplyr::select(-Garbage)
+        dplyr::select(-Garbage) %>%
+        dplyr::mutate(Categories = dplyr::if_else(Categories == "Hei" & Month == "1", "Cal",
+                                           dplyr::if_else(Categories == "Hei" & Month == "2", "Cal", Categories)))
 
       df
 
     })
 
-
-
     output$herd_stab2 <- renderTable({
+
+      # additional inputs
+
+      birth_weight_kg <- 40
+      milk_sup_l <- 6
+      mature_body_weight <- 680
+
+      calf_adg_kg <- seq(1, 60) %>%
+        purrr::map_dbl(starter_intake_calves, milk_intake = milk_sup_l) %>%
+        purrr::map_dbl(calf_adg, milk_intake = milk_sup_l) %>%
+        sum() / 60
+
+      weaning_weight_kg <- birth_weight_kg + calf_adg_kg * 60
+
 
 
       df() %>%
-        utils::head(50)
+        dplyr::mutate(
+          Month = as.numeric(Month),
+          day_min = Month * 30 - 29,
+          day_max = Month * 30,
+          mean_body_weight =
+            dplyr::if_else(Categories == "Hei",
+                           purrr::map_dbl(Month,
+                                          heifer_body_weight,
+                                          birth_weight       = birth_weight_kg,
+                                          weaning_weight     = weaning_weight_kg,
+                                          age_first_calving  = input$time_first_calv,
+                                          mature_body_weight = mature_body_weight,
+                                          type               = "mean"),
+            dplyr::if_else(Categories == "Cal",
+                           purrr::map_dbl(day_max,
+                                          calf_body_weight,
+                                          birth_weight       = birth_weight_kg,
+                                          calf_adg           = calf_adg_kg,
+                                          type               = "mean"), 0)),
+          final_body_weight =
+            dplyr::if_else(Categories == "Hei",
+                           purrr::map_dbl(Month,
+                                          heifer_body_weight,
+                                          birth_weight       = birth_weight_kg,
+                                          weaning_weight     = weaning_weight_kg,
+                                          age_first_calving  = input$time_first_calv,
+                                          mature_body_weight = mature_body_weight,
+                                          type               = "final"),
+            dplyr::if_else(Categories == "Cal",
+                          purrr::map_dbl(day_max,
+                                        calf_body_weight,
+                                        birth_weight       = birth_weight_kg,
+                                        calf_adg           = calf_adg_kg,
+                                        type               = "final"), 0))
+        )
 
     })
 
@@ -149,7 +197,6 @@ mod_animal_server <- function(id){
       })
 
     })
-
 
  })
 

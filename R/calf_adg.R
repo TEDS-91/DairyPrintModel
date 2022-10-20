@@ -38,7 +38,7 @@ calf_body_weight <- function(birth_weight, calf_adg, day_max, type) {
   if (type == "final") {
     calf_body_weight <- birth_weight + calf_adg * day_max
   } else if (type == "mean") {
-    calf_body_weight <- birth_weight + calf_adg * day_max - 0.5 * calf_adg
+    calf_body_weight <- birth_weight + calf_adg * day_max - 15 * calf_adg
   }
 
   return(calf_body_weight)

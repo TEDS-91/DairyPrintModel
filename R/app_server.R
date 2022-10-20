@@ -17,12 +17,13 @@ app_server <- function(input, output, session) {
 
   })
 
-  output$relatorio <-
-    downloadHandler(
+  output$rmd_report <- downloadHandler(
+
       "EZMoneyToolReport.html",
+
       content =
-        function(file)
-        {
+        function(file) {
+
           rmarkdown::render(
             input = "inst/rmd_report/report.Rmd",
             output_file = "built_report.html",
@@ -39,11 +40,5 @@ app_server <- function(input, output, session) {
             writeBin(con = file)
         }
     )
-
-
-
-
-
-
 
 }

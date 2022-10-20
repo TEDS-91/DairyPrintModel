@@ -6,6 +6,12 @@ utils::globalVariables(
     "Others",
     "MonthLac",
     "Garbage",
+    "Categories",
+    "Month",
+    "day_max",
+    "day_min",
+
+
 
     "milk_intake",
     "age",
