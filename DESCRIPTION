@@ -16,6 +16,7 @@ Imports:
     purrr,
     rmarkdown,
     shiny (>= 1.7.1),
+    shinycssloaders,
     stats,
     tibble,
     tidyr

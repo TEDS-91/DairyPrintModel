@@ -20,10 +20,10 @@ params$dry_matter_intake %>%
 ## Ploting Dry Matter Intake (testing)
 
 ```{r, message = FALSE, warning = FALSE, error = FALSE}
-
+plotly::ggplotly(
 ggplot2::ggplot(NULL, ggplot2::aes(x = params$dry_matter_intake)) +
   ggplot2::geom_histogram(fill = "blue") +
   ggplot2::xlab("Dry matter Intake (kg)")
-
+)
 ```
 

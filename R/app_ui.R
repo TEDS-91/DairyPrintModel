@@ -12,9 +12,7 @@ app_ui <- function(request) {
     fluidPage(
       h1("EZMoneyTool", align = "center"),
 
-      mod_animal_ui("animal"),
-
-
+      mod_animal_ui("animal")
 
     )
   )

@@ -7,7 +7,7 @@
 #' @noRd
 #'
 #' @importFrom shiny NS tagList
-mod_milk_yield_optimization_ui <- function(id){
+mod_milk_yield_optimization_ui <- function(id) {
   ns <- NS(id)
   tagList(
 
@@ -18,7 +18,7 @@ mod_milk_yield_optimization_ui <- function(id){
 #'
 #' @noRd
 mod_milk_yield_optimization_server <- function(id, obs_average_milk_yield, milk_freq, prop_primiparous, prop_secondiparous, cow_calving_interval){
-  moduleServer( id, function(input, output, session){
+  moduleServer( id, function(input, output, session) {
     ns <- session$ns
 
       lambda <- reactive({

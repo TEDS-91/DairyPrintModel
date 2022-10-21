@@ -17,6 +17,8 @@ mod_animal_ui <- function(id){
 
     style = "background-color:#E2EBF4",
 
+    #waiter::use_waiter(),
+
     fluidRow(
       column(3,
     numericInput(ns("n_cows"),              "Number of cows:",            value = 120, min = 0,  max = 30000)),
@@ -63,7 +65,7 @@ mod_animal_ui <- function(id){
                    style = "color: #fff; background-color: #007582; border-color: #007582")))),
 
     textOutput(ns("lambda")),
-    tableOutput(ns("herd_stab2")),
+    shinycssloaders::withSpinner(tableOutput(ns("herd_stab2")), type = 1, color = "#0dc5c1", size = 5),
     plotOutput(ns("graphic"))
 
   )
@@ -102,7 +104,7 @@ mod_animal_server <- function(id){
 
     })
 
-    lambda_milk_calc <- reactive({
+    lambda_milk_calc <- eventReactive(input$button, {
 
       age_first_calv <- input$time_first_calv
 
@@ -131,7 +133,10 @@ mod_animal_server <- function(id){
 
     })
 
+
     df <- eventReactive(input$button, {
+
+      withProgress(message = "Running the model...", {
 
       # converting the herd_matrix to tibble
       herd_demographics_raw <- herd_matrix()[[1]] %>%
@@ -249,7 +254,7 @@ mod_animal_server <- function(id){
         #dplyr::summarise(
         #  average_milk_yield = (weighted.mean(milk_yield_kg_2, NumberAnimals))) / 30
 
-
+      })
 
 
 
@@ -257,7 +262,7 @@ mod_animal_server <- function(id){
 
     output$herd_stab2 <- renderTable({
 
-      df()
+        df()
 
     })
 
