@@ -32,19 +32,3 @@ Heifer body weight (kg)
 \description{
 Estimates the heifer mean or final body weight at given month.
 }
-\examples{
-heifer_body_weight(birth_weight = 40,
-                   weaning_weight = 80,
-                   age_first_calving = 24,
-                   mature_body_weight = 680,
-                   month = 6,
-                   type = "mean")
-
-heifer_body_weight(birth_weight = 40,
-                   weaning_weight = 80,
-                   age_first_calving = 24,
-                   mature_body_weight = 680,
-                   month = 6,
-                   type = "final")
-
-}

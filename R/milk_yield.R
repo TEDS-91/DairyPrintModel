@@ -54,13 +54,40 @@ milk_yield <- function(days_milk, parity, milk_freq, lambda_milk) {
 
   if (parity == 'primiparous' & milk_freq == 3) {
     milk_yield <- ((19.9 + lac1_a + milk_freq3_a) * lambda_milk * days_milk ^ (0.247 + lac1_b + milk_freq3_b) * exp(- (0.003376 + lac1_c + milk_freq3_c) * days_milk))
-  } else if (parity == 'secondiparous'  & milk_freq == 3) {
+  } else if (parity == 'secondiparous' & milk_freq == 3) {
     milk_yield <- ((19.9 + lac2_a + milk_freq3_a) * lambda_milk * days_milk ^ (0.247 + lac2_b + milk_freq3_b) * exp(- (0.003376 + lac2_c + milk_freq3_c) * days_milk))
   } else if (parity == 'multiparous' & milk_freq == 3) {
     milk_yield <- ((19.9 + lac3_a + milk_freq3_a) * lambda_milk * days_milk ^ (0.247 + lac3_b + milk_freq3_b) * exp(- (0.003376 + lac3_c + milk_freq3_c) * days_milk))
   }
 
   return(milk_yield)
+
+}
+
+#' Estimates the total milk yield between two days in milk.
+#'
+#' @param min_value Initial day in milk.
+#' @param max_value Final day in milk.
+#' @param parity Parity: primiparous, secondiparous or multiparous.
+#' @param milk_freq Observed milk yield (kg).
+#' @param lambda_milk Hyper parameter to adjust the milk yield for a specific average value.
+#'
+#' @return Accumulated milk yield between two days in milk (kg).
+#' @export
+#'
+#' @examples
+#' milk_yield_acum(min_value = 30,
+#'                 max_value = 60,
+#'                 parity = "multiparous",
+#'                 milk_freq = 2,
+#'                 lambda_milk = 2)
+milk_yield_acum <- function(min_value, max_value, parity, milk_freq, lambda_milk){
+
+  milk_yield_acum <- seq(min_value, max_value) %>%
+    purrr::map_dbl(milk_yield, parity, milk_freq, lambda_milk) %>%
+    sum()
+
+  return(milk_yield_acum)
 
 }
 

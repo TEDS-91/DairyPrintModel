@@ -20,6 +20,7 @@ utils::globalVariables(
     "final_body_weight_kg",
     "final_body_weight",
 
+    "milk_yield_kg_2",
 
     "milk_intake",
     "age",

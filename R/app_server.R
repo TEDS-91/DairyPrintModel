@@ -11,6 +11,9 @@ app_server <- function(input, output, session) {
   mod_animal_server("animal")
 
 
+
+
+
   df <- reactive({
 
     df <- stats::rnorm(1000, 25, 4)

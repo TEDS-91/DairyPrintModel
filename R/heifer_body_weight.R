@@ -8,23 +8,8 @@
 #' @param type Weight type to be estimated: average weight in the period or final weight (kg).
 #'
 #' @return Heifer body weight (kg)
-#' @export
 #'
-#' @examples
-#' heifer_body_weight(birth_weight = 40,
-#'                    weaning_weight = 80,
-#'                    age_first_calving = 24,
-#'                    mature_body_weight = 680,
-#'                    month = 6,
-#'                    type = "mean")
-#'
-#' heifer_body_weight(birth_weight = 40,
-#'                    weaning_weight = 80,
-#'                    age_first_calving = 24,
-#'                    mature_body_weight = 680,
-#'                    month = 6,
-#'                    type = "final")
-#'
+
 heifer_body_weight <- function(birth_weight,
                                weaning_weight,
                                age_first_calving,

@@ -35,7 +35,12 @@ mod_animal_ui <- function(id){
       column(3,
     numericInput(ns("heifer_calf_born"),    "Percentage Heifers (%):",    value = 50,  min = 45, max = 55)),
       column(3,
-    numericInput(ns("average_milk_yield"),  "Average Milk Yield (kg):",   value = 40,  min = 30, max = 60))),
+             #mod_milk_yield_optimization_ui(ns("milk_yield_optimization")),
+    numericInput(ns("average_milk_yield"),  "Average Milk Yield (kg):",   value = 40,  min = 30, max = 60),
+    selectInput(ns("milk_freq"), "Milk Frequence:", choices = c(2, 3))
+
+
+             )),
 
     br(),
 
@@ -57,10 +62,12 @@ mod_animal_ui <- function(id){
     downloadButton("rmd_report", "Report.html",
                    style = "color: #fff; background-color: #007582; border-color: #007582")))),
 
+    textOutput(ns("lambda")),
     tableOutput(ns("herd_stab2")),
     plotOutput(ns("graphic"))
 
   )
+
 }
 
 #' animal Server Functions
@@ -95,6 +102,35 @@ mod_animal_server <- function(id){
 
     })
 
+    lambda_milk_calc <- reactive({
+
+      age_first_calv <- input$time_first_calv
+
+      cow_calving_int <- input$cow_calving_int
+
+      n_cows <- input$n_cows
+
+      prop_primiparous <- sum(herd_matrix()[[1]][1, (age_first_calv + 1):((age_first_calv + 1) + cow_calving_int - 1)]) / n_cows
+
+      prop_secondiparous <- sum(herd_matrix()[[1]][1, (age_first_calv + 1 + cow_calving_int):(age_first_calv + 1 + 2 * cow_calving_int - 1)]) / n_cows
+
+
+      lambda_milk_calc <- lambda_milk_yield(obs_average_milk_yield = input$average_milk_yield,
+                                            milk_freq              = input$milk_freq,
+                                            prop_primiparous       = prop_primiparous * 100,
+                                            prop_secondiparous     = prop_secondiparous * 100,
+                                            cow_calving_interval   = input$cow_calving_int) - 0.02
+      lambda_milk_calc
+
+      })
+
+
+    output$lambda <- renderPrint({
+
+      paste("the lambda value is:", lambda_milk_calc())
+
+    })
+
     df <- eventReactive(input$button, {
 
       # converting the herd_matrix to tibble
@@ -116,10 +152,6 @@ mod_animal_server <- function(id){
         dplyr::mutate(Categories = dplyr::if_else(Categories == "Hei" & Month == "1", "Cal",
                                            dplyr::if_else(Categories == "Hei" & Month == "2", "Cal", Categories)))
 
-
-
-
-
       # additional inputs
 
       birth_weight_kg <- 40
@@ -132,8 +164,6 @@ mod_animal_server <- function(id){
         sum() / 60
 
       weaning_weight_kg <- birth_weight_kg + calf_adg_kg * 60
-
-
 
       df <- df %>%
         dplyr::mutate(
@@ -189,9 +219,35 @@ mod_animal_server <- function(id){
           bw_change_acum_kg    = cumsum(bw_change_total_kg),
           mean_cow_weight_kg   = cow_bw_parturium_kg + bw_change_acum_kg - 0.5 * bw_change_total_kg,
           mean_body_weight_kg  = mean_body_weight + mean_cow_weight_kg,
-          final_body_weight_kg = final_body_weight + bw_change_total_kg + cow_bw_parturium_kg
+          final_body_weight_kg = final_body_weight + bw_change_total_kg + cow_bw_parturium_kg,
 
-        )
+          milk_yield_kg_2 = dplyr::if_else(Phase == "Grow" | Categories == "Dry", 0,
+                                           dplyr::if_else(Phase == "Lac1",
+                                                          purrr::map2_dbl(day_min,
+                                                                          day_max,
+                                                                          milk_yield_acum,
+                                                                          parity      = "primiparous",
+                                                                          milk_freq   = input$milk_freq,
+                                                                          lambda_milk = lambda_milk_calc()),
+                                                          dplyr::if_else(Phase == "Lac2",
+                                                                         purrr::map2_dbl(day_min,
+                                                                                         day_max,
+                                                                                         milk_yield_acum,
+                                                                                         parity      = "secondiparous",
+                                                                                         milk_freq   = input$milk_freq,
+                                                                                         lambda_milk = lambda_milk_calc()),
+                                                                         purrr::map2_dbl(day_min,
+                                                                                         day_max,
+                                                                                         milk_yield_acum,
+                                                                                         parity = "multiparous",
+                                                                                         milk_freq = input$milk_freq,
+                                                                                         lambda_milk = lambda_milk_calc())))),
+          milk_yield_kg_cow2 = milk_yield_kg_2 / 30
+        ) #%>%
+        #dplyr::filter(MonthSimulated == 1 & Categories == "Cow") %>%
+        #dplyr::ungroup() %>%
+        #dplyr::summarise(
+        #  average_milk_yield = (weighted.mean(milk_yield_kg_2, NumberAnimals))) / 30
 
 
 
