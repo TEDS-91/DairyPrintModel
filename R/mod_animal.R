@@ -157,11 +157,22 @@ mod_animal_server <- function(id){
         dplyr::mutate(Categories = dplyr::if_else(Categories == "Hei" & Month == "1", "Cal",
                                            dplyr::if_else(Categories == "Hei" & Month == "2", "Cal", Categories)))
 
+      ###################################################################################################################
       # additional inputs
 
       birth_weight_kg <- 40
       milk_sup_l <- 6
       mature_body_weight <- 680
+      milk_fat <- 3.67
+      milk_prot <- 3.25
+      milk_solids <- (1 - (100 - milk_fat - milk_prot - 4.6 - 0.8) / 100) * 100
+      forage_intake_1 <- 0.05
+      forage_intake_2 <- 0.25
+      dmi_dry <- 0.02
+
+
+
+      ##################################################################################################################
 
       calf_adg_kg <- seq(1, 60) %>%
         purrr::map_dbl(starter_intake_calves, milk_intake = milk_sup_l) %>%
@@ -247,7 +258,30 @@ mod_animal_server <- function(id){
                                                                                          parity = "multiparous",
                                                                                          milk_freq = input$milk_freq,
                                                                                          lambda_milk = lambda_milk_calc())))),
-          milk_yield_kg_cow2 = milk_yield_kg_2 / 30
+          milk_yield_kg_cow2 = milk_yield_kg_2 / 30,
+
+          starter_intake_kg = dplyr::if_else(Categories == "Cal",
+                                             purrr::map2_dbl(day_min,
+                                                             day_max,
+                                                             starter_intake_calves_interval_days,
+                                                             milk_intake = milk_sup_l), 0),
+          milk_solids_intake_kg = dplyr::if_else(Categories == "Cal",
+                                                 (milk_sup_l * milk_solids / 100), 0),
+          forage_intake_kg = dplyr::if_else(Categories == "Cal" & Month == 1, forage_intake_1,
+                                            dplyr::if_else(Categories == "Cal" & Month == 2, forage_intake_2, 0)),
+
+          dry_matter_intake_kg_animal = dplyr::if_else(Categories == "Cow",
+                                                       lactating_dry_matter_intake(((day_min + day_max) / 2), body_weight = mean_body_weight_kg, milk_yield = milk_yield_kg_cow2),
+                                                       dplyr::if_else(Categories == "Hei",
+                                                                      heifer_dry_matter_intake(mature_body_weight = mature_body_weight, body_weight = mean_body_weight_kg),
+                                                        dplyr::if_else(Categories == "Cal",
+                                                                       starter_intake_kg + milk_solids_intake_kg + forage_intake_kg,
+                                                                       dry_cow_dry_matter_intake(body_weight = mean_body_weight_kg)))),
+          dry_matter_intake_kg = round(dry_matter_intake_kg_animal * 30, 2),
+          dry_matter_intake_bw = dplyr::if_else(Categories != "Cow", round(dry_matter_intake_kg_animal / mean_body_weight_kg * 100, 2), round(dry_matter_intake_kg_animal / mean_cow_weight_kg * 100, 2)),
+          feed_efficiency = round(milk_yield_kg_cow2 / dry_matter_intake_kg_animal, 2)
+
+
         ) #%>%
         #dplyr::filter(MonthSimulated == 1 & Categories == "Cow") %>%
         #dplyr::ungroup() %>%

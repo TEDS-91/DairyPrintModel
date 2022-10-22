@@ -21,6 +21,11 @@ utils::globalVariables(
     "final_body_weight",
 
     "milk_yield_kg_2",
+    "dry_matter_intake_kg_animal",
+    "forage_intake_kg",
+    "milk_solids_intake_kg",
+    "milk_yield_kg_cow2",
+    "starter_intake_kg",
 
     "milk_intake",
     "age",
