@@ -158,6 +158,7 @@ mod_animal_server <- function(id){
                                            dplyr::if_else(Categories == "Hei" & Month == "2", "Cal", Categories)))
 
       ###################################################################################################################
+
       # additional inputs
 
       birth_weight_kg <- 40
@@ -166,9 +167,27 @@ mod_animal_server <- function(id){
       milk_fat <- 3.67
       milk_prot <- 3.25
       milk_solids <- (1 - (100 - milk_fat - milk_prot - 4.6 - 0.8) / 100) * 100
+      starter_cp <- 20
+      forage_cp <- 12
       forage_intake_1 <- 0.05
       forage_intake_2 <- 0.25
+
       dmi_dry <- 0.02
+
+      diet_cp_lac <- 16
+      diet_ee_lac <- 3
+      diet_ndf_lac <- 30
+      diet_nda_lac <- 20
+
+      diet_cp_hei <- 12
+      diet_ee_hei <- 3
+      diet_ndf_hei <- 45
+      diet_nda_hei <- 26
+
+      diet_cp_dry <- 12
+      diet_ee_dry <- 3
+      diet_ndf_dry <- 45
+      diet_nda_dry <- 22
 
 
 
@@ -217,6 +236,8 @@ mod_animal_server <- function(id){
                                                          calf_adg           = calf_adg_kg,
                                                          type               = "final"), 0))
         ) %>%
+
+        # BW calculations
         dplyr::group_by(MonthSimulated) %>%
         dplyr::mutate(
           cow_bw_parturium_kg = dplyr::if_else(Phase == "Grow", 0,
@@ -237,6 +258,7 @@ mod_animal_server <- function(id){
           mean_body_weight_kg  = mean_body_weight + mean_cow_weight_kg,
           final_body_weight_kg = final_body_weight + bw_change_total_kg + cow_bw_parturium_kg,
 
+          # Milk yield calculations
           milk_yield_kg_2 = dplyr::if_else(Phase == "Grow" | Categories == "Dry", 0,
                                            dplyr::if_else(Phase == "Lac1",
                                                           purrr::map2_dbl(day_min,
@@ -260,6 +282,8 @@ mod_animal_server <- function(id){
                                                                                          lambda_milk = lambda_milk_calc())))),
           milk_yield_kg_cow2 = milk_yield_kg_2 / 30,
 
+
+          # Dry matter intake calculations
           starter_intake_kg = dplyr::if_else(Categories == "Cal",
                                              purrr::map2_dbl(day_min,
                                                              day_max,
@@ -280,9 +304,156 @@ mod_animal_server <- function(id){
           dry_matter_intake_kg = round(dry_matter_intake_kg_animal * 30, 2),
           dry_matter_intake_bw = dplyr::if_else(Categories != "Cow", round(dry_matter_intake_kg_animal / mean_body_weight_kg * 100, 2), round(dry_matter_intake_kg_animal / mean_cow_weight_kg * 100, 2)),
           feed_efficiency = round(milk_yield_kg_cow2 / dry_matter_intake_kg_animal, 2)
+        ) %>%
+        dplyr::ungroup() %>%
+        dplyr::group_by(Phase) %>%
+
+        # GHG emissions
+        dplyr::mutate(
+          gei_mj_day = dplyr::if_else(Categories == "Cow",
+                                      gross_energy_intake(dry_matter_intake       = dry_matter_intake_kg_animal,
+                                                          crude_protein           = diet_cp_lac,
+                                                          ether_extract           = diet_ee_lac,
+                                                          neutral_detergent_fiber = diet_ndf_lac),
+                                      dplyr::if_else(Categories == "Hei",
+                                                     gross_energy_intake(dry_matter_intake       = dry_matter_intake_kg_animal,
+                                                                         crude_protein           = diet_cp_hei,
+                                                                         ether_extract           = diet_ee_hei,
+                                                                         neutral_detergent_fiber = diet_ndf_hei),
+                                                     gross_energy_intake(dry_matter_intake       = dry_matter_intake_kg_animal,
+                                                                         crude_protein           = diet_cp_dry,
+                                                                         ether_extract           = diet_ee_dry,
+                                                                         neutral_detergent_fiber = diet_ndf_dry))),
+          enteric_methane_g_animal_day = dplyr::if_else(Categories == "Cow",
+                                                        lactating_enteric_methane(gross_energy_intake     = gei_mj_day,
+                                                                                  neutral_detergent_fiber = diet_ndf_lac,
+                                                                                  ether_extract           = diet_ee_lac,
+                                                                                  body_weight             = mean_body_weight_kg,
+                                                                                  milk_fat                = milk_fat),
+                                                        dplyr::if_else(Categories == "Hei",
+                                                                       heifer_enteric_methane(gross_energy_intake     = gei_mj_day,
+                                                                                              neutral_detergent_fiber = diet_ndf_hei,
+                                                                                              body_weight             = mean_body_weight_kg),
+                                                                       dry_enteric_methane(gross_energy_intake = gei_mj_day,
+                                                                                            ether_extract      = diet_ee_dry))),
+          total_methane_g_animal = enteric_methane_g_animal_day * 30,
+          methane_yield = dplyr::if_else(Categories == "Cow", enteric_methane_g_animal_day / dry_matter_intake_kg_animal, 0),
+          methane_intensity = dplyr::if_else(Categories == "Cow", enteric_methane_g_animal_day / milk_yield_kg_cow2, 0),
+          methane_acum_animal = cumsum(enteric_methane_g_animal_day * 30),
+
+          co2_emissions_kg = animal_co2_emissions(dry_matter_intake = dry_matter_intake_kg_animal, body_weight = mean_body_weight_kg),
+
+          n2o_emissions_kg = dplyr::if_else(Categories == "Hei",
+                                            animal_n2o_emissions(dry_matter_intake = dry_matter_intake_kg_animal,
+                                                                 crude_protein     = diet_cp_hei) / 1000,
+                                            dplyr::if_else(Categories == "Cow",
+                                                           animal_n2o_emissions(dry_matter_intake = dry_matter_intake_kg_animal,
+                                                                                crude_protein     = diet_cp_lac) / 1000,
+                                                           dplyr::if_else(Categories == "Dry",
+                                                                          animal_n2o_emissions(dry_matter_intake = dry_matter_intake_kg_animal,
+                                                                                               crude_protein     = diet_cp_dry) / 1000,
+                                                                          animal_n2o_emissions(dry_matter_intake = dry_matter_intake_kg_animal,
+                                                                                               crude_protein = 24) / 1000))), #TODO
+
+          # Manure calculations
+          fresh_manure_output_kg_day = dplyr::if_else(Categories == "Hei",
+                                                      heifer_manure_excretion(dry_matter_intake = dry_matter_intake_kg_animal,
+                                                                              body_weight       = mean_body_weight_kg),
+                                                                     dplyr::if_else(Categories == "Cow",
+                                                                                    lactation_manure_excretion(dry_matter_intake = dry_matter_intake_kg_animal),
+                                                                                    dplyr::if_else(Categories == "Cal",
+                                                                                                   heifer_manure_excretion(dry_matter_intake = dry_matter_intake_kg_animal,
+                                                                                                                           body_weight       = mean_body_weight_kg),
+                                                                                                   dry_manure_excretion(body_weight = mean_body_weight_kg,
+                                                                                                                        crude_protein           = diet_cp_dry,
+                                                                                                                        neutral_detergent_fiber = diet_ndf_dry)))),
+          dm_manure_output_kg_day = dplyr::if_else(Categories == "Cow",
+                                                   lactation_dm_manure_excretion(dry_matter_intake = dry_matter_intake_kg_animal),
+                                                   dplyr::if_else(Categories == "Hei" & Month > 8,
+                                                                  15.26 * fresh_manure_output_kg_day / 100,
+                                                                  dplyr::if_else(Categories == "Hei" & Month <= 8, # TODO
+                                                                                 heifer_dm_manure_excretion(dry_matter_intake = dry_matter_intake_kg_animal),
+                                                                                 dplyr::if_else(Categories == "Cal",
+                                                                                                starter_intake_kg * (1 - 0.6) + milk_solids_intake_kg * (1 - 0.9) + forage_intake_kg * (1 - 0.4), #TODO
+                                                                                                11.76 * fresh_manure_output_kg_day / 100)))),
+          manure_dm_content = dm_manure_output_kg_day / fresh_manure_output_kg_day  * 100,
+
+          # Volatile solids
+          volatile_solids_kg_d = dplyr::if_else(Categories == "Hei",
+                                         volatile_solids(dry_matter_intake       = dry_matter_intake_kg_animal,
+                                                         neutral_detergent_fiber = diet_ndf_hei,
+                                                         crude_protein           = diet_cp_hei),
+                                         dplyr::if_else(Categories == "Dry",
+                                                 volatile_solids(dry_matter_intake       = dry_matter_intake_kg_animal,
+                                                                 neutral_detergent_fiber = diet_ndf_dry,
+                                                                 crude_protein           = diet_cp_dry),
+                                                 dplyr::if_else(Categories == "Cow",
+                                                         volatile_solids(dry_matter_intake       = dry_matter_intake_kg_animal,
+                                                                         neutral_detergent_fiber = diet_ndf_lac,
+                                                                         crude_protein           = diet_cp_lac),
+                                                         volatile_solids(dry_matter_intake       = dry_matter_intake_kg_animal,
+                                                                         neutral_detergent_fiber = 0,
+                                                                         crude_protein           = 24)))), # TODO,
+          digestible_volatile_solids_kg_d = dplyr::if_else(Categories == "Hei",
+                                                           digestible_volatile_solids(dry_matter_intake = dry_matter_intake_kg_animal,
+                                                                                      neutral_detergent_fiber = diet_ndf_hei,
+                                                                                      acid_detergent_fiber = diet_nda_hei,
+                                                                                      crude_protein = diet_cp_hei),
+                                                           dplyr::if_else(Categories == "Dry",
+                                                                          digestible_volatile_solids(dry_matter_intake = dry_matter_intake_kg_animal,
+                                                                                                     neutral_detergent_fiber = diet_ndf_dry,
+                                                                                                     acid_detergent_fiber = diet_nda_dry,
+                                                                                                     crude_protein = diet_cp_dry),
+                                                                          dplyr::if_else(Categories == "Cow",
+                                                                                         digestible_volatile_solids(dry_matter_intake = dry_matter_intake_kg_animal,
+                                                                                                                    neutral_detergent_fiber = diet_ndf_lac,
+                                                                                                                    acid_detergent_fiber = diet_nda_lac,
+                                                                                                                    crude_protein = diet_cp_lac),
+                                                                                         digestible_volatile_solids(dry_matter_intake = dry_matter_intake_kg_animal,
+                                                                                                                    neutral_detergent_fiber = 0,
+                                                                                                                    acid_detergent_fiber = 0,
+                                                                                                                    crude_protein = 24)))), # TODO
+          volatile_solids_content_dm = volatile_solids_kg_d / fresh_manure_output_kg_day * 100,
+
+          volatile_solids_digestibility = digestible_volatile_solids_kg_d / volatile_solids_kg_d,
+
+          # Nitrogen calculations
+          total_nitrogen_ingested_g = dplyr::if_else(Categories == "Hei",
+                                              (dry_matter_intake_kg_animal * 1000) * (diet_cp_hei / 100) / 6.25,
+                                              dplyr::if_else(Categories == "Dry",
+                                                      (dry_matter_intake_kg_animal * 1000) * (diet_cp_dry / 100) / 6.25,
+                                                      dplyr::if_else(Categories == "Cow",
+                                                              dry_matter_intake_kg_animal * 1000 * (diet_cp_lac / 100) / 6.25,
+                                                              ((milk_solids_intake_kg * milk_prot / milk_solids) / 6.25 + (starter_intake_kg * starter_cp / 100) / 6.25 + (forage_intake_kg * forage_cp / 100) / 6.25) * 1000))),
+          total_nitrogen_excreted_g = dplyr::if_else(Categories == "Cow",
+                                                     lactating_n_total_excretion(nitrogen_intake = total_nitrogen_ingested_g),
+                                              dplyr::if_else(Categories == "Dry",
+                                                             dry_n_total_excretion(nitrogen_intake = total_nitrogen_ingested_g),
+                                                      dplyr::if_else(Categories == "Hei",
+                                                              heifer_n_total_excretion(nitrogen_intake = total_nitrogen_ingested_g),
+                                                                      ((milk_solids_intake_kg * milk_prot / milk_solids) * (1 - 0.75) + starter_intake_kg * starter_cp / 100 * (1 - 0.65) + forage_intake_kg * forage_cp / 100 * (1 - 0.50) * 1000) ))), # TODO
+          fecal_nitrogen_excreted_d = dplyr::if_else(Categories == "Cow",
+                                                     lactating_n_fecal_excretion(nitrogen_intake = total_nitrogen_ingested_g),
+                                                     dplyr::if_else(Categories == "Dry",
+                                                                    dry_n_total_excretion(nitrogen_intake = total_nitrogen_ingested_g),
+                                                                    dplyr::if_else(Categories == "Cal",
+                                                                                   total_nitrogen_excreted_g * 0.2,
+                                                                                   heifer_n_fecal_excretion(nitrogen_intake = total_nitrogen_ingested_g)))),
+          urine_nitrogen_excreted_g = total_nitrogen_excreted_g - fecal_nitrogen_excreted_d,
+
+          milk_n_output_g = dplyr::if_else(Phase == "Grow" | Categories == "Dry", 0,
+                                           milk_protein_content(parity = "multiparous", days_milk = (day_min + day_max) / 2)), #TODO
+
+          nitrogen_balance_g = total_nitrogen_ingested_g - total_nitrogen_excreted_g - milk_n_output_g
+
+        )
 
 
-        ) #%>%
+
+
+
+
+      #%>%
         #dplyr::filter(MonthSimulated == 1 & Categories == "Cow") %>%
         #dplyr::ungroup() %>%
         #dplyr::summarise(

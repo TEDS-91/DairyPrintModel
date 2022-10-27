@@ -26,6 +26,19 @@ utils::globalVariables(
     "milk_solids_intake_kg",
     "milk_yield_kg_cow2",
     "starter_intake_kg",
+    "enteric_methane_g_animal_day",
+    "gei_mj_day",
+
+    "digestible_volatile_solids_kg_d",
+    "dm_manure_output_kg_day",
+    "fecal_nitrogen_excreted_d",
+    "fresh_manure_output_kg_day",
+    "milk_n_output_g",
+    "total_nitrogen_excreted_g",
+    "total_nitrogen_ingested_g",
+    "volatile_solids_kg_d",
+
+
 
     "milk_intake",
     "age",

@@ -12,11 +12,7 @@
 #'
 heifer_manure_excretion <- function(dry_matter_intake, body_weight) {
 
-  if (body_weight < 205) {
-    heifer_manure_excretion <- dry_matter_intake * 3.45
-  } else {
-    heifer_manure_excretion <- 4.158 * dry_matter_intake - body_weight * 0.0246
-  }
+  heifer_manure_excretion <- dplyr::if_else(body_weight < 205, dry_matter_intake * 3.45, 4.158 * dry_matter_intake - body_weight * 0.0246)
 
   return(heifer_manure_excretion)
 
