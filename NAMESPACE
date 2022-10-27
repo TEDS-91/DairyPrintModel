@@ -3,6 +3,7 @@
 export("%>%")
 export(animal_co2_emissions)
 export(animal_n2o_emissions)
+export(average_milk_protein)
 export(body_weight_loss_lactation)
 export(calf_adg)
 export(calf_body_weight)

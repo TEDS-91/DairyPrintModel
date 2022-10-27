@@ -37,6 +37,7 @@ utils::globalVariables(
     "total_nitrogen_excreted_g",
     "total_nitrogen_ingested_g",
     "volatile_solids_kg_d",
+    "milk_protein",
 
 
 

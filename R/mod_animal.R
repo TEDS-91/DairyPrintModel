@@ -138,6 +138,7 @@ mod_animal_server <- function(id){
 
       withProgress(message = "Running the model...", {
 
+
       # converting the herd_matrix to tibble
       herd_demographics_raw <- herd_matrix()[[1]] %>%
         tibble::as_tibble()
@@ -441,16 +442,18 @@ mod_animal_server <- function(id){
                                                                                    heifer_n_fecal_excretion(nitrogen_intake = total_nitrogen_ingested_g)))),
           urine_nitrogen_excreted_g = total_nitrogen_excreted_g - fecal_nitrogen_excreted_d,
 
-          milk_n_output_g = dplyr::if_else(Phase == "Grow" | Categories == "Dry", 0,
-                                           milk_protein_content(parity = "multiparous", days_milk = (day_min + day_max) / 2)), #TODO
+          milk_protein = dplyr::if_else(Phase == "Grow" | Categories == "Dry", 0,
+                                        dplyr::if_else(Categories == "Lac1", purrr::pmap_dbl(list(day_min, day_max), average_milk_protein, parity = "primiparous"),
+                                                       dplyr::if_else(Categories == "Lac2", purrr::pmap_dbl(list(day_min, day_max), average_milk_protein, parity = "secondiparous"),
+                                                                      purrr::pmap_dbl(list(day_min, day_max), average_milk_protein, parity = "multiparous")))),
 
-          nitrogen_balance_g = total_nitrogen_ingested_g - total_nitrogen_excreted_g - milk_n_output_g
+          milk_n_output_g = dplyr::if_else(Categories == "Cow", milk_yield_kg_cow2 * milk_protein / 100 / 6.25 * 1000, 0),
+
+          nitrogen_balance_g = total_nitrogen_ingested_g - total_nitrogen_excreted_g - milk_n_output_g,
+
+          n_ef = milk_n_output_g / total_nitrogen_ingested_g * 100
 
         )
-
-
-
-
 
 
       #%>%
@@ -459,9 +462,9 @@ mod_animal_server <- function(id){
         #dplyr::summarise(
         #  average_milk_yield = (weighted.mean(milk_yield_kg_2, NumberAnimals))) / 30
 
-      })
+      }
 
-
+      )
 
     })
 

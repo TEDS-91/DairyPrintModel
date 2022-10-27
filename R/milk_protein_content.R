@@ -22,3 +22,25 @@ milk_protein_content <- function(parity, days_milk) {
   return(milk_protein_content)
 
 }
+
+#' Estimates the average milk protein between two days in milk.
+#'
+#' @param parity  Parity: primiparous, secondiparous, or multiparous.
+#' @param day_min Initial day in milk.
+#' @param day_max Final day in milk.
+#'
+#' @return Average milk protein between two days in milk (\%).
+#' @export
+#'
+#' @examples
+#' average_milk_protein(parity = "multiparous", day_min = 30, day_max = 60)
+#'
+average_milk_protein <- function(parity, day_min, day_max) {
+
+  average_milk_protein <- seq(day_min, day_max) %>%
+    purrr::map_dbl(milk_protein_content, parity = parity) %>%
+    sum() / (day_max - day_min + 1)
+
+  return(average_milk_protein)
+
+}
