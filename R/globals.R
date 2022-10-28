@@ -38,6 +38,9 @@ utils::globalVariables(
     "total_nitrogen_ingested_g",
     "volatile_solids_kg_d",
     "milk_protein",
+    "total_phosphorus_excretion_g",
+    "total_phosphorus_excretion_milk",
+    "total_phosphorus_ingested_g",
 
 
 
