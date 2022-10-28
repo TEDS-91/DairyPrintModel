@@ -167,11 +167,14 @@ mod_animal_server <- function(id){
       mature_body_weight <- 680
       milk_fat <- 3.67
       milk_prot <- 3.25
+      milk_p_g_l <- 0.996
       milk_solids <- (1 - (100 - milk_fat - milk_prot - 4.6 - 0.8) / 100) * 100
       starter_cp <- 20
+      starter_p <- 0.5
       forage_cp <- 12
       forage_intake_1 <- 0.05
       forage_intake_2 <- 0.25
+      forage_p <- 0.5
 
       dmi_dry <- 0.02
 
@@ -179,16 +182,20 @@ mod_animal_server <- function(id){
       diet_ee_lac <- 3
       diet_ndf_lac <- 30
       diet_nda_lac <- 20
+      diet_p_lac <- 0.5
 
       diet_cp_hei <- 12
       diet_ee_hei <- 3
       diet_ndf_hei <- 45
       diet_nda_hei <- 26
+      diet_p_hei <- 0.5
 
       diet_cp_dry <- 12
       diet_ee_dry <- 3
       diet_ndf_dry <- 45
       diet_nda_dry <- 22
+      diet_p_dry <- 0.5
+
 
 
 
@@ -451,7 +458,27 @@ mod_animal_server <- function(id){
 
           nitrogen_balance_g = total_nitrogen_ingested_g - total_nitrogen_excreted_g - milk_n_output_g,
 
-          n_ef = milk_n_output_g / total_nitrogen_ingested_g * 100
+          n_ef = milk_n_output_g / total_nitrogen_ingested_g * 100,
+
+          # P calculations
+          total_phosphorus_ingested_g = dplyr::if_else(Categories == "Hei",
+                                                       (dry_matter_intake_kg_animal * 1000) * (diet_p_hei / 100),
+                                                       dplyr::if_else(Categories == "Dry",
+                                                                      (dry_matter_intake_kg_animal * 1000) * (diet_p_dry / 100),
+                                                                      dplyr::if_else(Categories == "Cal",
+                                                                                     milk_sup_l * milk_p_g_l + (starter_intake_kg * starter_p / 100 * 1000) + (forage_intake_kg * forage_p / 100 * 1000),
+                                                                                     (dry_matter_intake_kg_animal * 1000) * (diet_p_lac / 100)))),
+
+          total_phosphorus_excretion_g = dplyr::if_else(Categories == "Hei",
+                                                        total_phosphorus_ingested_g * (1 - 0.6), #TODO
+                                                        dplyr::if_else(Categories == "Dry",
+                                                                       total_phosphorus_ingested_g * (1 - 0.6), #TODO
+                                                                       dplyr::if_else(Categories == "Cal",
+                                                                                      (milk_sup_l * milk_p_g_l * (1 - 0.85) + starter_intake_kg * starter_p / 100 * (1 - 0.85) + forage_intake_kg * forage_p / 100 * (1 - 0.70) * 1000),
+                                                                                      lactating_p_total_excretion(dry_matter_intake       = dry_matter_intake_kg_animal,
+                                                                                                                  phosphorous_content     = diet_p_lac)))),
+          total_phosphorus_excretion_milk = dplyr::if_else(Categories == "Cow", milk_yield_kg_cow2 * milk_p_g_l, 0),
+          phosphorus_balance_g = total_phosphorus_ingested_g - total_phosphorus_excretion_g - total_phosphorus_excretion_milk
 
         )
 
