@@ -32,29 +32,93 @@ mod_animal_ui <- function(id){
     fluidRow(
       column(3,
     numericInput(ns("calves_heifers_cul"),  "Heifers Culling Rate (%):",  value = 20,  min = 10, max = 50)),
-      column(3,
+      column(2,
     numericInput(ns("stillbirth_rate"),     "Stillbirth Rate (%):",       value = 7,   min = 0,  max = 15)),
-      column(3,
+      column(2,
     numericInput(ns("heifer_calf_born"),    "Percentage Heifers (%):",    value = 50,  min = 45, max = 55)),
+      column(2,
+    numericInput(ns("average_milk_yield"),  "Average Milk Yield (kg):",   value = 40,  min = 30, max = 60)),
       column(3,
-             #mod_milk_yield_optimization_ui(ns("milk_yield_optimization")),
-    numericInput(ns("average_milk_yield"),  "Average Milk Yield (kg):",   value = 40,  min = 30, max = 60),
-    selectInput(ns("milk_freq"), "Milk Frequence:", choices = c(2, 3))
+    selectInput(ns("milk_freq"), "Milk Frequence:", choices = c(2, 3))))),
 
+    wellPanel(
 
-             )),
+    style = "background-color:#E2EBF4",
+
+    fluidRow(
+    column(12,
+    h3(strong("Milk composition"), align = "center")),
+
+    column(6,
+           numericInput(ns("milk_protein"),  "Milk Protein (%):",         value = 3.25, min = 2, max = 5)),
+    column(6,
+           numericInput(ns("milk_fat"),  "Milk Fat (%):",                 value = 3.5,  min = 2, max = 5))
+    )),
+
+    wellPanel(
+
+    style = "background-color:#E2EBF4",
+
+    fluidRow(
+    column(12,
+    h3(strong("Diet Information"), align = "center")),
+
+    h4(strong("Lactation Cows"), align = "left"),
+
+    column(3,
+           numericInput(ns("diet_lac_cp"), "Crude Protein (%):", value = 16,   min = 8, max = 30)),
+    column(2,
+           numericInput(ns("diet_lac_ndf"), "NDF (%):", value = 25,   min = 8, max = 50)),
+    column(2,
+           numericInput(ns("diet_lac_adf"), "ADF (%):", value = 15,   min = 8, max = 30)),
+    column(2,
+           numericInput(ns("diet_lac_ee"), "EE (%):", value = 4,   min = 1, max = 8)),
+    column(3,
+           numericInput(ns("diet_lac_p"),  "Phosphorous (%):", value = 1.5,  min = 0.3, max = 3)),
+
+    h4(strong("Dry Cows"), align = "left"),
+
+    column(3,
+           numericInput(ns("diet_dry_cp"), "Crude Protein (%):", value = 16,   min = 8, max = 30)),
+    column(2,
+           numericInput(ns("diet_dry_ndf"), "NDF (%):", value = 25,   min = 8, max = 50)),
+    column(2,
+           numericInput(ns("diet_dry_adf"), "ADF (%):", value = 15,   min = 8, max = 30)),
+    column(2,
+           numericInput(ns("diet_dry_ee"), "EE (%):", value = 4,   min = 1, max = 8)),
+    column(3,
+           numericInput(ns("diet_dry_p"),  "Phosphorous (%):", value = 1.5,  min = 0.3, max = 3)),
+
+    h4(strong("Heifers"), align = "left"),
+
+    column(3,
+           numericInput(ns("diet_hei_cp"), "Crude Protein (%):", value = 16,   min = 8, max = 30)),
+    column(2,
+           numericInput(ns("diet_hei_ndf"), "NDF (%):", value = 25,   min = 8, max = 50)),
+    column(2,
+           numericInput(ns("diet_hei_adf"), "ADF (%):", value = 15,   min = 8, max = 30)),
+    column(2,
+           numericInput(ns("diet_hei_ee"), "EE (%):", value = 4,   min = 1, max = 8)),
+    column(3,
+           numericInput(ns("diet_hei_p"),  "Phosphorous (%):", value = 1.5,  min = 0.3, max = 3)),
+
+    h4(strong("Calves"), align = "left"),
+
+    column(3,
+           numericInput(ns("milk_sup"), "Milk Suplly (l/d):", value = 6,   min = 2, max = 15)),
+    column(2,
+           numericInput(ns("starter_cp"), "Starter Crude Protein (%):", value = 20,   min = 15, max = 30)),
+    column(2,
+           numericInput(ns("starter_ndf"), "Starter P (%):", value = 20,   min = 15, max = 30)),
+    column(2,
+           numericInput(ns("forage_cp"), "Forage Crude Protein (%):", value = 20,   min = 15, max = 30)),
+    column(3,
+           numericInput(ns("forage_ndf"), "Forage P (%):", value = 20,   min = 15, max = 30))),
+
 
     br(),
 
     fluidRow(
-    column(6,
-    h3(strong("Milk composition"), align = "center")),
-
-    column(6,
-    h3(strong("Diet Information"), align = "center")),
-
-    br(),
-
     column(3,
     actionButton(ns("button"),
                  "Run!",
