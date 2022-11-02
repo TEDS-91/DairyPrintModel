@@ -65,47 +65,20 @@ mod_animal_ui <- function(id){
 
     h4(strong("Lactation Cows"), align = "left"),
 
-    column(3,
-           numericInput(ns("diet_lac_cp"), "Crude Protein (%):", value = 16,   min = 8, max = 30)),
-    column(2,
-           numericInput(ns("diet_lac_ndf"), "NDF (%):", value = 25,   min = 8, max = 50)),
-    column(2,
-           numericInput(ns("diet_lac_adf"), "ADF (%):", value = 15,   min = 8, max = 30)),
-    column(2,
-           numericInput(ns("diet_lac_ee"), "EE (%):", value = 4,   min = 1, max = 8)),
-    column(3,
-           numericInput(ns("diet_lac_p"),  "Phosphorous (%):", value = 1.5,  min = 0.3, max = 3)),
+    diet_ui_prms(ns("diet_lac")),
 
     h4(strong("Dry Cows"), align = "left"),
 
-    column(3,
-           numericInput(ns("diet_dry_cp"), "Crude Protein (%):", value = 16,   min = 8, max = 30)),
-    column(2,
-           numericInput(ns("diet_dry_ndf"), "NDF (%):", value = 25,   min = 8, max = 50)),
-    column(2,
-           numericInput(ns("diet_dry_adf"), "ADF (%):", value = 15,   min = 8, max = 30)),
-    column(2,
-           numericInput(ns("diet_dry_ee"), "EE (%):", value = 4,   min = 1, max = 8)),
-    column(3,
-           numericInput(ns("diet_dry_p"),  "Phosphorous (%):", value = 1.5,  min = 0.3, max = 3)),
+    diet_ui_prms(ns("diet_dry")),
 
     h4(strong("Heifers"), align = "left"),
 
-    column(3,
-           numericInput(ns("diet_hei_cp"), "Crude Protein (%):", value = 16,   min = 8, max = 30)),
-    column(2,
-           numericInput(ns("diet_hei_ndf"), "NDF (%):", value = 25,   min = 8, max = 50)),
-    column(2,
-           numericInput(ns("diet_hei_adf"), "ADF (%):", value = 15,   min = 8, max = 30)),
-    column(2,
-           numericInput(ns("diet_hei_ee"), "EE (%):", value = 4,   min = 1, max = 8)),
-    column(3,
-           numericInput(ns("diet_hei_p"),  "Phosphorous (%):", value = 1.5,  min = 0.3, max = 3)),
+    diet_ui_prms(ns("diet_hei")),
 
     h4(strong("Calves"), align = "left"),
 
     column(3,
-           numericInput(ns("milk_sup"), "Milk Suplly (l/d):", value = 6,   min = 2, max = 15)),
+           numericInput(ns("milk_sup"), "Milk Suply (l/d):", value = 6,   min = 2, max = 15)),
     column(2,
            numericInput(ns("starter_cp"), "Starter Crude Protein (%):", value = 20,   min = 15, max = 30)),
     column(2,
@@ -193,7 +166,10 @@ mod_animal_server <- function(id){
 
     output$lambda <- renderPrint({
 
-      paste("the lambda value is:", lambda_milk_calc())
+     # paste("the lambda value is:", lambda_milk_calc())
+     #
+      input$diet_lac_cp
+
 
     })
 
@@ -242,11 +218,11 @@ mod_animal_server <- function(id){
 
       dmi_dry <- 0.02
 
-      diet_cp_lac <- 16
-      diet_ee_lac <- 3
-      diet_ndf_lac <- 30
-      diet_nda_lac <- 20
-      diet_p_lac <- 0.5
+      diet_cp_lac <- input$diet_lac_cp
+      diet_ee_lac <- input$diet_lac_ee
+      diet_ndf_lac <- input$diet_lac_ndf
+      diet_nda_lac <- input$diet_lac_adf
+      diet_p_lac <- input$diet_lac_p
 
       diet_cp_hei <- 12
       diet_ee_hei <- 3
@@ -533,6 +509,8 @@ mod_animal_server <- function(id){
                                                                                      milk_sup_l * milk_p_g_l + (starter_intake_kg * starter_p / 100 * 1000) + (forage_intake_kg * forage_p / 100 * 1000),
                                                                                      (dry_matter_intake_kg_animal * 1000) * (diet_p_lac / 100)))),
 
+          total_phosphorus_excretion_milk = dplyr::if_else(Categories == "Cow", milk_yield_kg_cow2 * milk_p_g_l, 0),
+
           total_phosphorus_excretion_g = dplyr::if_else(Categories == "Hei",
                                                         total_phosphorus_ingested_g * (1 - 0.6), #TODO
                                                         dplyr::if_else(Categories == "Dry",
@@ -540,8 +518,10 @@ mod_animal_server <- function(id){
                                                                        dplyr::if_else(Categories == "Cal",
                                                                                       (milk_sup_l * milk_p_g_l * (1 - 0.85) + starter_intake_kg * starter_p / 100 * (1 - 0.85) + forage_intake_kg * forage_p / 100 * (1 - 0.70) * 1000),
                                                                                       lactating_p_total_excretion(dry_matter_intake       = dry_matter_intake_kg_animal,
-                                                                                                                  phosphorous_content     = diet_p_lac)))),
-          total_phosphorus_excretion_milk = dplyr::if_else(Categories == "Cow", milk_yield_kg_cow2 * milk_p_g_l, 0),
+                                                                                                                  phosphorous_content     = diet_p_lac,
+                                                                                                                  milk_p_excretion        = total_phosphorus_excretion_milk)))),
+
+
           phosphorus_balance_g = total_phosphorus_ingested_g - total_phosphorus_excretion_g - total_phosphorus_excretion_milk
 
         )
