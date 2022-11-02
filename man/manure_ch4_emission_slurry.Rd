@@ -4,14 +4,20 @@
 \alias{manure_ch4_emission_slurry}
 \title{Estimates the daily methane emissions from manure storage (Raw, liquid, and digestate).}
 \usage{
-manure_ch4_emission_slurry(vs_total, vs_d, vs_nd, temp_c, enclosed)
+manure_ch4_emission_slurry(
+  volatile_solids_total,
+  volatile_solids_d,
+  volatile_solids_nd,
+  temp_c,
+  enclosed
+)
 }
 \arguments{
-\item{vs_total}{Total volatile solids (kg).}
+\item{volatile_solids_total}{Total volatile solids (kg).}
 
-\item{vs_d}{Degradable VS in the manure (kg).}
+\item{volatile_solids_d}{Degradable VS in the manure (kg).}
 
-\item{vs_nd}{Non degradable VS in the manure (kg).}
+\item{volatile_solids_nd}{Non degradable VS in the manure (kg).}
 
 \item{temp_c}{Temperature (°C).}
 
@@ -24,6 +30,9 @@ Methane daily emissions from manure storage (kg).
 Estimates the daily methane emissions from manure storage (Raw, liquid, and digestate).
 }
 \examples{
-manure_ch4_emission_slurry(1, 0.417, 0.583, temp_c = 15, enclosed = "no")
+manure_ch4_emission_slurry(volatile_solids_total = 1,
+                           volatile_solids_d = 0.417,
+                           volatile_solids_nd = 0.583,
+                           temp_c = 15, enclosed = "no")
 
 }

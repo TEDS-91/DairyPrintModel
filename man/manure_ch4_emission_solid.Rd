@@ -4,10 +4,10 @@
 \alias{manure_ch4_emission_solid}
 \title{Estimates the daily methane emissions from manure storage (solid, raw, and separated).}
 \usage{
-manure_ch4_emission_solid(vs, temp_c)
+manure_ch4_emission_solid(volatile_solids, temp_c)
 }
 \arguments{
-\item{vs}{Manure volatile solids (kg).}
+\item{volatile_solids}{Manure volatile solids (kg).}
 
 \item{temp_c}{Temperature (°C).}
 }
@@ -18,6 +18,6 @@ Methane daily emissions from manure storage (kg).
 Estimates the daily methane emissions from manure storage (solid, raw, and separated).
 }
 \examples{
-manure_ch4_emission_solid(vs = 1, temp_c = 25)
+manure_ch4_emission_solid(volatile_solids = 1, temp_c = 25)
 
 }

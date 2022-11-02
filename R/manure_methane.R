@@ -1,8 +1,8 @@
 #' Estimates the daily methane emissions from manure storage (Raw, liquid, and digestate).
 #'
-#' @param vs_total Total volatile solids (kg).
-#' @param vs_d Degradable VS in the manure (kg).
-#' @param vs_nd Non degradable VS in the manure (kg).
+#' @param volatile_solids_total Total volatile solids (kg).
+#' @param volatile_solids_d Degradable VS in the manure (kg).
+#' @param volatile_solids_nd Non degradable VS in the manure (kg).
 #' @param temp_c Temperature (°C).
 #' @param enclosed Is the manure storage enclosed: yes or no.
 #'
@@ -10,9 +10,16 @@
 #' @export
 #'
 #' @examples
-#' manure_ch4_emission_slurry(1, 0.417, 0.583, temp_c = 15, enclosed = "no")
+#' manure_ch4_emission_slurry(volatile_solids_total = 1,
+#'                            volatile_solids_d = 0.417,
+#'                            volatile_solids_nd = 0.583,
+#'                            temp_c = 15, enclosed = "no")
 #'
-manure_ch4_emission_slurry <- function(vs_total, vs_d, vs_nd, temp_c, enclosed) {
+manure_ch4_emission_slurry <- function(volatile_solids_total,
+                                       volatile_solids_d,
+                                       volatile_solids_nd,
+                                       temp_c,
+                                       enclosed) {
 
   # Fixed parameters description:
   #
@@ -40,8 +47,8 @@ manure_ch4_emission_slurry <- function(vs_total, vs_d, vs_nd, temp_c, enclosed) 
 
   n_eff <- 0.99
 
-  manure_ch4_emission_slurry <- dplyr::if_else(enclosed == "no", 0.024 * vs_total * (vs_d * b_1 + vs_nd * b_2) * exp(ln_A - (E / (R * temp_k))),
-                                     (0.024 * vs_total * (vs_d * b_1 + vs_nd * b_2) * exp(ln_A - (E / (R * temp_k)))) * (1 - n_eff))
+  manure_ch4_emission_slurry <- dplyr::if_else(enclosed == "no", 0.024 * volatile_solids_total * (volatile_solids_d * b_1 + volatile_solids_nd * b_2) * exp(ln_A - (E / (R * temp_k))),
+                                     (0.024 * volatile_solids_total * (volatile_solids_d * b_1 + volatile_solids_nd * b_2) * exp(ln_A - (E / (R * temp_k)))) * (1 - n_eff))
 
   return(manure_ch4_emission_slurry)
 
@@ -49,16 +56,16 @@ manure_ch4_emission_slurry <- function(vs_total, vs_d, vs_nd, temp_c, enclosed) 
 
 #' Estimates the daily methane emissions from manure storage (solid, raw, and separated).
 #'
-#' @param vs Manure volatile solids (kg).
+#' @param volatile_solids Manure volatile solids (kg).
 #' @param temp_c Temperature (°C).
 #'
 #' @return Methane daily emissions from manure storage (kg).
 #' @export
 #'
 #' @examples
-#' manure_ch4_emission_solid(vs = 1, temp_c = 25)
+#' manure_ch4_emission_solid(volatile_solids = 1, temp_c = 25)
 #'
-manure_ch4_emission_solid <- function(vs, temp_c) {
+manure_ch4_emission_solid <- function(volatile_solids, temp_c) {
 
   # Fixed parameters description
   #
@@ -70,8 +77,8 @@ manure_ch4_emission_solid <- function(vs, temp_c) {
 
   MCF <- (0.201 * temp_c) - 0.29
 
-  manure_ch4_emission_solid <- dplyr::if_else(MCF < 0, (vs * B_0 * 0.68 * 0) / 100,
-                                              (vs * B_0 * 0.68 * MCF) / 100)
+  manure_ch4_emission_solid <- dplyr::if_else(MCF < 0, (volatile_solids * B_0 * 0.68 * 0) / 100,
+                                              (volatile_solids * B_0 * 0.68 * MCF) / 100)
 
   return(manure_ch4_emission_solid)
 
