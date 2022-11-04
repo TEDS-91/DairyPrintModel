@@ -140,3 +140,32 @@ lambda_milk_yield <- function(obs_average_milk_yield,
   return(lambda_milk)
 
 }
+
+#' Corrects milk for 4 of fat and 3.3 of protein.
+#'
+#' @param milk_yield Milk yield (kg).
+#' @param milk_fat Milk fat content (\%).
+#' @param milk_prot Milk protein content (\%).
+#'
+#' @return Energy fat and protein corrected milk (kg).
+#' @export
+#'
+#' @examples
+#' energy_corrected_milk(milk_yield = 40, milk_fat = 3.5, milk_prot = 3.1)
+#'
+energy_corrected_milk <- function(milk_yield, milk_fat, milk_prot) {
+
+  energy_corrected_milk <- milk_yield * ((0.0929 * milk_fat) + (0.0547 * milk_prot) + (0.0395 * 4.85)) / 0.7436
+
+  return(energy_corrected_milk)
+
+}
+
+
+
+
+
+
+
+
+

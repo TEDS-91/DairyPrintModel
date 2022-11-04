@@ -5,7 +5,8 @@
 #' @param volatile_solids_nd Non degradable VS in the manure (kg).
 #' @param temp_c Temperature (°C).
 #' @param enclosed Is the manure storage enclosed: yes or no.
-#'
+#' @seealso The equation used here is also available in \href{https://elibrary.asabe.org/abstract.asp?aid=27781}{Chianese et al. (2009)}.
+
 #' @return Methane daily emissions from manure storage (kg).
 #' @export
 #'
@@ -13,7 +14,8 @@
 #' manure_ch4_emission_slurry(volatile_solids_total = 1,
 #'                            volatile_solids_d = 0.417,
 #'                            volatile_solids_nd = 0.583,
-#'                            temp_c = 15, enclosed = "no")
+#'                            temp_c = 15,
+#'                            enclosed = "no")
 #'
 manure_ch4_emission_slurry <- function(volatile_solids_total,
                                        volatile_solids_d,
@@ -48,7 +50,7 @@ manure_ch4_emission_slurry <- function(volatile_solids_total,
   n_eff <- 0.99
 
   manure_ch4_emission_slurry <- dplyr::if_else(enclosed == "no", 0.024 * volatile_solids_total * (volatile_solids_d * b_1 + volatile_solids_nd * b_2) * exp(ln_A - (E / (R * temp_k))),
-                                     (0.024 * volatile_solids_total * (volatile_solids_d * b_1 + volatile_solids_nd * b_2) * exp(ln_A - (E / (R * temp_k)))) * (1 - n_eff))
+                                               (0.024 * volatile_solids_total * (volatile_solids_d * b_1 + volatile_solids_nd * b_2) * exp(ln_A - (E / (R * temp_k)))) * (1 - n_eff))
 
   return(manure_ch4_emission_slurry)
 
@@ -74,7 +76,7 @@ manure_ch4_emission_solid <- function(volatile_solids, temp_c) {
   B_0 <- 0.23
   #
   # MCF is the CH4 conversion factor
-
+  #
   MCF <- (0.201 * temp_c) - 0.29
 
   manure_ch4_emission_solid <- dplyr::if_else(MCF < 0, (volatile_solids * B_0 * 0.68 * 0) / 100,

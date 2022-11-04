@@ -10,8 +10,8 @@
 #'
 #' @examples
 #' lactating_p_total_excretion(dry_matter_intake = 25,
-#'                            phosphorous_content = 0.4,
-#'                            milk_p_excretion = 45)
+#'                             phosphorous_content = 0.4,
+#'                             milk_p_excretion = 45)
 #'
 lactating_p_total_excretion <- function(dry_matter_intake,
                                         phosphorous_content,

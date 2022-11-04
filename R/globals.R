@@ -21,6 +21,7 @@ utils::globalVariables(
     "final_body_weight",
 
     "milk_yield_kg_2",
+    "milk_yield_kg_fpc",
     "dry_matter_intake_kg_animal",
     "forage_intake_kg",
     "milk_solids_intake_kg",
@@ -41,6 +42,8 @@ utils::globalVariables(
     "total_phosphorus_excretion_g",
     "total_phosphorus_excretion_milk",
     "total_phosphorus_ingested_g",
+    "total_potassium_excretion_milk",
+    "total_potassium_ingested_g",
 
 
 

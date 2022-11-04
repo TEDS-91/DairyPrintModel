@@ -33,6 +33,10 @@ Estimates the daily methane emissions from manure storage (Raw, liquid, and dige
 manure_ch4_emission_slurry(volatile_solids_total = 1,
                            volatile_solids_d = 0.417,
                            volatile_solids_nd = 0.583,
-                           temp_c = 15, enclosed = "no")
+                           temp_c = 15,
+                           enclosed = "no")
 
+}
+\seealso{
+The equation used here is also available in \href{https://elibrary.asabe.org/abstract.asp?aid=27781}{Chianese et al. (2009)}.
 }

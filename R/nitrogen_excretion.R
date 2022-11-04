@@ -55,6 +55,25 @@ lactating_n_total_excretion <- function(nitrogen_intake) {
 
 }
 
+#' Estimates the milk urea nitrogen (MUN).
+#'
+#' @param nitrogen_intake Nitrogen intake (g).
+#'
+#' @return Milk urea nitrogen (MUN) (g).
+#' @seealso The equation used here is also available in \href{https://reader.elsevier.com/reader/sd/pii/S0022030215000259?token=7ECD53F63381FD64DFC3874D7B4B1BA42FF5330C206BC6F9EB59882C56F3093C1D8D1DB57FE3D563070977EDBFA8F7CC&originRegion=us-east-1&originCreation=20221102190050}{Aguirre-Villegas et al. (2015)}.
+#' @export
+#'
+#' @examples
+#' milk_urea_nitrogen(nitrogen_intake = 640)
+#'
+milk_urea_nitrogen <- function(nitrogen_intake) {
+
+  milk_urea_nitrogen <- 0.0148 * nitrogen_intake + 2.16
+
+  return(milk_urea_nitrogen)
+
+}
+
 #' Estimates the daily fecal nitrogen excretion of dry cows.
 #'
 #' @param nitrogen_intake Nitrogen intake (g/day).

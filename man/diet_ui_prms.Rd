@@ -10,7 +10,8 @@ diet_ui_prms(
   ndf = 25,
   adf = 15,
   ee = 4,
-  p = 0.4
+  p = 0.4,
+  k = 1.4
 )
 }
 \arguments{
@@ -25,6 +26,8 @@ diet_ui_prms(
 \item{ee}{Diet ether extract (\%).}
 
 \item{p}{Diet phosphorous content (\%).}
+
+\item{k}{Diet potassium content (\%).}
 }
 \value{
 Diet UI parameters.
