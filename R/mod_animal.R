@@ -221,26 +221,26 @@ mod_animal_server <- function(id){
 
       dmi_dry <- 0.02
 
-      diet_cp_lac <- input$diet_lac_cp
-      diet_ee_lac <- input$diet_lac_ee
+      diet_cp_lac  <- input$diet_lac_cp
+      diet_ee_lac  <- input$diet_lac_ee
       diet_ndf_lac <- input$diet_lac_ndf
       diet_nda_lac <- input$diet_lac_adf
-      diet_p_lac <- input$diet_lac_p
-      diet_k_lac <- 1.3
+      diet_p_lac   <- input$diet_lac_p
+      diet_k_lac   <- input$diet_lac_k
 
-      diet_cp_hei <- 12
-      diet_ee_hei <- 3
-      diet_ndf_hei <- 45
-      diet_nda_hei <- 26
-      diet_p_hei <- 0.5
-      diet_k_hei <- 1
+      diet_cp_hei  <- input$diet_hei_cp
+      diet_ee_hei  <- input$diet_hei_ee
+      diet_ndf_hei <- input$diet_hei_ndf
+      diet_nda_hei <- input$diet_hei_adf
+      diet_p_hei   <- input$diet_hei_p
+      diet_k_hei   <- input$diet_hei_k
 
-      diet_cp_dry <- 12
-      diet_ee_dry <- 3
-      diet_ndf_dry <- 45
-      diet_nda_dry <- 22
-      diet_p_dry <- 0.5
-      diet_k_dry <- 1
+      diet_cp_dry  <- input$diet_dry_cp
+      diet_ee_dry  <- input$diet_dry_ee
+      diet_ndf_dry <- input$diet_dry_ndf
+      diet_nda_dry <- input$diet_dry_adf
+      diet_p_dry   <- input$diet_dry_p
+      diet_k_dry   <- input$diet_dry_k
 
       ##################################################################################################################
 

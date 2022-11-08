@@ -13,7 +13,7 @@
 diet_ui_prms <- function(category = "diet_lac", cp = 16, ndf = 25, adf = 15, ee = 4, p = 0.4, k = 1.4) {
 
   diet_ui_prms <- list(
-    column(3,
+    column(2,
            numericInput(inputId = paste0(category, "_cp"),  label = "Crude Protein (%):", value = cp,    min = 0,   max = 60)),
     column(2,
            numericInput(inputId = paste0(category, "_ndf"), label = "NDF (%):",           value = ndf,   min = 0,   max = 60)),
@@ -21,9 +21,9 @@ diet_ui_prms <- function(category = "diet_lac", cp = 16, ndf = 25, adf = 15, ee 
            numericInput(inputId = paste0(category, "_adf"), label = "ADF (%):",           value = adf,   min = 0,   max = 60)),
     column(2,
            numericInput(inputId = paste0(category, "_ee"),  label = "EE (%):",            value = ee,    min = 0,   max = 60)),
-    column(3,
+    column(2,
            numericInput(inputId = paste0(category, "_p"),   label = "Phosphorous (%):",   value = p,     min = 0,   max = 60)),
-    column(3,
+    column(2,
            numericInput(inputId = paste0(category, "_k"),   label = "Potassium (%):",     value = p,     min = 0,   max = 60))
   )
 
