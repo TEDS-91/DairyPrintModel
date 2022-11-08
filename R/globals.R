@@ -45,6 +45,19 @@ utils::globalVariables(
     "total_potassium_excretion_milk",
     "total_potassium_ingested_g",
 
+    # nh3 barn emissions module
+    "Const",
+    "M",
+    "Q",
+    "aver_tempC",
+    "county",
+    "gama_densi",
+    "loss_animal_kg",
+    "loss_kg_m2",
+    "r",
+    "tan_kg_m2",
+    "wi_wheather",
+
 
 
     "milk_intake",

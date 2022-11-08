@@ -12,7 +12,11 @@ app_ui <- function(request) {
     fluidPage(
       h1("EZMoneyTool", align = "center"),
 
-      mod_animal_ui("animal")
+      mod_animal_ui("animal"),
+
+      selectInput("facilitie", label = "Select the facilitie", choices = c("freestall", "tie-stall"), selected = "tie-stall"),
+
+      mod_barn_nh3_emissions_ui("barn_nh3_emissions")
 
     )
   )

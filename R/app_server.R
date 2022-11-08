@@ -11,8 +11,9 @@ app_server <- function(input, output, session) {
 
   mod_animal_server("animal")
 
+  facilitie <- reactive(input$facilitie)
 
-
+  mod_barn_nh3_emissions_server("barn_nh3_emissions", facilitie = facilitie)
 
 
   df <- reactive({
