@@ -20,7 +20,13 @@ app_ui <- function(request) {
         column(3,
                selectInput("county", label = "Select the county", choices = unique(wi_wheather$county), selected = "Adams")),
         column(3,
-               selectInput("bedding_type", label = "Select the Bedding type", choices = c("Sand", "Sawdust", "Chopped straw"), selected = "Sawdust"))),
+               selectInput("bedding_type", label = "Select the Bedding type", choices = c("Sand", "Sawdust", "Chopped straw"), selected = "Sawdust")),
+        column(3,
+               selectInput("biodigester", label = "Biodigester", choices = c("yes", "no"), selected = "no"))),
+      fluidRow(
+        column(3,
+               numericInput("biod_ef", label = "Biodigester Efficiency:", value = 30))
+      ),
 
       mod_barn_nh3_emissions_ui("barn_nh3_emissions"),
 

@@ -16,9 +16,13 @@ app_server <- function(input, output, session) {
 
   bedding <- reactive(input$bedding_type)
 
+  biodigester <- reactive(input$biodigester)
+
+  biod_ef <- reactive(input$biod_ef)
+
   mod_barn_nh3_emissions_server("barn_nh3_emissions", county = county, facilitie = facilitie)
 
-  mod_ch4_emissions_server("ch4_emissions", county = county, facilitie = facilitie, bedding = bedding)
+  mod_ch4_emissions_server("ch4_emissions", county = county, facilitie = facilitie, bedding = bedding, biodigester = biodigester, biodigester_ef = biod_ef)
 
 
 

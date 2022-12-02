@@ -19,7 +19,7 @@ mod_ch4_emissions_ui <- function(id){
 #' ch4_emissions Server Functions
 #'
 #' @noRd
-mod_ch4_emissions_server <- function(id, county, facilitie, bedding){
+mod_ch4_emissions_server <- function(id, county, facilitie, bedding, biodigester, biodigester_ef){
   moduleServer( id, function(input, output, session){
     ns <- session$ns
 
@@ -32,6 +32,10 @@ mod_ch4_emissions_server <- function(id, county, facilitie, bedding){
       facilitie <- facilitie()
 
       bedding <- bedding()
+
+      biodigester <- biodigester()
+
+      biodigester_ef <- biodigester_ef()
 
       # animal prmts
 
@@ -54,6 +58,20 @@ mod_ch4_emissions_server <- function(id, county, facilitie, bedding){
       total_vs_manure_kg <- (milking_cows * milking_cows_manure * milking_cows_ts + dry_cows * dry_cows_manure * dry_cows_ts + heifers * heifers_manure * heifers_ts) * 0.8
 
 
+      yday <- seq(1, 730, 1)
+
+      temp_c <- rep(wi_wheather %>%
+                      dplyr::filter(county == county()) %>%
+                      dplyr::pull(aver_tempC), 2)
+
+      herd_ch4_emissions_kg <- milking_cows * 0.464 + dry_cows * 0.261 + heifers * 0.156
+
+      area_exposed_m2 <- dplyr::if_else(facilitie == "freestall", milking_cows * 3.5 + dry_cows * 3.5 + heifers * 2.5,
+                                        milking_cows * 1.5 + dry_cows * 1.5 + heifers * 2.5)
+
+      barn_ch4_emissions_kg <- barn_ch4_emission_floor(temp_c = temp_c, manure_area = area_exposed_m2)
+
+
       # determining bedding quantity
       bedding_quantity_kg <- dplyr::if_else(bedding == "Sawdust", 2 * (milking_cows + dry_cows + heifers),
                                             dplyr::if_else(bedding == "Sand", 1.5 * (milking_cows + dry_cows + heifers),
@@ -74,19 +92,26 @@ mod_ch4_emissions_server <- function(id, county, facilitie, bedding){
       total_mass_managed_corSS_kg <- dplyr::if_else(bedding == "Sand", total_mass_managed_kg - 1.5 * (milking_cows + dry_cows + heifers),
                                                     total_mass_managed_kg)
 
+      biod_ch4_yield_kg <- dplyr::if_else(biodigester == "yes", biodigester_ch4_yield(volatile_solids = total_vs_managed_kg, biodigester_efficiency = biodigester_ef),
+                                          0)
 
-      yday <- seq(1, 730, 1)
+      biod_ch4_vol_m3 <- biod_ch4_yield_kg / 0.657
 
-      temp_c <- rep(wi_wheather %>%
-        dplyr::filter(county == county()) %>%
-        dplyr::pull(aver_tempC), 2)
+      biod_co2_vol_m3 <- biod_ch4_vol_m3 / 60 * 40
 
-      herd_ch4_emissions_kg <- milking_cows * 0.464 + dry_cows * 0.261 + heifers * 0.156
+      biod_co2_yield_kg <- biod_co2_vol_m3 * 1.87
 
-      area_exposed_m2 <- dplyr::if_else(facilitie == "freestall", milking_cows * 3.5 + dry_cows * 3.5 + heifers * 2.5,
-                                     milking_cows * 1.5 + dry_cows * 1.5 + heifers * 2.5)
+      total_biogas_m3 <- biod_ch4_vol_m3 + biod_co2_vol_m3
 
-      barn_ch4_emissions_kg <- barn_ch4_emission_floor(temp_c = temp_c, manure_area = area_exposed_m2)
+      biogas_vs_ratio <- total_biogas_m3 / total_vs_managed_kg
+
+      total_mass_digested_kg <- total_mass_managed_corSS_kg - biod_ch4_yield_kg - biod_co2_yield_kg
+
+      digested_ts_kg <- total_ts_managed_kg - biod_ch4_yield_kg - biod_co2_yield_kg
+
+      digested_vs_kg <- total_vs_managed_kg - biod_ch4_yield_kg - biod_co2_yield_kg
+
+
 
 
 
@@ -106,7 +131,19 @@ mod_ch4_emissions_server <- function(id, county, facilitie, bedding){
         total_mass_managed_kg,
         total_ts_managed_kg,
         total_vs_managed_kg,
-        total_mass_managed_corSS_kg
+        total_mass_managed_corSS_kg,
+        biodigester,
+        biodigester_ef,
+        biod_ch4_yield_kg,
+        biod_ch4_vol_m3,
+        biod_co2_yield_kg,
+        biod_co2_vol_m3,
+        total_biogas_m3,
+        biogas_vs_ratio,
+        total_mass_digested_kg,
+        digested_ts_kg,
+        digested_vs_kg
+
 
 
       )
