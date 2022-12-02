@@ -11,10 +11,6 @@ mod_barn_nh3_emissions_ui <- function(id){
   ns <- NS(id)
   tagList(
 
-    selectInput(ns("county"), label = "Select the county", choices = unique(wi_wheather$county), selected = "Adams"),
-
-    #selectInput(ns("facilitie"), label = "Select the facilitie", choices = c("freestall", "tie-stall"), selected = "tie-stall"),
-
     tableOutput(ns("tabela"))
 
   )
@@ -23,13 +19,15 @@ mod_barn_nh3_emissions_ui <- function(id){
 #' barn_nh3_amissions Server Functions
 #'
 #' @noRd
-mod_barn_nh3_emissions_server <- function(id, facilitie){
+mod_barn_nh3_emissions_server <- function(id, county, facilitie){
   moduleServer( id, function(input, output, session){
     ns <- session$ns
 
     nh3_emissions <- reactive({
 
       facilitie <- facilitie()
+
+      county <- county()
 
        urine_vol <- 21
 
@@ -45,7 +43,7 @@ mod_barn_nh3_emissions_server <- function(id, facilitie){
 
 
       nh3_emissions <- wi_wheather %>%
-        dplyr::filter(county == input$county) %>%
+        dplyr::filter(county == county()) %>%
         dplyr::mutate(
           Const = const,
           gama_densi = gamma_densi,
@@ -65,7 +63,8 @@ mod_barn_nh3_emissions_server <- function(id, facilitie){
 
     output$tabela <- renderTable({
 
-      nh3_emissions()
+
+      #nh3_emissions()
 
     })
 

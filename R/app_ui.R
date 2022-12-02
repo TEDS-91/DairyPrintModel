@@ -14,9 +14,19 @@ app_ui <- function(request) {
 
       mod_animal_ui("animal"),
 
-      selectInput("facilitie", label = "Select the facilitie", choices = c("freestall", "tie-stall"), selected = "tie-stall"),
+      fluidRow(
+        column(3,
+               selectInput("facilitie", label = "Select the facilitie", choices = c("freestall", "tie-stall"), selected = "tie-stall")),
+        column(3,
+               selectInput("county", label = "Select the county", choices = unique(wi_wheather$county), selected = "Adams")),
+        column(3,
+               selectInput("bedding_type", label = "Select the Bedding type", choices = c("Sand", "Sawdust", "Chopped straw"), selected = "Sawdust"))),
 
-      mod_barn_nh3_emissions_ui("barn_nh3_emissions")
+      mod_barn_nh3_emissions_ui("barn_nh3_emissions"),
+
+      mod_ch4_emissions_ui("ch4_emissions")
+
+
 
     )
   )
