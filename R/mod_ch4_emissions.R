@@ -19,7 +19,16 @@ mod_ch4_emissions_ui <- function(id){
 #' ch4_emissions Server Functions
 #'
 #' @noRd
-mod_ch4_emissions_server <- function(id, county, facilitie, bedding, biodigester, biodigester_ef){
+mod_ch4_emissions_server <- function(id,
+                                     county,
+                                     facilitie,
+                                     bedding,
+                                     biodigester,
+                                     biodigester_ef,
+                                     type_manure,
+                                     solid_liquid,
+                                     enclosed_manure,
+                                     empty_time){
   moduleServer( id, function(input, output, session){
     ns <- session$ns
 
@@ -37,7 +46,15 @@ mod_ch4_emissions_server <- function(id, county, facilitie, bedding, biodigester
 
       biodigester_ef <- biodigester_ef()
 
-      # animal prmts
+      type_manure <- type_manure()
+
+      solid_liquid <- solid_liquid()
+
+      enclosed_manure <- enclosed_manure()
+
+      empty_time <- empty_time()
+
+      # animal prmts - they will come from the animal
 
       milking_cows <- 230
       dry_cows <- 50
@@ -56,7 +73,6 @@ mod_ch4_emissions_server <- function(id, county, facilitie, bedding, biodigester
       total_ts_manure_kg <- milking_cows * milking_cows_manure * milking_cows_ts + dry_cows * dry_cows_manure * dry_cows_ts + heifers * heifers_manure * heifers_ts
 
       total_vs_manure_kg <- (milking_cows * milking_cows_manure * milking_cows_ts + dry_cows * dry_cows_manure * dry_cows_ts + heifers * heifers_manure * heifers_ts) * 0.8
-
 
       yday <- seq(1, 730, 1)
 
@@ -105,6 +121,7 @@ mod_ch4_emissions_server <- function(id, county, facilitie, bedding, biodigester
 
       biogas_vs_ratio <- total_biogas_m3 / total_vs_managed_kg
 
+
       total_mass_digested_kg <- total_mass_managed_corSS_kg - biod_ch4_yield_kg - biod_co2_yield_kg
 
       digested_ts_kg <- total_ts_managed_kg - biod_ch4_yield_kg - biod_co2_yield_kg
@@ -112,8 +129,47 @@ mod_ch4_emissions_server <- function(id, county, facilitie, bedding, biodigester
       digested_vs_kg <- total_vs_managed_kg - biod_ch4_yield_kg - biod_co2_yield_kg
 
 
+      manure_solids_after_sep_pct <- dplyr::if_else(solid_liquid == "no", 0, 10.5)
+
+      manure_solids_after_sep_kg <- manure_solids_after_sep_pct / 100 * total_mass_digested_kg
+
+      manure_liquids_after_sep_pct <- dplyr::if_else(solid_liquid == "no", 0, 89.5)
+
+      manure_liquids_after_sep_kg <- manure_liquids_after_sep_pct / 100 * total_mass_digested_kg
+
+      manure_ts_solids_after_sep_pct <- dplyr::if_else(solid_liquid == "no", 0, 42)
+
+      manure_ts_solids_after_sep_kg <- manure_ts_solids_after_sep_pct / 100 * digested_ts_kg
+
+      manure_ts_liquids_after_sep_pct <- dplyr::if_else(solid_liquid == "no", 0, 58)
+
+      manure_ts_liquids_after_sep_kg <- manure_ts_liquids_after_sep_pct / 100 * digested_ts_kg
+
+      manure_vs_solids_after_sep_pct <- dplyr::if_else(solid_liquid == "no", 0, 47)
+
+      manure_vs_solids_after_sep_kg <- manure_vs_solids_after_sep_pct / 100 * digested_vs_kg
+
+      manure_vs_liquids_after_sep_pct <- dplyr::if_else(solid_liquid == "no", 0, 53)
+
+      manure_vs_liquids_after_sep_kg <- manure_vs_liquids_after_sep_pct / 100 * digested_vs_kg
 
 
+      ts_solids_final_after_sep_pct <- dplyr::if_else(solid_liquid == "no", 0, manure_ts_solids_after_sep_kg / manure_solids_after_sep_kg * 100)
+
+      ts_liquids_final_after_sep_pct <- dplyr::if_else(solid_liquid == "no", 0, manure_ts_liquids_after_sep_kg / manure_liquids_after_sep_kg * 100)
+
+      vs_solids_final_after_sep_pct <- dplyr::if_else(solid_liquid == "no", 0, manure_vs_solids_after_sep_kg / manure_solids_after_sep_kg * 100)
+
+      vs_liquids_final_after_sep_pct <- dplyr::if_else(solid_liquid == "no", 0, manure_vs_liquids_after_sep_kg / manure_liquids_after_sep_kg * 100)
+
+      # solid storage
+      #
+      empty_days <- empty_day(empty_time = empty_time)
+
+      vs_loaded_kg <- ifelse(solid_liquid == "yes" & empty_days == 0, manure_vs_solids_after_sep_kg,
+                             ifelse(solid_liquid == "yes" & type_manure == "solid", digested_vs_kg, 0))
+
+      ch4_emissions_solid_storage_kg <- manure_ch4_emission_solid(volatile_solids = vs_loaded_kg, temp_c = temp_c)
 
 
       emissions <- tibble::tibble(
@@ -142,7 +198,30 @@ mod_ch4_emissions_server <- function(id, county, facilitie, bedding, biodigester
         biogas_vs_ratio,
         total_mass_digested_kg,
         digested_ts_kg,
-        digested_vs_kg
+        digested_vs_kg,
+
+        manure_solids_after_sep_pct,
+        manure_solids_after_sep_kg,
+        manure_liquids_after_sep_pct,
+        manure_liquids_after_sep_kg,
+        manure_ts_solids_after_sep_pct,
+        manure_ts_solids_after_sep_kg,
+        manure_ts_liquids_after_sep_pct,
+        manure_ts_liquids_after_sep_kg,
+        manure_vs_solids_after_sep_pct,
+        manure_vs_solids_after_sep_kg,
+        manure_vs_liquids_after_sep_pct,
+        manure_vs_liquids_after_sep_kg,
+
+        ts_solids_final_after_sep_pct,
+        ts_liquids_final_after_sep_pct,
+        vs_solids_final_after_sep_pct,
+        vs_liquids_final_after_sep_pct,
+
+        empty_days,
+        vs_loaded_kg,
+        ch4_emissions_solid_storage_kg
+
 
 
 
@@ -157,10 +236,6 @@ mod_ch4_emissions_server <- function(id, county, facilitie, bedding, biodigester
       emissions()
 
     })
-
-
-
-
 
 
   })

@@ -16,16 +16,25 @@ app_ui <- function(request) {
 
       fluidRow(
         column(3,
-               selectInput("facilitie", label = "Select the facilitie", choices = c("freestall", "tie-stall"), selected = "tie-stall")),
+               selectInput("facilitie",       label = "Facilitie",                choices = c("freestall", "tie-stall"), selected = "tie-stall")),
         column(3,
-               selectInput("county", label = "Select the county", choices = unique(wi_wheather$county), selected = "Adams")),
+               selectInput("county",          label = "County",                   choices = unique(wi_wheather$county), selected = "Adams")),
         column(3,
-               selectInput("bedding_type", label = "Select the Bedding type", choices = c("Sand", "Sawdust", "Chopped straw"), selected = "Sawdust")),
+               selectInput("bedding_type",    label = "Bedding type",             choices = c("Sand", "Sawdust", "Chopped straw"), selected = "Sawdust")),
         column(3,
-               selectInput("biodigester", label = "Biodigester", choices = c("yes", "no"), selected = "no"))),
+               selectInput("biodigester",     label = "Biodigester",              choices = c("yes", "no"), selected = "yes"))),
+
       fluidRow(
         column(3,
-               numericInput("biod_ef", label = "Biodigester Efficiency:", value = 30))
+               numericInput("biod_ef",        label = "Biodigester efficiency:",  value = 30)),
+        column(3,
+               selectInput("solid_liquid",    label = "Solid-liquid separation:", choices = c("yes", "no"), selected = "yes")),
+        column(3,
+               selectInput("type_manure",     label = "Manure",                   choices = c("slurry", "solid"), selected = "solid")),
+        column(3,
+               selectInput("enclosed_manure", label = "Enclosed manure store:",   choices = c("yes", "no"), selected = "no")),
+        column(3,
+               selectInput("empty",           label = "Empty time:",              choices = c("Fall", "Spring", "Fall and Spring"), selected = "Fall"))
       ),
 
       mod_barn_nh3_emissions_ui("barn_nh3_emissions"),

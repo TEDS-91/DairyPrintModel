@@ -20,9 +20,29 @@ app_server <- function(input, output, session) {
 
   biod_ef <- reactive(input$biod_ef)
 
-  mod_barn_nh3_emissions_server("barn_nh3_emissions", county = county, facilitie = facilitie)
+  solid_liquid_separation <- reactive(input$solid_liquid)
 
-  mod_ch4_emissions_server("ch4_emissions", county = county, facilitie = facilitie, bedding = bedding, biodigester = biodigester, biodigester_ef = biod_ef)
+  enclosed_manure <- reactive(input$enclosed_manure)
+
+  empty_time <- reactive(input$empty)
+
+  type_manure <- reactive(input$type_manure)
+
+
+  mod_barn_nh3_emissions_server("barn_nh3_emissions",
+                                county = county,
+                                facilitie = facilitie)
+
+  mod_ch4_emissions_server("ch4_emissions",
+                           county          = county,
+                           facilitie       = facilitie,
+                           bedding         = bedding,
+                           biodigester     = biodigester,
+                           biodigester_ef  = biod_ef,
+                           type_manure     = type_manure,
+                           solid_liquid    = solid_liquid_separation,
+                           enclosed_manure = enclosed_manure,
+                           empty_time      = empty_time)
 
 
 
