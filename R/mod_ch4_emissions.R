@@ -11,7 +11,10 @@ mod_ch4_emissions_ui <- function(id){
   ns <- NS(id)
   tagList(
 
-    tableOutput(ns("tabela"))
+    tableOutput(ns("tabela")),
+
+    plotOutput(ns("plot"))
+
 
   )
 }
@@ -166,10 +169,94 @@ mod_ch4_emissions_server <- function(id,
       #
       empty_days <- empty_day(empty_time = empty_time)
 
-      vs_loaded_kg <- ifelse(solid_liquid == "yes" & empty_days == 0, manure_vs_solids_after_sep_kg,
-                             ifelse(solid_liquid == "yes" & type_manure == "solid", digested_vs_kg, 0))
+      vs_solid_loaded_kg <- dplyr::if_else(solid_liquid == "yes" & empty_days == 0, manure_vs_solids_after_sep_kg,
+                                           dplyr::if_else(type_manure == "solid" & empty_days == 0, digested_vs_kg, 0))
 
-      ch4_emissions_solid_storage_kg <- manure_ch4_emission_solid(volatile_solids = vs_loaded_kg, temp_c = temp_c)
+      ch4_emissions_solid_storage_kg <- manure_ch4_emission_solid(volatile_solids = vs_solid_loaded_kg, temp_c = temp_c)
+
+      # liquid storage
+
+      vs_liq_loaded_kg_day <- dplyr::if_else(solid_liquid == "yes", manure_vs_liquids_after_sep_kg,
+                                             dplyr::if_else(type_manure == "slurry", digested_vs_kg, 0))
+
+      vs_liq_loaded_kg_day <- rep(vs_liq_loaded_kg_day, 730)
+
+      remaining_vs_tank_pct <- 1
+
+      tank_capacity <- 365 * vs_liq_loaded_kg_day[1]
+
+      vs_liq_loaded_cum_kg <- vector(length = 730)
+
+      vs_liq_loaded_cum_kg[1] <- vs_liq_loaded_kg_day[1]
+
+      vs_liq_deg <- rep(NA, 730); vs_liq_ndeg <- rep(NA, 730); vs_liq_loss_kg_day <- rep(NA, 730); vs_liq_loss_cum_kg <- rep(NA, 730);
+      vs_liq_total_cum_kg <- rep(NA, 730); ch4_liq_emission_kg_day <- rep(NA, 730); co2_liq_emission_kg <- rep(NA, 730)
+
+
+      for (i in 2:730) {
+
+        # required parameters
+
+        B_o <- 0.2
+
+        ch4_pot <- 0.48
+
+        # first row calculations to initialize all calculations
+
+        vs_liq_loaded_cum_kg[1] <- vs_liq_loaded_kg_day[1]
+
+        vs_liq_total_cum_kg[1] <- vs_liq_loaded_kg_day[1]
+
+        vs_liq_loss_kg_day[1] <- 0
+
+        vs_liq_loss_cum_kg[1] <- 0
+
+        vs_liq_deg[1] <- (vs_liq_loaded_cum_kg[1] * (B_o / ch4_pot) - vs_liq_loss_cum_kg[1]) / vs_liq_total_cum_kg[1]
+
+        vs_liq_ndeg[1] <- 1 - vs_liq_deg[1]
+
+        ch4_liq_emission_kg_day[1] <- manure_ch4_emission_slurry(volatile_solids_total = vs_liq_total_cum_kg[1],
+                                                                 volatile_solids_d     = vs_liq_deg[1],
+                                                                 volatile_solids_nd    = vs_liq_ndeg[1],
+                                                                 temp_c                = temp_c[1],
+                                                                 enclosed              = enclosed_manure)
+
+        co2_liq_emission_kg[1] <- dplyr::if_else(enclosed_manure == "no", 0, ch4_liq_emission_kg_day[1] * 2.75)
+
+        # calculations for the rest of the vectors
+
+        print(vs_liq_loaded_kg_day[i])
+
+        vs_liq_loaded_cum_kg[i] <- dplyr::if_else(empty_days[i] == 0, vs_liq_loaded_kg_day[i] + vs_liq_loaded_cum_kg[i - 1],
+                                                  (remaining_vs_tank_pct / 100 * tank_capacity))
+
+        vs_liq_loss_kg_day[i] <- ch4_liq_emission_kg_day[i - 1] * 3
+
+        vs_liq_loss_cum_kg[i] <- dplyr::if_else(vs_liq_loaded_cum_kg[i] <= (remaining_vs_tank_pct / 100 * tank_capacity), 0, vs_liq_loss_kg_day[i] + vs_liq_loss_cum_kg[i - 1])
+
+        vs_liq_total_cum_kg[i] <- dplyr::if_else(vs_liq_loaded_cum_kg[i] <= (remaining_vs_tank_pct / 100 * tank_capacity), vs_liq_loaded_cum_kg[i], vs_liq_loaded_cum_kg[i] - vs_liq_loss_cum_kg[i - 1])
+
+        vs_liq_deg[i] <- dplyr::if_else(vs_liq_loaded_cum_kg[i] <= (remaining_vs_tank_pct / 100 * tank_capacity), (vs_liq_loaded_cum_kg[i] * (B_o / ch4_pot) - 0) / vs_liq_total_cum_kg[i],
+                             (vs_liq_loaded_cum_kg[i] * (B_o / ch4_pot) - vs_liq_loss_cum_kg[i]) / vs_liq_total_cum_kg[i])
+
+        vs_liq_ndeg[i] <- 1 - vs_liq_deg[i]
+
+        ch4_liq_emission_kg_day[i] <- manure_ch4_emission_slurry(volatile_solids_total = vs_liq_total_cum_kg[i],
+                                                                 volatile_solids_d     = vs_liq_deg[i],
+                                                                 volatile_solids_nd    = vs_liq_ndeg[i],
+                                                                 temp_c                = temp_c[i],
+                                                                 enclosed              = enclosed_manure)
+
+        co2_liq_emission_kg[i] <- dplyr::if_else(enclosed_manure == "no", 0, ch4_liq_emission_kg_day[i] * 2.75)
+
+      }
+
+      print(vs_liq_loaded_kg_day)
+
+
+
+
+
 
 
       emissions <- tibble::tibble(
@@ -219,8 +306,16 @@ mod_ch4_emissions_server <- function(id,
         vs_liquids_final_after_sep_pct,
 
         empty_days,
-        vs_loaded_kg,
-        ch4_emissions_solid_storage_kg
+        vs_solid_loaded_kg,
+        ch4_emissions_solid_storage_kg,
+
+        vs_liq_loaded_kg_day,
+        vs_liq_total_cum_kg,
+        vs_liq_loss_kg_day,
+        vs_liq_loss_cum_kg,
+        vs_liq_deg,
+        vs_liq_ndeg,
+        ch4_liq_emission_kg_day
 
 
 
@@ -233,7 +328,52 @@ mod_ch4_emissions_server <- function(id,
 
     output$tabela <- renderTable({
 
-      emissions()
+      #emissions()
+
+    })
+
+    output$plot <- renderPlot({
+
+    emissoes <- tibble::tibble(emissions())
+
+    if(type_manure() == "slurry") {
+
+      graphics::par(mar = c(5, 4, 4, 4) + 0.3)
+
+      emissoes$ch4_liq_emission_kg_day %>%
+        plot(xlab = "Year days",
+             ylab = "Methane Emission (kg)",
+             type = "b",
+             col = "red",
+             lwd = 5,
+             pch = 17,
+             main = "Daily and Cumulative CH4 Emissions from Manure Storage")
+
+      graphics::par(new = TRUE) # Add new plot
+
+      plot(emissoes$yday,
+           cumsum(emissoes$ch4_liq_emission_kg_day),
+           type = "b",
+           col = "blue",
+           lwd = 5,
+           pch = 15,
+           axes = FALSE, xlab = "", ylab = "") # Create second plot without axes
+
+      graphics::axis(side = 4, at = pretty(range(cumsum(emissoes$ch4_liq_emission_kg_day))))      # Add second axis
+      graphics::mtext("Cumulative Methane Emission (kg)", side = 4, line = 3)
+      graphics::legend("topleft", legend = c("Cum. CH4 (kg)", "Daily CH4 (kg)"),
+                col = c("blue", "red"), pch = 17, cex = 0.9)
+
+    } else {
+      print(
+      ggplot2::ggplot(emissions(), ggplot2::aes(x = yday, y = ch4_emissions_solid_storage_kg)) +
+        ggplot2::geom_point())
+
+    }
+
+
+
+
 
     })
 
