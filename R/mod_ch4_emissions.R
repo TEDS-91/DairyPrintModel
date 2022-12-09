@@ -225,8 +225,6 @@ mod_ch4_emissions_server <- function(id,
 
         # calculations for the rest of the vectors
 
-        print(vs_liq_loaded_kg_day[i])
-
         vs_liq_loaded_cum_kg[i] <- dplyr::if_else(empty_days[i] == 0, vs_liq_loaded_kg_day[i] + vs_liq_loaded_cum_kg[i - 1],
                                                   (remaining_vs_tank_pct / 100 * tank_capacity))
 
@@ -250,14 +248,6 @@ mod_ch4_emissions_server <- function(id,
         co2_liq_emission_kg[i] <- dplyr::if_else(enclosed_manure == "no", 0, ch4_liq_emission_kg_day[i] * 2.75)
 
       }
-
-      print(vs_liq_loaded_kg_day)
-
-
-
-
-
-
 
       emissions <- tibble::tibble(
         yday,
@@ -336,7 +326,7 @@ mod_ch4_emissions_server <- function(id,
 
     emissoes <- tibble::tibble(emissions())
 
-    if(type_manure() == "slurry") {
+    if(solid_liquid() == "no" & type_manure() == "slurry") {
 
       graphics::par(mar = c(5, 4, 4, 4) + 0.3)
 
@@ -364,10 +354,51 @@ mod_ch4_emissions_server <- function(id,
       graphics::legend("topleft", legend = c("Cum. CH4 (kg)", "Daily CH4 (kg)"),
                 col = c("blue", "red"), pch = 17, cex = 0.9)
 
-    } else {
+
+
+    } else if (solid_liquid() == "no" & type_manure() == "solid") {
+
       print(
       ggplot2::ggplot(emissions(), ggplot2::aes(x = yday, y = ch4_emissions_solid_storage_kg)) +
         ggplot2::geom_point())
+
+    } else {
+
+      liq_plot <- function() {
+
+      graphics::par(mar = c(5, 4, 4, 4) + 0.3)
+
+      emissoes$ch4_liq_emission_kg_day %>%
+        plot(xlab = "Year days",
+             ylab = "Methane Emission (kg)",
+             type = "b",
+             col = "red",
+             lwd = 5,
+             pch = 17,
+             main = "Daily and Cumulative CH4 Emissions from Manure Storage")
+
+      graphics::par(new = TRUE) # Add new plot
+
+      plot(emissoes$yday,
+           cumsum(emissoes$ch4_liq_emission_kg_day),
+           type = "b",
+           col = "blue",
+           lwd = 5,
+           pch = 15,
+           axes = FALSE, xlab = "", ylab = "") # Create second plot without axes
+
+      graphics::axis(side = 4, at = pretty(range(cumsum(emissoes$ch4_liq_emission_kg_day))))      # Add second axis
+      graphics::mtext("Cumulative Methane Emission (kg)", side = 4, line = 3)
+      graphics::legend("topleft", legend = c("Cum. CH4 (kg)", "Daily CH4 (kg)"),
+                       col = c("blue", "red"), pch = 17, cex = 0.9)
+      }
+
+
+
+      graphics::par(mfrow = c(1, 2))
+
+      liq_plot()
+      plot(emissoes$ch4_emissions_solid_storage_kg, ylab = "Methane emissios (kg/day)", xlab = "Year day")
 
     }
 
