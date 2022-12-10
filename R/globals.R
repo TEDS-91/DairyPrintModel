@@ -56,7 +56,7 @@ utils::globalVariables(
     "loss_kg_m2",
     "r",
     "tan_kg_m2",
-    "wi_wheather",
+    "wi_weather",
 
 
 

@@ -11,9 +11,8 @@ mod_ch4_emissions_ui <- function(id){
   ns <- NS(id)
   tagList(
 
-    tableOutput(ns("tabela")),
-
-    plotOutput(ns("plot"))
+    plotOutput(ns("plot")),
+    tableOutput(ns("tabela"))
 
 
   )
@@ -79,7 +78,7 @@ mod_ch4_emissions_server <- function(id,
 
       yday <- seq(1, 730, 1)
 
-      temp_c <- rep(wi_wheather %>%
+      temp_c <- rep(wi_weather %>%
                       dplyr::filter(county == county()) %>%
                       dplyr::pull(aver_tempC), 2)
 
@@ -181,7 +180,7 @@ mod_ch4_emissions_server <- function(id,
 
       vs_liq_loaded_kg_day <- rep(vs_liq_loaded_kg_day, 730)
 
-      remaining_vs_tank_pct <- 1
+      remaining_vs_tank_pct <- 0.05
 
       tank_capacity <- 365 * vs_liq_loaded_kg_day[1]
 
@@ -235,7 +234,7 @@ mod_ch4_emissions_server <- function(id,
         vs_liq_total_cum_kg[i] <- dplyr::if_else(vs_liq_loaded_cum_kg[i] <= (remaining_vs_tank_pct / 100 * tank_capacity), vs_liq_loaded_cum_kg[i], vs_liq_loaded_cum_kg[i] - vs_liq_loss_cum_kg[i - 1])
 
         vs_liq_deg[i] <- dplyr::if_else(vs_liq_loaded_cum_kg[i] <= (remaining_vs_tank_pct / 100 * tank_capacity), (vs_liq_loaded_cum_kg[i] * (B_o / ch4_pot) - 0) / vs_liq_total_cum_kg[i],
-                             (vs_liq_loaded_cum_kg[i] * (B_o / ch4_pot) - vs_liq_loss_cum_kg[i]) / vs_liq_total_cum_kg[i])
+                                        (vs_liq_loaded_cum_kg[i] * (B_o / ch4_pot) - vs_liq_loss_cum_kg[i]) / vs_liq_total_cum_kg[i])
 
         vs_liq_ndeg[i] <- 1 - vs_liq_deg[i]
 
@@ -305,7 +304,8 @@ mod_ch4_emissions_server <- function(id,
         vs_liq_loss_cum_kg,
         vs_liq_deg,
         vs_liq_ndeg,
-        ch4_liq_emission_kg_day
+        ch4_liq_emission_kg_day,
+        tank_capacity
 
 
 
@@ -318,7 +318,7 @@ mod_ch4_emissions_server <- function(id,
 
     output$tabela <- renderTable({
 
-      #emissions()
+      emissions()
 
     })
 

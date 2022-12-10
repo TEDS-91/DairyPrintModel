@@ -1,6 +1,6 @@
-#' Winsconsin county wheather dataset.
+#' Winsconsin county weather dataset.
 #'
-#' This dataset contains wheather information summarized for each county in Wisconsin since 1990 to 2021.
+#' This dataset contains weather information summarized for each county in Wisconsin since 1990 to 2021.
 #'
 #' @format Dataset with 26280 rows and 6 columns:
 #' \describe{
@@ -13,4 +13,4 @@
 #'   ...
 #' }
 #' @source Data retrieved from \href{https://daymet.ornl.gov/}{Daymet website}.
-"wi_wheather"
+"wi_weather"

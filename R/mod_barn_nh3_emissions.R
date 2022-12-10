@@ -41,8 +41,7 @@ mod_barn_nh3_emissions_server <- function(id, county, facilitie){
 
        const <- 86400 # time conversion
 
-
-      nh3_emissions <- wi_wheather %>%
+      nh3_emissions <- wi_weather %>%
         dplyr::filter(county == county()) %>%
         dplyr::mutate(
           Const = const,
@@ -58,16 +57,13 @@ mod_barn_nh3_emissions_server <- function(id, county, facilitie){
 
      nh3_emissions
 
-
     })
 
     output$tabela <- renderTable({
 
-
       #nh3_emissions()
 
     })
-
 
   })
 }

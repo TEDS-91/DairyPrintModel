@@ -18,7 +18,7 @@ app_ui <- function(request) {
         column(3,
                selectInput("facilitie",       label = "Facilitie",                choices = c("freestall", "tie-stall"), selected = "tie-stall")),
         column(3,
-               selectInput("county",          label = "County",                   choices = unique(wi_wheather$county), selected = "Adams")),
+               selectInput("county",          label = "County",                   choices = unique(wi_weather$county), selected = "Adams")),
         column(3,
                selectInput("bedding_type",    label = "Bedding type",             choices = c("Sand", "Sawdust", "Chopped straw"), selected = "Sawdust")),
         column(3,
