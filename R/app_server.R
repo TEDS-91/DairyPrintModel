@@ -10,6 +10,8 @@ app_server <- function(input, output, session) {
 
   mod_animal_server("animal")
 
+  mod_economics_server("economics")
+
   facilitie <- reactive(input$facilitie)
 
   county <- reactive(input$county)

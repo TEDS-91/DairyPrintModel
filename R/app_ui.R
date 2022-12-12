@@ -39,7 +39,9 @@ app_ui <- function(request) {
 
       mod_barn_nh3_emissions_ui("barn_nh3_emissions"),
 
-      mod_ch4_emissions_ui("ch4_emissions")
+      mod_ch4_emissions_ui("ch4_emissions"),
+
+      mod_economics_ui("economics")
 
 
 

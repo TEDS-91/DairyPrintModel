@@ -11,7 +11,8 @@ mod_barn_nh3_emissions_ui <- function(id){
   ns <- NS(id)
   tagList(
 
-    tableOutput(ns("tabela"))
+    tableOutput(ns("tabela"))#,
+    #plotOutput(ns("grafico"))
 
   )
 }
@@ -64,6 +65,19 @@ mod_barn_nh3_emissions_server <- function(id, county, facilitie){
       #nh3_emissions()
 
     })
+
+ #   output$grafico <- renderPlot({
+#
+#       nh3 <- tibble::as_tibble(nh3_emissions())
+#
+#       nh3 %>%
+#       ggplot2::ggplot( ggplot2::aes(x = yday, y = loss_animal_kg)) +
+#         ggplot2::theme_bw() +
+#         ggplot2::geom_point() +
+#         ggplot2::xlab("Yaer Days") +
+#         ggplot2::ylab("Daily Amonia Emissions")
+
+   # })
 
   })
 }

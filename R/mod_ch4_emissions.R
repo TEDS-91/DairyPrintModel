@@ -318,7 +318,7 @@ mod_ch4_emissions_server <- function(id,
 
     output$tabela <- renderTable({
 
-      emissions()
+      #emissions()
 
     })
 

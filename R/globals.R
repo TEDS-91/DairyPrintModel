@@ -57,6 +57,7 @@ utils::globalVariables(
     "r",
     "tan_kg_m2",
     "wi_weather",
+    "yday",
 
 
 
