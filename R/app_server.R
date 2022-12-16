@@ -30,10 +30,16 @@ app_server <- function(input, output, session) {
 
   type_manure <- reactive(input$type_manure)
 
+  crust <- reactive(input$crust)
 
-  mod_barn_nh3_emissions_server("barn_nh3_emissions",
-                                county = county,
-                                facilitie = facilitie)
+
+  mod_nh3_emissions_server("nh3_emissions",
+                           county          = county,
+                           facilitie       = facilitie,
+                           biodigester     = biodigester,
+                           type_manure     = type_manure,
+                           crust           = crust,
+                           empty_time      = empty_time)
 
   mod_ch4_emissions_server("ch4_emissions",
                            county          = county,

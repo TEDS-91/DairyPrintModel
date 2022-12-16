@@ -12,9 +12,9 @@
 #'
 eq_coeff <- function(temp_c, pH) {
 
-  Kh <- 10 ^ (1478 / (temp_c + 273) - 1.69)
+  Kh <- 10 ^ (1478 / (temp_c + 273.15) - 1.69)
 
-  Ka <- 1 + 10 ^ (0.09018 + 2729.9 / (temp_c + 273) - pH)
+  Ka <- 1 + 10 ^ (0.09018 + 2729.9 / (temp_c + 273.15) - pH)
 
   eq_coeff <- Kh * Ka
 

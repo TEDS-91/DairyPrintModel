@@ -25,19 +25,21 @@ app_ui <- function(request) {
                selectInput("biodigester",     label = "Biodigester",              choices = c("yes", "no"), selected = "yes"))),
 
       fluidRow(
-        column(3,
+        column(2,
                numericInput("biod_ef",        label = "Biodigester efficiency:",  value = 30)),
-        column(3,
+        column(2,
                selectInput("solid_liquid",    label = "Solid-liquid separation:", choices = c("yes", "no"), selected = "yes")),
-        column(3,
+        column(2,
                selectInput("type_manure",     label = "Manure",                   choices = c("slurry", "solid"), selected = "solid")),
-        column(3,
+        column(2,
                selectInput("enclosed_manure", label = "Enclosed manure store:",   choices = c("yes", "no"), selected = "no")),
-        column(3,
-               selectInput("empty",           label = "Empty time:",              choices = c("Fall", "Spring", "Fall and Spring"), selected = "Fall"))
+        column(2,
+               selectInput("empty",           label = "Empty time:",              choices = c("Fall", "Spring", "Fall and Spring"), selected = "Fall")),
+        column(2,
+               selectInput("crust",           label = "Crust formation:",         choices = c("yes", "no"), selected = "no"))
       ),
 
-      mod_barn_nh3_emissions_ui("barn_nh3_emissions"),
+      mod_nh3_emissions_ui("nh3_emissions"),
 
       mod_ch4_emissions_ui("ch4_emissions"),
 
