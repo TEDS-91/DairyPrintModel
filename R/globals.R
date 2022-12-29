@@ -59,6 +59,23 @@ utils::globalVariables(
     "wi_weather",
     "yday",
 
+    "NumberAnimals",
+    "area",
+    "k_removal",
+    "lime_applied",
+    "n_removal",
+    "p_removal",
+    "total_manure",
+    "total_n_applied",
+    "total_solids_kg",
+    "total_volatile_solids_kg",
+    "ts_manure urea_pct_applied",
+    "vs_manure yield",
+    "ts_manure",
+    "urea_pct_applied",
+    "vs_manure",
+    "yield",
+
 
 
     "milk_intake",

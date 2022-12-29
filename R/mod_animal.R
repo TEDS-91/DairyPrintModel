@@ -251,6 +251,8 @@ mod_animal_server <- function(id){
 
       weaning_weight_kg <- birth_weight_kg + calf_adg_kg * 60
 
+      ##################################################################################################################
+
       df <- df %>%
         dplyr::mutate(
           Month   = as.numeric(Month),
@@ -396,17 +398,17 @@ mod_animal_server <- function(id){
 
           co2_emissions_kg = animal_co2_emissions(dry_matter_intake = dry_matter_intake_kg_animal, body_weight = mean_body_weight_kg),
 
-          n2o_emissions_kg = dplyr::if_else(Categories == "Hei",
+          n2o_emissions_g = dplyr::if_else(Categories == "Hei",
                                             animal_n2o_emissions(dry_matter_intake = dry_matter_intake_kg_animal,
-                                                                 crude_protein     = diet_cp_hei) / 1000,
+                                                                 crude_protein     = diet_cp_hei),
                                             dplyr::if_else(Categories == "Cow",
                                                            animal_n2o_emissions(dry_matter_intake = dry_matter_intake_kg_animal,
-                                                                                crude_protein     = diet_cp_lac) / 1000,
+                                                                                crude_protein     = diet_cp_lac),
                                                            dplyr::if_else(Categories == "Dry",
                                                                           animal_n2o_emissions(dry_matter_intake = dry_matter_intake_kg_animal,
-                                                                                               crude_protein     = diet_cp_dry) / 1000,
+                                                                                               crude_protein     = diet_cp_dry),
                                                                           animal_n2o_emissions(dry_matter_intake = dry_matter_intake_kg_animal,
-                                                                                               crude_protein = 24) / 1000))), #TODO
+                                                                                               crude_protein = 24)))), #TODO
 
           # Manure calculations
           fresh_manure_output_kg_day = dplyr::if_else(Categories == "Hei",
@@ -551,14 +553,16 @@ mod_animal_server <- function(id){
                                                                                       total_potassium_ingested_g - total_potassium_excretion_milk)))
 
 
-        )
-
-
-      #%>%
-        #dplyr::filter(MonthSimulated == 1 & Categories == "Cow") %>%
-        #dplyr::ungroup() %>%
-        #dplyr::summarise(
-        #  average_milk_yield = (weighted.mean(milk_yield_kg_2, NumberAnimals))) / 30
+        ) %>%
+        dplyr::group_by(MonthSimulated, Categories) %>%
+        dplyr::summarise(
+          total_animals = sum(NumberAnimals),
+          total_ch4_kg = sum(NumberAnimals * enteric_methane_g_animal_day / 1000),
+          total_manure_kg = sum(NumberAnimals * fresh_manure_output_kg_day),
+          total_solids_kg = sum(NumberAnimals * dm_manure_output_kg_day),
+          total_volatile_solids_kg = sum(NumberAnimals * volatile_solids_kg_d)
+        ) %>%
+        dplyr::filter(MonthSimulated == 1)
 
       }
 
@@ -568,23 +572,28 @@ mod_animal_server <- function(id){
 
     output$herd_stab2 <- renderTable({
 
-        df()
+      df()
+
+        # df() %>%
+        # dplyr::group_by(MonthSimulated, Categories) %>%
+        # dplyr::summarise(
+        #   total_animals = sum(NumberAnimals),
+        #   total_ch4_kg = sum(NumberAnimals * enteric_methane_g_animal_day / 1000),
+        #   total_manure_kg = sum(NumberAnimals * fresh_manure_output_kg_day),
+        #   total_solids_kg = sum(NumberAnimals * dm_manure_output_kg_day),
+        #   total_volatile_solids_kg = sum(NumberAnimals * volatile_solids_kg_d)
+        # ) %>%
+        # dplyr::filter(MonthSimulated == 1)
 
     })
 
-      observeEvent(input$button, {
 
-        output$graphic <- renderPlot({
+    return(df)
 
-          df() %>%
-          ggplot2::ggplot(ggplot2::aes(x = Month, mean_body_weight_kg, col = Phase)) +
-            ggplot2::geom_line() +
-            ggplot2::facet_wrap(~Phase, scales = "free") +
-            ggplot2::theme(legend.position = "bottom")
 
-      })
 
-    })
+
+
 
  })
 

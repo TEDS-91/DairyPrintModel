@@ -36,14 +36,20 @@ app_ui <- function(request) {
         column(2,
                selectInput("empty",           label = "Empty time:",              choices = c("Fall", "Spring", "Fall and Spring"), selected = "Fall")),
         column(2,
-               selectInput("crust",           label = "Crust formation:",         choices = c("yes", "no"), selected = "no"))
+               selectInput("crust",           label = "Crust formation:",         choices = c("yes", "no"), selected = "no")),
+        column(2,
+               numericInput("storage_area",   label = "Manure Storage Area (m2):", value = 200))
       ),
 
       mod_nh3_emissions_ui("nh3_emissions"),
 
       mod_ch4_emissions_ui("ch4_emissions"),
 
-      mod_economics_ui("economics")
+      mod_nitrous_oxide_emissions_ui("nitrous_oxide"),
+
+      mod_economics_ui("economics"),
+
+      mod_crop_ui("crop")
 
 
 

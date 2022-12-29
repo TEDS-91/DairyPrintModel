@@ -22,6 +22,7 @@ mod_ch4_emissions_ui <- function(id){
 #'
 #' @noRd
 mod_ch4_emissions_server <- function(id,
+                                     animal_data,
                                      county,
                                      facilitie,
                                      bedding,
@@ -37,6 +38,8 @@ mod_ch4_emissions_server <- function(id,
     # all logic without connect with the animal part
 
     emissions <- reactive({
+
+      animal_data <- animal_data()
 
       county <- county()
 
@@ -70,11 +73,35 @@ mod_ch4_emissions_server <- function(id,
       dry_cows_ts <- 0.0443
       heifers_ts <- 0.0459
 
-      total_manure_kg <- milking_cows * milking_cows_manure + dry_cows * dry_cows_manure + heifers * heifers_manure
+      #total_manure_kg <- milking_cows * milking_cows_manure + dry_cows * dry_cows_manure + heifers * heifers_manure
+      total_manure_kg <- animal_data %>%
+        dplyr::summarise(
+          total_manure = sum(total_manure_kg)
+        ) %>%
+        dplyr::pull(total_manure)
 
-      total_ts_manure_kg <- milking_cows * milking_cows_manure * milking_cows_ts + dry_cows * dry_cows_manure * dry_cows_ts + heifers * heifers_manure * heifers_ts
+      print(total_manure_kg)
 
-      total_vs_manure_kg <- (milking_cows * milking_cows_manure * milking_cows_ts + dry_cows * dry_cows_manure * dry_cows_ts + heifers * heifers_manure * heifers_ts) * 0.8
+      #total_ts_manure_kg <- milking_cows * milking_cows_manure * milking_cows_ts + dry_cows * dry_cows_manure * dry_cows_ts + heifers * heifers_manure * heifers_ts
+      total_ts_manure_kg <- animal_data %>%
+        dplyr::summarise(
+          ts_manure = sum(total_solids_kg)
+        ) %>%
+        dplyr::pull(ts_manure)
+
+      print(total_ts_manure_kg)
+
+      #total_vs_manure_kg <- (milking_cows * milking_cows_manure * milking_cows_ts + dry_cows * dry_cows_manure * dry_cows_ts + heifers * heifers_manure * heifers_ts) * 0.8
+
+      total_vs_manure_kg <- animal_data %>%
+        dplyr::summarise(
+          vs_manure = sum(total_volatile_solids_kg)
+        ) %>%
+        dplyr::pull(vs_manure)
+
+      print(total_vs_manure_kg)
+
+
 
       yday <- seq(1, 730, 1)
 

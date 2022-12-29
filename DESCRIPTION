@@ -13,6 +13,7 @@ Imports:
     ggplot2,
     golem (>= 0.3.4),
     magrittr,
+    patchwork,
     purrr,
     rmarkdown,
     shiny (>= 1.7.1),

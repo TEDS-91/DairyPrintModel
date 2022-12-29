@@ -29,7 +29,8 @@ mod_nh3_emissions_server <- function(id,
                                      biodigester,
                                      type_manure,
                                      crust,
-                                     empty_time){
+                                     empty_time,
+                                     manure_storage_area){
   moduleServer( id, function(input, output, session){
     ns <- session$ns
 
@@ -142,17 +143,11 @@ mod_nh3_emissions_server <- function(id,
           acumulado_manure[i] <- tank_cap2 * 0.01 + volume_diario_man
         }
 
-
       }
-
-
-
-      #
-
 
       # r for storage
 
-      if (crust == "no" & type_manure == "slurry") {
+      if (crust == "no" & type_manure == "slurry") { #TODO
 
         r_storage <- resistence_nh3(hsc = 19, temp_c = temp_c)
 
@@ -172,13 +167,9 @@ mod_nh3_emissions_server <- function(id,
 
       storage_area <- 200
 
-      storage_N_loss_m2 <- total_tan * const * gamma_densi / (r_storage * cum_manure_sol_loaded * Q_storage) * storage_area
-
-      storage_N_loss_m22 <- acumulado * const * gamma_densi / (r_storage * acumulado_manure * Q_storage) * storage_area
+      storage_N_loss_m2 <- acumulado * const * gamma_densi / (r_storage * acumulado_manure * Q_storage)
 
       cum_N_loss_m2 <- cumsum(storage_N_loss_m2)
-
-      cum_N_loss_m22 <- cumsum(storage_N_loss_m22)
 
       nh3_emissions <- tibble::tibble(
 
@@ -187,38 +178,29 @@ mod_nh3_emissions_server <- function(id,
         yday,
         temp_c,
         empty_days,
-        # const,
-        # gamma_densi,
-        # r,
-        # manure_solution_mass,
-        # manure_solution_pH,
-        # Q,
-        # tan_kg_m2,
-        # loss_kg_m2,
-        # loss_animal_kg,
-        # cum_loss,
+        const,
+        gamma_densi,
+        r,
+        manure_solution_mass,
+        manure_solution_pH,
+        Q,
+        tan_kg_m2,
+        loss_kg_m2,
+        loss_animal_kg,
+        cum_loss,
         #
-        # remaining_tan,
-        # empty_days,
-        # mineralization_pct,
-        # n_mineralized_feces,
-        # total_tan,
-        # manure_sol_loaded,
-        # cum_manure_sol_loaded,
-        # crust,
-        # r_storage,
-        # ph_storage,
-        # Q_storage,
+        remaining_tan,
+        mineralization_pct,
+        n_mineralized_feces,
+        total_tan,
+        manure_sol_loaded,
+        cum_manure_sol_loaded,
+        crust,
+        r_storage,
+        ph_storage,
+        Q_storage,
         volume_diario,
         storage_N_loss_m2,
-        storage_N_loss_m22,
-        #cum_N_loss_m2,
-
-        acumulado,
-        volume_diario_man,
-        cum_manure_sol_loaded,
-        acumulado_manure,
-        cum_N_loss_m22,
         cum_N_loss_m2
 
 
@@ -239,13 +221,23 @@ mod_nh3_emissions_server <- function(id,
 
        nh3 <- tibble::as_tibble(nh3_emissions())
 
-       nh3 %>%
+       barn <- nh3 %>%
+         ggplot2::ggplot( ggplot2::aes(x = yday, y = loss_animal_kg), col = "blue") +
+         ggplot2::theme_bw() +
+         ggplot2::geom_point() +
+         #ggplot2::geom_point( ggplot2::aes(x = yday, y = storage_N_loss_m22), col = "blue") +
+         ggplot2::xlab("Yaer Days") +
+         ggplot2::ylab("Daily Ammonia Emissions from Barn")
+
+       manure <- nh3 %>%
        ggplot2::ggplot( ggplot2::aes(x = yday, y = storage_N_loss_m2), col = "blue") +
          ggplot2::theme_bw() +
          ggplot2::geom_point() +
-         ggplot2::geom_point( ggplot2::aes(x = yday, y = storage_N_loss_m22), col = "blue") +
+         #ggplot2::geom_point( ggplot2::aes(x = yday, y = storage_N_loss_m22), col = "blue") +
          ggplot2::xlab("Yaer Days") +
-         ggplot2::ylab("Daily Amonia Emissions")
+         ggplot2::ylab("Daily Ammonia Emissions from Manure Storage")
+
+       patchwork::plot_layout(barn | manure)
 
     })
 
@@ -256,8 +248,7 @@ mod_nh3_emissions_server <- function(id,
 
       nh3 %>%
         dplyr::summarise(
-          total_nh3_emp = sum(cum_N_loss_m22),
-          total_nh3_without_emp = sum(cum_N_loss_m2)
+          total_nh3 = sum(cum_N_loss_m2)
         )
 
 

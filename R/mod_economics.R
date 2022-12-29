@@ -25,7 +25,7 @@ mod_economics_ui <- function(id){
       column(2,
              numericInput(ns("milk_price"),       label = "Milk Price ($/wt)", value = 21))),
 
-    h4(strong("Economics"), align = "center"),
+    #h4(strong("Economics"), align = "center"),
 
     tableOutput(ns("tabela"))
 

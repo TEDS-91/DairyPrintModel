@@ -8,7 +8,7 @@ app_server <- function(input, output, session) {
 
   # Your application server logic
 
-  mod_animal_server("animal")
+  animal_data <- mod_animal_server("animal")
 
   mod_economics_server("economics")
 
@@ -32,16 +32,20 @@ app_server <- function(input, output, session) {
 
   crust <- reactive(input$crust)
 
+  manure_storage_area <- reactive(input$storage_area)
+
 
   mod_nh3_emissions_server("nh3_emissions",
-                           county          = county,
-                           facilitie       = facilitie,
-                           biodigester     = biodigester,
-                           type_manure     = type_manure,
-                           crust           = crust,
-                           empty_time      = empty_time)
+                           county              = county,
+                           facilitie           = facilitie,
+                           biodigester         = biodigester,
+                           type_manure         = type_manure,
+                           crust               = crust,
+                           empty_time          = empty_time,
+                           manure_storage_area = manure_storage_area)
 
   mod_ch4_emissions_server("ch4_emissions",
+                           animal_data     = animal_data,
                            county          = county,
                            facilitie       = facilitie,
                            bedding         = bedding,
@@ -51,6 +55,13 @@ app_server <- function(input, output, session) {
                            solid_liquid    = solid_liquid_separation,
                            enclosed_manure = enclosed_manure,
                            empty_time      = empty_time)
+
+  mod_nitrous_oxide_emissions_server("nitrous_oxide",
+                                     enclosed_manure = enclosed_manure,
+                                     manure_storage_area = manure_storage_area)
+
+  mod_crop_server("crop",
+                  animal_data = animal_data)
 
 
 
