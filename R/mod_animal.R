@@ -101,7 +101,11 @@ mod_animal_ui <- function(id){
     downloadButton("rmd_report", "Report.html",
                    style = "color: #fff; background-color: #007582; border-color: #007582")))),
 
+    h4("Hyperparameter to correct milk yiled:"),
     textOutput(ns("lambda")),
+
+    h4("Herd summarised statistics:"),
+
     shinycssloaders::withSpinner(tableOutput(ns("herd_stab2")), type = 1, color = "#0dc5c1", size = 5),
     plotOutput(ns("graphic"))
 
@@ -203,7 +207,7 @@ mod_animal_server <- function(id){
       # additional inputs
 
       birth_weight_kg <- 40
-      milk_sup_l <- 6
+      milk_sup_l <- input$milk_sup
       mature_body_weight <- 680
       milk_fat <- 3.67
       milk_prot <- 3.25
@@ -446,9 +450,7 @@ mod_animal_server <- function(id){
                                                          volatile_solids(dry_matter_intake       = dry_matter_intake_kg_animal,
                                                                          neutral_detergent_fiber = diet_ndf_lac,
                                                                          crude_protein           = diet_cp_lac),
-                                                         volatile_solids(dry_matter_intake       = dry_matter_intake_kg_animal,
-                                                                         neutral_detergent_fiber = 0,
-                                                                         crude_protein           = 24)))), # TODO,
+                                                         dry_matter_intake_kg_animal * 0.1 * 0.9))), # TODO,
           digestible_volatile_solids_kg_d = dplyr::if_else(Categories == "Hei",
                                                            digestible_volatile_solids(dry_matter_intake = dry_matter_intake_kg_animal,
                                                                                       neutral_detergent_fiber = diet_ndf_hei,
@@ -556,13 +558,16 @@ mod_animal_server <- function(id){
         ) %>%
         dplyr::group_by(MonthSimulated, Categories) %>%
         dplyr::summarise(
-          total_animals = sum(NumberAnimals),
+          total_animals = round(sum(NumberAnimals)),
+          milk_yield_kg = weighted.mean(milk_yield_kg_cow2, NumberAnimals),
           total_ch4_kg = sum(NumberAnimals * enteric_methane_g_animal_day / 1000),
           total_manure_kg = sum(NumberAnimals * fresh_manure_output_kg_day),
           total_solids_kg = sum(NumberAnimals * dm_manure_output_kg_day),
-          total_volatile_solids_kg = sum(NumberAnimals * volatile_solids_kg_d)
+          total_volatile_solids_kg = sum(NumberAnimals * volatile_solids_kg_d),
+          .groups = "drop",
         ) %>%
-        dplyr::filter(MonthSimulated == 1)
+        dplyr::filter(MonthSimulated == 1) %>%
+        dplyr::select(-MonthSimulated)
 
       }
 

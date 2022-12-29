@@ -13,7 +13,7 @@ mod_crop_ui <- function(id){
 
     h3(strong("Crops"), align = "center"),
 
-    numericInput(ns("number_crops"), label = "Number of Crops:", value = 4, min = 1, max = 10),
+    selectInput(ns("number_crops"), label = "Number of Crops:", choices = seq(1, 10, 1), selected = 5),
 
     uiOutput(ns("crop_types")),
 

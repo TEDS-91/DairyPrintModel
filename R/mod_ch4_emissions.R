@@ -61,17 +61,31 @@ mod_ch4_emissions_server <- function(id,
 
       # animal prmts - they will come from the animal
 
-      milking_cows <- 230
-      dry_cows <- 50
-      heifers <- 134
+      milking_cows <- animal_data %>%
+        dplyr::filter(Categories == "Cow") %>%
+        dplyr::pull(total_animals)
 
-      milking_cows_manure <- 65
-      dry_cows_manure <- 25
-      heifers_manure <- 21
+      print(milking_cows)
 
-      milking_cows_ts <- 0.0875
-      dry_cows_ts <- 0.0443
-      heifers_ts <- 0.0459
+      dry_cows <- animal_data %>%
+        dplyr::filter(Categories == "Dry") %>%
+        dplyr::pull(total_animals)
+
+      print(dry_cows)
+
+      heifers <- animal_data %>%
+        dplyr::filter(Categories == "Hei") %>%
+        dplyr::pull(total_animals)
+
+      print(heifers)
+
+      #milking_cows_manure <- 65
+      #dry_cows_manure <- 25
+      #heifers_manure <- 21
+
+      #milking_cows_ts <- 0.0875
+      #dry_cows_ts <- 0.0443
+      #heifers_ts <- 0.0459
 
       #total_manure_kg <- milking_cows * milking_cows_manure + dry_cows * dry_cows_manure + heifers * heifers_manure
       total_manure_kg <- animal_data %>%
@@ -109,7 +123,14 @@ mod_ch4_emissions_server <- function(id,
                       dplyr::filter(county == county()) %>%
                       dplyr::pull(aver_tempC), 2)
 
-      herd_ch4_emissions_kg <- milking_cows * 0.464 + dry_cows * 0.261 + heifers * 0.156
+      #herd_ch4_emissions_kg <- milking_cows * 0.464 + dry_cows * 0.261 + heifers * 0.156
+      herd_ch4_emissions_kg <-  animal_data %>%
+        dplyr::summarise(
+          total_ch4_kg = sum(total_ch4_kg)
+        ) %>%
+        dplyr::pull(total_ch4_kg)
+
+      print(herd_ch4_emissions_kg)
 
       area_exposed_m2 <- dplyr::if_else(facilitie == "freestall", milking_cows * 3.5 + dry_cows * 3.5 + heifers * 2.5,
                                         milking_cows * 1.5 + dry_cows * 1.5 + heifers * 2.5)
@@ -278,61 +299,62 @@ mod_ch4_emissions_server <- function(id,
       emissions <- tibble::tibble(
         yday,
         temp_c,
+        # herd_ch4_emissions_kg,
+        # area_exposed_m2,
+        # total_manure_kg,
+        # total_ts_manure_kg,
+        # bedding_quantity_kg,
+        # bedding_ts_kg,
+        # bedding_vs_kg,
+        # total_vs_manure_kg,
+        # total_mass_managed_kg,
+        # total_ts_managed_kg,
+        # total_vs_managed_kg,
+        # total_mass_managed_corSS_kg,
+        # biodigester,
+        # biodigester_ef,
+        # biod_ch4_yield_kg,
+        # biod_ch4_vol_m3,
+        # biod_co2_yield_kg,
+        # biod_co2_vol_m3,
+        # total_biogas_m3,
+        # biogas_vs_ratio,
+        # total_mass_digested_kg,
+        # digested_ts_kg,
+        # digested_vs_kg,
+        #
+        # manure_solids_after_sep_pct,
+        # manure_solids_after_sep_kg,
+        # manure_liquids_after_sep_pct,
+        # manure_liquids_after_sep_kg,
+        # manure_ts_solids_after_sep_pct,
+        # manure_ts_solids_after_sep_kg,
+        # manure_ts_liquids_after_sep_pct,
+        # manure_ts_liquids_after_sep_kg,
+        # manure_vs_solids_after_sep_pct,
+        # manure_vs_solids_after_sep_kg,
+        # manure_vs_liquids_after_sep_pct,
+        # manure_vs_liquids_after_sep_kg,
+        #
+        # ts_solids_final_after_sep_pct,
+        # ts_liquids_final_after_sep_pct,
+        # vs_solids_final_after_sep_pct,
+        # vs_liquids_final_after_sep_pct,
+        #
+        # empty_days,
+        # vs_solid_loaded_kg,
+        #
+        # vs_liq_loaded_kg_day,
+        # vs_liq_total_cum_kg,
+        # vs_liq_loss_kg_day,
+        # vs_liq_loss_cum_kg,
+        # vs_liq_deg,
+        # vs_liq_ndeg,
+        #
         herd_ch4_emissions_kg,
-        area_exposed_m2,
         barn_ch4_emissions_kg,
-        total_manure_kg,
-        total_ts_manure_kg,
-        bedding_quantity_kg,
-        bedding_ts_kg,
-        bedding_vs_kg,
-        total_vs_manure_kg,
-        total_mass_managed_kg,
-        total_ts_managed_kg,
-        total_vs_managed_kg,
-        total_mass_managed_corSS_kg,
-        biodigester,
-        biodigester_ef,
-        biod_ch4_yield_kg,
-        biod_ch4_vol_m3,
-        biod_co2_yield_kg,
-        biod_co2_vol_m3,
-        total_biogas_m3,
-        biogas_vs_ratio,
-        total_mass_digested_kg,
-        digested_ts_kg,
-        digested_vs_kg,
-
-        manure_solids_after_sep_pct,
-        manure_solids_after_sep_kg,
-        manure_liquids_after_sep_pct,
-        manure_liquids_after_sep_kg,
-        manure_ts_solids_after_sep_pct,
-        manure_ts_solids_after_sep_kg,
-        manure_ts_liquids_after_sep_pct,
-        manure_ts_liquids_after_sep_kg,
-        manure_vs_solids_after_sep_pct,
-        manure_vs_solids_after_sep_kg,
-        manure_vs_liquids_after_sep_pct,
-        manure_vs_liquids_after_sep_kg,
-
-        ts_solids_final_after_sep_pct,
-        ts_liquids_final_after_sep_pct,
-        vs_solids_final_after_sep_pct,
-        vs_liquids_final_after_sep_pct,
-
-        empty_days,
-        vs_solid_loaded_kg,
         ch4_emissions_solid_storage_kg,
-
-        vs_liq_loaded_kg_day,
-        vs_liq_total_cum_kg,
-        vs_liq_loss_kg_day,
-        vs_liq_loss_cum_kg,
-        vs_liq_deg,
-        vs_liq_ndeg,
-        ch4_liq_emission_kg_day,
-        tank_capacity
+        ch4_liq_emission_kg_day
 
 
 
@@ -345,7 +367,15 @@ mod_ch4_emissions_server <- function(id,
 
     output$tabela <- renderTable({
 
-      #emissions()
+      emissions() %>%
+        dplyr::filter(yday > 365) %>%
+         dplyr::summarise(
+           total_ch4_herd = sum(herd_ch4_emissions_kg),
+           total_ch4_fac  = sum(barn_ch4_emissions_kg),
+           total_ch4_liq  = sum(ch4_liq_emission_kg_day),
+           total_ch4_soli = sum(ch4_emissions_solid_storage_kg)
+
+         )
 
     })
 

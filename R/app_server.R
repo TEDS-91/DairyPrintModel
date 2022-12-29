@@ -65,15 +65,9 @@ app_server <- function(input, output, session) {
 
 
 
+  report <- reactive({
 
-
-
-
-
-
-  df <- reactive({
-
-    df <- stats::rnorm(1000, 25, 4)
+    animal_data()
 
   })
 
@@ -89,7 +83,7 @@ app_server <- function(input, output, session) {
             output_file = "built_report.html",
 
             params = list(
-              dry_matter_intake = df()
+              suma_table = report()
             )
           )
 

@@ -15,6 +15,7 @@ Imports:
     magrittr,
     patchwork,
     purrr,
+    reactable,
     rmarkdown,
     shiny (>= 1.7.1),
     shinycssloaders,

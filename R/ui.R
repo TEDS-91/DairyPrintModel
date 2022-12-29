@@ -87,7 +87,7 @@ crop_ui_prms <- function(id) {
         column(4,
                selectInput(inputId  = paste0(id, "_application_method"), label = "Application method:", choices = c("Direct injection", "Irrigation", "Broadcast spreading"), selected = "Broadcast spreading")),
         column(4,
-               numericInput(inputId = paste0(id, "_manure_pct"), label = "Manure Applied (% of Total Manure):", value = 25, min = 0, max = 100)
+               numericInput(inputId = paste0(id, "_manure_pct"), label = "Manure Applied (% of Total Manure):", value = 20, min = 0, max = 100)
         )
 
       )
