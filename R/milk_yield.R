@@ -160,12 +160,3 @@ energy_corrected_milk <- function(milk_yield, milk_fat, milk_prot) {
   return(energy_corrected_milk)
 
 }
-
-
-
-
-
-
-
-
-

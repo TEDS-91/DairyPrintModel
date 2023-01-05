@@ -474,9 +474,3 @@ mod_ch4_emissions_server <- function(id,
 
   })
 }
-
-## To be copied in the UI
-# mod_ch4_emissions_ui("ch4_emissions")
-
-## To be copied in the server
-# mod_ch4_emissions_server("ch4_emissions")

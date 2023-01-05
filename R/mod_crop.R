@@ -127,9 +127,3 @@ mod_crop_server <- function(id, animal_data){
 
   })
 }
-
-## To be copied in the UI
-# mod_crop_ui("crop")
-
-## To be copied in the server
-# mod_crop_server("crop")

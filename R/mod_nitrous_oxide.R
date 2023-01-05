@@ -60,14 +60,6 @@ mod_nitrous_oxide_emissions_server <- function(id,
 
     })
 
-
-
-
   })
 }
 
-## To be copied in the UI
-# mod_nitrous_oxide_emissions_ui("nitrous_oxide")
-
-## To be copied in the server
-# mod_nitrous_oxide_emissions_server("nitrous_oxide")

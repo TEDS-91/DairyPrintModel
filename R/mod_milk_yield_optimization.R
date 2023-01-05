@@ -37,9 +37,3 @@ mod_milk_yield_optimization_server <- function(id, obs_average_milk_yield, milk_
   })
 
 }
-
-## To be copied in the UI
-# mod_milk_yield_optimization_ui("milk_yield_optimization")
-
-## To be copied in the server
-# mod_milk_yield_optimization_server("milk_yield_optimization")

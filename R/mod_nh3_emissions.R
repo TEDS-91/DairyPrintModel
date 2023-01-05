@@ -259,9 +259,3 @@ mod_nh3_emissions_server <- function(id,
 
   })
 }
-
-## To be copied in the UI
-# mod_nh3_emissions_ui("nh3_emissions")
-
-## To be copied in the server
-# mod_nh3_emissions_server("nh3_emissions")

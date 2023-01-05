@@ -115,8 +115,3 @@ mod_economics_server <- function(id,
   })
 }
 
-## To be copied in the UI
-# mod_economics_ui("economics")
-
-## To be copied in the server
-# mod_economics_server("economics")
