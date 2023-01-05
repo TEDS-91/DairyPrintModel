@@ -8,9 +8,7 @@ app_server <- function(input, output, session) {
 
   # Your application server logic
 
-  animal_data <- mod_animal_server("animal")
-
-  mod_economics_server("economics")
+  # general prmts from UI
 
   facilitie <- reactive(input$facilitie)
 
@@ -33,6 +31,13 @@ app_server <- function(input, output, session) {
   crust <- reactive(input$crust)
 
   manure_storage_area <- reactive(input$storage_area)
+
+  # calling modules
+
+  animal_data <- mod_animal_server("animal")
+
+  mod_economics_server("economics",
+                       animal_data = animal_data)
 
 
   mod_nh3_emissions_server("nh3_emissions",

@@ -296,9 +296,14 @@ mod_ch4_emissions_server <- function(id,
 
       }
 
+      total_ts_remaing_kg <- total_ts_managed_kg - ch4_liq_emission_kg_day - ch4_emissions_solid_storage_kg
+
+
+
       emissions <- tibble::tibble(
         yday,
         temp_c,
+        total_ts_remaing_kg,
         # herd_ch4_emissions_kg,
         # area_exposed_m2,
         # total_manure_kg,
@@ -341,7 +346,7 @@ mod_ch4_emissions_server <- function(id,
         # vs_solids_final_after_sep_pct,
         # vs_liquids_final_after_sep_pct,
         #
-        # empty_days,
+        empty_days,
         # vs_solid_loaded_kg,
         #
         # vs_liq_loaded_kg_day,
@@ -367,15 +372,16 @@ mod_ch4_emissions_server <- function(id,
 
     output$tabela <- renderTable({
 
-      emissions() %>%
-        dplyr::filter(yday > 365) %>%
-         dplyr::summarise(
-           total_ch4_herd = sum(herd_ch4_emissions_kg),
-           total_ch4_fac  = sum(barn_ch4_emissions_kg),
-           total_ch4_liq  = sum(ch4_liq_emission_kg_day),
-           total_ch4_soli = sum(ch4_emissions_solid_storage_kg)
+       emissions() %>%
+         dplyr::filter(yday > 365) %>%
+          dplyr::summarise(
+            total_ch4_herd = sum(herd_ch4_emissions_kg),
+            total_ch4_fac  = sum(barn_ch4_emissions_kg),
+            total_ch4_liq  = sum(ch4_liq_emission_kg_day),
+            total_ch4_soli = sum(ch4_emissions_solid_storage_kg)
 
-         )
+          )
+
 
     })
 

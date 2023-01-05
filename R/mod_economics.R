@@ -21,8 +21,6 @@ mod_economics_ui <- function(id){
       column(2,
              numericInput(ns("heifer_diet_cost"), label = "Heifers ($/DM)", value = 0.28)),
       column(2,
-             numericInput(ns("milk_yield"),       label = "Milk Yield (kg/d)", value = 43)),
-      column(2,
              numericInput(ns("milk_price"),       label = "Milk Price ($/wt)", value = 21))),
 
     #h4(strong("Economics"), align = "center"),
@@ -35,11 +33,14 @@ mod_economics_ui <- function(id){
 #' economics Server Functions
 #'
 #' @noRd
-mod_economics_server <- function(id){
+mod_economics_server <- function(id,
+                                 animal_data){
   moduleServer( id, function(input, output, session){
     ns <- session$ns
 
     economics <- reactive({
+
+      animal_data <- animal_data()
 
       # animal prmts - they will come from the animal
 
@@ -47,11 +48,30 @@ mod_economics_server <- function(id){
       dry_cows <- 50
       heifers <- 134
 
-      dmi_milking_cows <- 28.5
-      dmi_dry_cows <- 12
-      dmi_heifers <- 7.7
+      #dmi_milking_cows <- 28.5
+      dmi_milking_cows <- animal_data %>%
+        dplyr::filter(Categories == "Cow") %>%
+        dplyr::pull("dmi_kg")
 
-      my_lactating <- input$milk_yield
+      #dmi_dry_cows <- 12
+      dmi_dry_cows <- animal_data %>%
+        dplyr::filter(Categories == "Dry") %>%
+        dplyr::pull("dmi_kg")
+
+      #dmi_heifers <- 7.7
+      dmi_heifers <- animal_data %>%
+        dplyr::filter(Categories == "Hei") %>%
+        dplyr::pull("dmi_kg")
+
+
+
+
+
+
+      #my_lactating <- input$milk_yield
+      my_lactating <- animal_data %>%
+        dplyr::filter(Categories == "Cow") %>%
+        dplyr::pull("milk_yield_kg")
 
       feed_efic <- my_lactating / dmi_milking_cows
 

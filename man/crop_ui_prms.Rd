@@ -10,7 +10,7 @@ crop_ui_prms(id)
 \item{id}{Crop id.}
 }
 \value{
-Crop UI parameters.
+Crop UI components.
 }
 \description{
 Crop UI parameters.

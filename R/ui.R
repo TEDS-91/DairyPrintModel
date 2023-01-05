@@ -32,12 +32,147 @@ diet_ui_prms <- function(category = "diet_lac", cp = 16, ndf = 25, adf = 15, ee 
 
 }
 
+#' general parameters used over the application by other modules.
+#'
+#' @return UI elements.
+#' @export
+#'
+general_ui_prms <- function() {
+
+  general_ui_prms <- list(
+
+    fluidRow(
+
+      column(3,
+             selectInput("facilitie",       label = "Facilitie",                 choices = c("freestall", "tie-stall"), selected = "tie-stall")),
+      column(3,
+             selectInput("county",          label = "County",                    choices = unique(wi_weather$county), selected = "Adams")),
+      column(3,
+             selectInput("bedding_type",    label = "Bedding type",              choices = c("Sand", "Sawdust", "Chopped straw"), selected = "Sawdust")),
+      column(3,
+             selectInput("biodigester",     label = "Biodigester",               choices = c("yes", "no"), selected = "yes"))),
+
+    fluidRow(
+
+      column(2,
+             numericInput("biod_ef",        label = "Biodigester efficiency:",  value = 30)),
+      column(2,
+             selectInput("solid_liquid",    label = "Solid-liquid separation:",  choices = c("yes", "no"), selected = "yes")),
+      column(2,
+             selectInput("type_manure",     label = "Manure",                    choices = c("slurry", "solid"), selected = "solid")),
+      column(2,
+             selectInput("enclosed_manure", label = "Enclosed manure store:",    choices = c("yes", "no"), selected = "no")),
+      column(2,
+             selectInput("empty",           label = "Empty time:",               choices = c("Fall", "Spring", "Fall and Spring"), selected = "Fall")),
+      column(2,
+             selectInput("crust",           label = "Crust formation:",          choices = c("yes", "no"), selected = "no")),
+      column(2,
+             numericInput("storage_area",   label = "Manure Storage Area (m2):", value = 200))
+    )
+
+  )
+
+  return(general_ui_prms)
+
+}
+
+#' Animal UI parameters.
+#'
+#' @param prm Parameter to be concatenated in the module.
+#'
+#' @return Animal UI components.
+#'
+animal_ui_prms <- function(prm) {
+
+  animal_ui_prms <- list(
+
+    fluidRow(
+
+      column(3,
+             numericInput(paste0(prm, "_n_cows"),              "Number of cows:",            value = 120, min = 0,  max = 30000)),
+      column(3,
+             numericInput(paste0(prm, "_cow_calving_int"),     "Calving Interval (mo):",     value = 14,  min = 10, max = 20)),
+      column(3,
+             numericInput(paste0(prm, "_cow_rep_rate"),        "Cow Culling Rate (%):",      value = 30,  min = 20, max = 50)),
+      column(3,
+             numericInput(paste0(prm, "_time_first_calv"),     "First Calving (mo):",        value = 24,  min = 18, max = 36))),
+
+    fluidRow(
+
+      column(3,
+             numericInput(paste0(prm, "_calves_heifers_cul"),  "Heifers Culling Rate (%):",  value = 20,  min = 10, max = 50)),
+      column(2,
+             numericInput(paste0(prm, "_stillbirth_rate"),     "Stillbirth Rate (%):",       value = 7,   min = 0,  max = 15)),
+      column(2,
+             numericInput(paste0(prm, "_heifer_calf_born"),    "Percentage Heifers (%):",    value = 50,  min = 45, max = 55)),
+      column(2,
+             numericInput(paste0(prm, "_average_milk_yield"),  "Average Milk Yield (kg):",   value = 40,  min = 30, max = 60)),
+      column(3,
+             selectInput(paste0(prm, "_milk_freq"), "Milk Frequence:", choices = c(2, 3))))
+  )
+
+  return(animal_ui_prms)
+
+}
+
+#' Calf UI parameters.
+#'
+#' @param prm Parameter to be concatenated in the module.
+#'
+#' @return Calf UI components.
+#'
+calf_ui_prms <- function(prm) {
+
+  calf_ui_prms <- list(
+
+    fluidRow(
+
+      column(3,
+             numericInput(paste0(prm, "_milk_sup"),   "Milk Suply (l/d):", value = 6,   min = 2, max = 15)),
+      column(2,
+             numericInput(paste0(prm, "_starter_cp"),  "Starter Crude Protein (%):", value = 20,   min = 15, max = 30)),
+      column(2,
+             numericInput(paste0(prm, "_starter_ndf"), "Starter P (%):", value = 20,   min = 15, max = 30)),
+      column(2,
+             numericInput(paste0(prm, "_forage_cp"),   "Forage Crude Protein (%):", value = 20,   min = 15, max = 30)),
+      column(3,
+             numericInput(paste0(prm, "_forage_ndf"),  "Forage P (%):", value = 20,   min = 15, max = 30))
+    )
+
+  )
+
+  return(calf_ui_prms)
+
+}
+
+#' Milk UI parameters.
+#'
+#' @param prm Parameter to be concatenated in the module.
+#'
+#' @return Milk UI components.
+#'
+milk_ui_prms <- function(prm) {
+
+  milk_ui_prms <- list(
+
+    fluidRow(
+
+      column(12,
+             h3(strong("Milk composition"), align = "center")),
+      column(6,
+             numericInput(paste0(prm, "_protein"),  "Milk Protein (%):",         value = 3.25, min = 2, max = 5)),
+      column(6,
+             numericInput(paste0(prm, "_fat"),  "Milk Fat (%):",                 value = 3.50,  min = 2, max = 5)))
+  )
+
+  return(milk_ui_prms)
+}
 
 #' Crop UI parameters.
 #'
 #' @param id Crop id.
 #'
-#' @return Crop UI parameters.
+#' @return Crop UI components.
 #'
 crop_ui_prms <- function(id) {
 

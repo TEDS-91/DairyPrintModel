@@ -13,9 +13,9 @@ mod_nh3_emissions_ui <- function(id){
 
     tableOutput(ns("tabela")),
 
-    plotOutput(ns("grafico")),
+    #plotOutput(ns("grafico")),
 
-    tableOutput(ns("tabela2"))
+    #tableOutput(ns("tabela2"))
 
   )
 }
@@ -243,13 +243,13 @@ mod_nh3_emissions_server <- function(id,
 
     output$tabela2 <- renderTable({
 
-      nh3 <- tibble::as_tibble(nh3_emissions())
-
-
-      nh3 %>%
-        dplyr::summarise(
-          total_nh3 = sum(cum_N_loss_m2)
-        )
+      # nh3 <- tibble::as_tibble(nh3_emissions())
+      #
+      #
+      # nh3 %>%
+      #   dplyr::summarise(
+      #     total_nh3 = sum(cum_N_loss_m2)
+      #   )
 
 
 

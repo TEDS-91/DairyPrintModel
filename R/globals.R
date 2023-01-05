@@ -76,6 +76,14 @@ utils::globalVariables(
     "vs_manure",
     "yield",
 
+    "n2o_emissions_g",
+    "nitrogen_fix",
+    "taglist",
+    "total_animals",
+    "total_ch4_kg",
+    "total_n_fixed",
+    "total_n_removal",
+
 
 
     "milk_intake",

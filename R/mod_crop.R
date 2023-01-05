@@ -113,9 +113,11 @@ mod_crop_server <- function(id, animal_data){
        valores %>%
          dplyr::inner_join(crop_nutrient_removal_n_fix, by = c("crop_type" = "crop")) %>%
          dplyr::mutate(
-           total_n_removal = n_removal * yield * area,
-           total_p_removal = p_removal * yield / 2.29 * area,
-           total_k_removal = k_removal * yield / 1.21 * area
+           total_n_removal = n_removal * yield,
+           total_p_removal = p_removal * yield / 2.29,
+           total_k_removal = k_removal * yield / 1.21,
+           total_n_fixed   = nitrogen_fix * yield,
+           crop_n_balance  = total_n_applied - total_n_removal + total_n_fixed
          )
 
 

@@ -13,101 +13,67 @@ mod_animal_ui <- function(id){
 
     wellPanel(
 
-    h3(icon("fa-duotone fa-cow", verify_fa = FALSE), strong("Herd Information"), align = "center"),
+      h3(icon("fa-duotone fa-cow", verify_fa = FALSE), strong("Herd Information"), align = "center"),
 
-    style = "background-color:#E2EBF4",
+      style = "background-color:#E2EBF4",
 
-    #waiter::use_waiter(),
-
-    fluidRow(
-      column(3,
-    numericInput(ns("n_cows"),              "Number of cows:",            value = 120, min = 0,  max = 30000)),
-      column(3,
-    numericInput(ns("cow_calving_int"),     "Calving Interval (mo):",     value = 14,  min = 10, max = 20)),
-      column(3,
-    numericInput(ns("cow_rep_rate"),        "Cow Culling Rate (%):",      value = 30,  min = 20, max = 50)),
-      column(3,
-    numericInput(ns("time_first_calv"),     "First Calving (mo):",        value = 24,  min = 18, max = 36))),
-
-    fluidRow(
-      column(3,
-    numericInput(ns("calves_heifers_cul"),  "Heifers Culling Rate (%):",  value = 20,  min = 10, max = 50)),
-      column(2,
-    numericInput(ns("stillbirth_rate"),     "Stillbirth Rate (%):",       value = 7,   min = 0,  max = 15)),
-      column(2,
-    numericInput(ns("heifer_calf_born"),    "Percentage Heifers (%):",    value = 50,  min = 45, max = 55)),
-      column(2,
-    numericInput(ns("average_milk_yield"),  "Average Milk Yield (kg):",   value = 40,  min = 30, max = 60)),
-      column(3,
-    selectInput(ns("milk_freq"), "Milk Frequence:", choices = c(2, 3))))),
+      animal_ui_prms(ns("animal"))),
 
     wellPanel(
 
-    style = "background-color:#E2EBF4",
+      style = "background-color:#E2EBF4",
 
-    fluidRow(
-    column(12,
-    h3(strong("Milk composition"), align = "center")),
+      milk_ui_prms(ns("milk"))
 
-    column(6,
-           numericInput(ns("milk_protein"),  "Milk Protein (%):",         value = 3.25, min = 2, max = 5)),
-    column(6,
-           numericInput(ns("milk_fat"),  "Milk Fat (%):",                 value = 3.5,  min = 2, max = 5))
-    )),
+    ),
 
     wellPanel(
 
-    style = "background-color:#E2EBF4",
+      style = "background-color:#E2EBF4",
 
-    fluidRow(
-    column(12,
-    h3(strong("Diet Information"), align = "center")),
+      fluidRow(
 
-    h4(strong("Lactation Cows"), align = "left"),
+        column(12,
 
-    diet_ui_prms(ns("diet_lac")),
+               h3(strong("Diet Information"), align = "center")),
 
-    h4(strong("Dry Cows"), align = "left"),
+        h4(strong("Lactation Cows"), align = "left"),
 
-    diet_ui_prms(ns("diet_dry")),
+        diet_ui_prms(ns("diet_lac")),
 
-    h4(strong("Heifers"), align = "left"),
+        h4(strong("Dry Cows"), align = "left"),
 
-    diet_ui_prms(ns("diet_hei")),
+        diet_ui_prms(ns("diet_dry")),
 
-    h4(strong("Calves"), align = "left"),
+        h4(strong("Heifers"), align = "left"),
 
-    column(3,
-           numericInput(ns("milk_sup"), "Milk Suply (l/d):", value = 6,   min = 2, max = 15)),
-    column(2,
-           numericInput(ns("starter_cp"), "Starter Crude Protein (%):", value = 20,   min = 15, max = 30)),
-    column(2,
-           numericInput(ns("starter_ndf"), "Starter P (%):", value = 20,   min = 15, max = 30)),
-    column(2,
-           numericInput(ns("forage_cp"), "Forage Crude Protein (%):", value = 20,   min = 15, max = 30)),
-    column(3,
-           numericInput(ns("forage_ndf"), "Forage P (%):", value = 20,   min = 15, max = 30))),
+        diet_ui_prms(ns("diet_hei")),
 
+        h4(strong("Calves"), align = "left"),
 
-    br(),
+        calf_ui_prms(ns("calf"))),
 
-    fluidRow(
-    column(3,
-    actionButton(ns("button"),
-                 "Run!",
-                 style = "color: #fff; background-color: #007582; border-color: #007582; height:40px; width:80px")),
+      br(),
 
-    column(9,
-    downloadButton("rmd_report", "Report.html",
-                   style = "color: #fff; background-color: #007582; border-color: #007582")))),
+      fluidRow(
+
+        column(3,
+               actionButton(ns("button"),
+                            "Run!",
+                            style = "color: #fff; background-color: #007582; border-color: #007582; height:40px; width:80px")),
+
+        column(9,
+               downloadButton("rmd_report", "Report.html",
+                              style = "color: #fff; background-color: #007582; border-color: #007582")))),
 
     h4("Hyperparameter to correct milk yiled:"),
+
     textOutput(ns("lambda")),
 
-    h4("Herd summarised statistics:"),
+        h4("Herd summarised statistics:"),
 
-    shinycssloaders::withSpinner(tableOutput(ns("herd_stab2")), type = 1, color = "#0dc5c1", size = 5),
-    plotOutput(ns("graphic"))
+    shinycssloaders::withSpinner(tableOutput(ns("herd_stab2")), type = 1, color = "#0dc5c1", size = 5)#,
+    #plotOutput(ns("graphic"))
 
   )
 
@@ -122,47 +88,47 @@ mod_animal_server <- function(id){
 
     herd_stab_matrix <- reactive({
 
-      herd_stab_matrix <- herd_stabilization(time_first_calv    = input$time_first_calv,
-                                             heifer_calf_born   = input$heifer_calf_born,
-                                             stillbirth_rate    = input$stillbirth_rate,
-                                             calves_heifers_cul = input$calves_heifers_cul,
-                                             cow_rep_rate       = input$cow_rep_rate,
-                                             cow_calving_int    = input$cow_calving_int,
-                                             n_adult_cows       = input$n_cows)
+      herd_stab_matrix <- herd_stabilization(time_first_calv    = input$animal_time_first_calv,
+                                             heifer_calf_born   = input$animal_heifer_calf_born,
+                                             stillbirth_rate    = input$animal_stillbirth_rate,
+                                             calves_heifers_cul = input$animal_calves_heifers_cul,
+                                             cow_rep_rate       = input$animal_cow_rep_rate,
+                                             cow_calving_int    = input$animal_cow_calving_int,
+                                             n_adult_cows       = input$animal_n_cows)
 
     })
 
     herd_matrix <- reactive({
 
-      herd_matrix <- herd_projection(time_first_calv    = input$time_first_calv,
-                                     heifer_calf_born   = input$heifer_calf_born,
-                                     stillbirth_rate    = input$stillbirth_rate,
-                                     calves_heifers_cul = input$calves_heifers_cul,
-                                     cow_rep_rate       = input$cow_rep_rate,
-                                     cow_calving_int    = input$cow_calving_int,
-                                     n_adult_cows       = input$n_cows,
+      herd_matrix <- herd_projection(time_first_calv    = input$animal_time_first_calv,
+                                     heifer_calf_born   = input$animal_heifer_calf_born,
+                                     stillbirth_rate    = input$animal_stillbirth_rate,
+                                     calves_heifers_cul = input$animal_calves_heifers_cul,
+                                     cow_rep_rate       = input$animal_cow_rep_rate,
+                                     cow_calving_int    = input$animal_cow_calving_int,
+                                     n_adult_cows       = input$animal_n_cows,
                                      months_to_project  = 12)
 
     })
 
     lambda_milk_calc <- eventReactive(input$button, {
 
-      age_first_calv <- input$time_first_calv
+      age_first_calv <- input$animal_time_first_calv
 
-      cow_calving_int <- input$cow_calving_int
+      cow_calving_int <- input$animal_cow_calving_int
 
-      n_cows <- input$n_cows
+      n_cows <- input$animal_n_cows
 
       prop_primiparous <- sum(herd_matrix()[[1]][1, (age_first_calv + 1):((age_first_calv + 1) + cow_calving_int - 1)]) / n_cows
 
       prop_secondiparous <- sum(herd_matrix()[[1]][1, (age_first_calv + 1 + cow_calving_int):(age_first_calv + 1 + 2 * cow_calving_int - 1)]) / n_cows
 
 
-      lambda_milk_calc <- lambda_milk_yield(obs_average_milk_yield = input$average_milk_yield,
-                                            milk_freq              = input$milk_freq,
+      lambda_milk_calc <- lambda_milk_yield(obs_average_milk_yield = input$animal_average_milk_yield,
+                                            milk_freq              = input$animal_milk_freq,
                                             prop_primiparous       = prop_primiparous * 100,
                                             prop_secondiparous     = prop_secondiparous * 100,
-                                            cow_calving_interval   = input$cow_calving_int) - 0.02
+                                            cow_calving_interval   = input$animal_cow_calving_int) - 0.02
       lambda_milk_calc
 
       })
@@ -170,10 +136,7 @@ mod_animal_server <- function(id){
 
     output$lambda <- renderPrint({
 
-     # paste("the lambda value is:", lambda_milk_calc())
-     #
-      input$diet_lac_cp
-
+      paste("the lambda value is:", lambda_milk_calc())
 
     })
 
@@ -207,17 +170,17 @@ mod_animal_server <- function(id){
       # additional inputs
 
       birth_weight_kg <- 40
-      milk_sup_l <- input$milk_sup
+      milk_sup_l <- input$calf_milk_sup
       mature_body_weight <- 680
-      milk_fat <- 3.67
-      milk_prot <- 3.25
+      milk_fat <- input$milk_fat
+      milk_prot <- input$milk_protein
       milk_p_g_l <- 0.996
       milk_k_g_l <- 1.5
       milk_solids <- (1 - (100 - milk_fat - milk_prot - 4.6 - 0.8) / 100) * 100
-      starter_cp <- 20
+      starter_cp <- input$calf_starter_cp
       starter_p <- 0.5
       starter_k <- 1
-      forage_cp <- 12
+      forage_cp <- input$calf_forage_cp
       forage_intake_1 <- 0.05
       forage_intake_2 <- 0.25
       forage_p <- 0.5
@@ -268,7 +231,7 @@ mod_animal_server <- function(id){
                                           heifer_body_weight,
                                           birth_weight       = birth_weight_kg,
                                           weaning_weight     = weaning_weight_kg,
-                                          age_first_calving  = input$time_first_calv,
+                                          age_first_calving  = input$animal_time_first_calv,
                                           mature_body_weight = mature_body_weight,
                                           type               = "mean"),
                            dplyr::if_else(Categories == "Cal",
@@ -283,7 +246,7 @@ mod_animal_server <- function(id){
                                           heifer_body_weight,
                                           birth_weight       = birth_weight_kg,
                                           weaning_weight     = weaning_weight_kg,
-                                          age_first_calving  = input$time_first_calv,
+                                          age_first_calving  = input$animal_time_first_calv,
                                           mature_body_weight = mature_body_weight,
                                           type               = "final"),
                            dplyr::if_else(Categories == "Cal",
@@ -322,20 +285,20 @@ mod_animal_server <- function(id){
                                                                           day_max,
                                                                           milk_yield_acum,
                                                                           parity      = "primiparous",
-                                                                          milk_freq   = input$milk_freq,
+                                                                          milk_freq   = input$animal_milk_freq,
                                                                           lambda_milk = lambda_milk_calc()),
                                                           dplyr::if_else(Phase == "Lac2",
                                                                          purrr::map2_dbl(day_min,
                                                                                          day_max,
                                                                                          milk_yield_acum,
                                                                                          parity      = "secondiparous",
-                                                                                         milk_freq   = input$milk_freq,
+                                                                                         milk_freq   = input$animal_milk_freq,
                                                                                          lambda_milk = lambda_milk_calc()),
                                                                          purrr::map2_dbl(day_min,
                                                                                          day_max,
                                                                                          milk_yield_acum,
                                                                                          parity      = "multiparous",
-                                                                                         milk_freq   = input$milk_freq,
+                                                                                         milk_freq   = input$animal_milk_freq,
                                                                                          lambda_milk = lambda_milk_calc())))),
           milk_yield_kg_cow2 = milk_yield_kg_2 / 30,
 
@@ -559,8 +522,10 @@ mod_animal_server <- function(id){
         dplyr::group_by(MonthSimulated, Categories) %>%
         dplyr::summarise(
           total_animals = round(sum(NumberAnimals)),
-          milk_yield_kg = weighted.mean(milk_yield_kg_cow2, NumberAnimals),
+          milk_yield_kg = stats::weighted.mean(milk_yield_kg_cow2, NumberAnimals),
+          dmi_kg = stats::weighted.mean(dry_matter_intake_kg_animal, NumberAnimals),
           total_ch4_kg = sum(NumberAnimals * enteric_methane_g_animal_day / 1000),
+          total_n2o_kg = sum(NumberAnimals * n2o_emissions_g / 1000),
           total_manure_kg = sum(NumberAnimals * fresh_manure_output_kg_day),
           total_solids_kg = sum(NumberAnimals * dm_manure_output_kg_day),
           total_volatile_solids_kg = sum(NumberAnimals * volatile_solids_kg_d),
