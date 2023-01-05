@@ -2,7 +2,7 @@
 % Please edit documentation in R/milk_yield.R
 \name{energy_corrected_milk}
 \alias{energy_corrected_milk}
-\title{Corrects milk for 4 of fat and 3.3 of protein.}
+\title{Corrects milk for 4 (\%) of fat and 3.3 (\%) of protein.}
 \usage{
 energy_corrected_milk(milk_yield, milk_fat, milk_prot)
 }
@@ -17,7 +17,7 @@ energy_corrected_milk(milk_yield, milk_fat, milk_prot)
 Energy fat and protein corrected milk (kg).
 }
 \description{
-Corrects milk for 4 of fat and 3.3 of protein.
+Corrects milk for 4 (\%) of fat and 3.3 (\%) of protein.
 }
 \examples{
 energy_corrected_milk(milk_yield = 40, milk_fat = 3.5, milk_prot = 3.1)

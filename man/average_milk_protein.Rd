@@ -4,7 +4,7 @@
 \alias{average_milk_protein}
 \title{Estimates the average milk protein between two days in milk.}
 \usage{
-average_milk_protein(parity, day_min, day_max)
+average_milk_protein(parity, day_min, day_max, lambda_prot)
 }
 \arguments{
 \item{parity}{Parity: primiparous, secondiparous, or multiparous.}
@@ -12,6 +12,8 @@ average_milk_protein(parity, day_min, day_max)
 \item{day_min}{Initial day in milk.}
 
 \item{day_max}{Final day in milk.}
+
+\item{lambda_prot}{Hyperparameter to adjust the milk protein content for a specific average value.}
 }
 \value{
 Average milk protein between two days in milk (\%).
@@ -20,6 +22,6 @@ Average milk protein between two days in milk (\%).
 Estimates the average milk protein between two days in milk.
 }
 \examples{
-average_milk_protein(parity = "multiparous", day_min = 30, day_max = 60)
+average_milk_protein(parity = "multiparous", day_min = 30, day_max = 60, lambda_prot = 1)
 
 }

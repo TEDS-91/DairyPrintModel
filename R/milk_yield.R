@@ -119,7 +119,7 @@ lambda_milk_yield <- function(obs_average_milk_yield,
 
   # maximum days in milk to calculate lambda
   #
-  max_days_milk <- round((cow_calving_interval - 2) * 30.4)
+  max_days_milk <- round((cow_calving_interval - 2) * 30)
 
   coef_opt <- obs_average_milk_yield - (prop_primiparous / 100 * ((seq(1, max_days_milk) %>%
                                                                      purrr::map_dbl(milk_yield, 'primiparous', milk_freq, lambda = x) %>%
@@ -141,7 +141,7 @@ lambda_milk_yield <- function(obs_average_milk_yield,
 
 }
 
-#' Corrects milk for 4 of fat and 3.3 of protein.
+#' Corrects milk for 4 (\%) of fat and 3.3 (\%) of protein.
 #'
 #' @param milk_yield Milk yield (kg).
 #' @param milk_fat Milk fat content (\%).

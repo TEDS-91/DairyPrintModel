@@ -122,9 +122,32 @@ mod_animal_server <- function(id){
       })
 
 
+    lambda_milk_prot_calc <- eventReactive(input$button, {
+
+      age_first_calv <- input$animal_time_first_calv
+
+      cow_calving_int <- input$animal_cow_calving_int
+
+      n_cows <- input$animal_n_cows
+
+      prop_primiparous <- sum(herd_matrix()[[1]][1, (age_first_calv + 1):((age_first_calv + 1) + cow_calving_int - 1)]) / n_cows
+
+      prop_secondiparous <- sum(herd_matrix()[[1]][1, (age_first_calv + 1 + cow_calving_int):(age_first_calv + 1 + 2 * cow_calving_int - 1)]) / n_cows
+
+
+      lambda_milk_prot_calc <- lambda_milk_prot(obs_average_milk_prot = input$milk_protein,
+                                             prop_primiparous       = prop_primiparous * 100,
+                                             prop_secondiparous     = prop_secondiparous * 100,
+                                             cow_calving_interval   = input$animal_cow_calving_int)
+
+      lambda_milk_prot_calc
+
+    })
+
+
     output$lambda <- renderPrint({
 
-      paste("the lambda value is:", lambda_milk_calc())
+      paste("the lambda value is:", lambda_milk_prot_calc())
 
     })
 
@@ -293,8 +316,14 @@ mod_animal_server <- function(id){
                                                                                              lambda_milk = lambda_milk_calc())))),
               milk_yield_kg_cow2 = milk_yield_kg_2 / 30,
 
+              milk_protein = dplyr::if_else(Phase == "Grow" | Categories == "Dry", 0,
+                                            dplyr::if_else(Categories == "Lac1", purrr::pmap_dbl(list(day_min, day_max), average_milk_protein, parity = "primiparous", lambda_prot = lambda_milk_prot_calc()),
+                                                           dplyr::if_else(Categories == "Lac2",
+                                                                          purrr::pmap_dbl(list(day_min, day_max), average_milk_protein, parity = "secondiparous", lambda_prot = lambda_milk_prot_calc()),
+                                                                          purrr::pmap_dbl(list(day_min, day_max), average_milk_protein, parity = "multiparous", lambda_prot = lambda_milk_prot_calc())))),
+
               # milk corrected for 4% fat and 3.3% of protein
-              milk_yield_kg_fpc = energy_corrected_milk(milk_yield = milk_yield_kg_cow2, milk_fat = milk_fat, milk_prot = milk_prot))
+              milk_yield_kg_fpc = energy_corrected_milk(milk_yield = milk_yield_kg_cow2, milk_fat = milk_fat, milk_prot = milk_protein))
 
           # Dry matter intake calculations
 
@@ -466,12 +495,6 @@ mod_animal_server <- function(id){
                                                                                        heifer_n_fecal_excretion(nitrogen_intake = total_nitrogen_ingested_g)))),
               urine_nitrogen_excreted_g = total_nitrogen_excreted_g - fecal_nitrogen_excreted_d,
 
-              milk_protein = dplyr::if_else(Phase == "Grow" | Categories == "Dry", 0,
-                                            dplyr::if_else(Categories == "Lac1", purrr::pmap_dbl(list(day_min, day_max), average_milk_protein, parity = "primiparous"),
-                                                           dplyr::if_else(Categories == "Lac2",
-                                                                          purrr::pmap_dbl(list(day_min, day_max), average_milk_protein, parity = "secondiparous"),
-                                                                          purrr::pmap_dbl(list(day_min, day_max), average_milk_protein, parity = "multiparous")))),
-
               milk_n_output_g = dplyr::if_else(Categories == "Cow", milk_yield_kg_fpc * milk_protein / 100 / 6.25 * 1000, 0),
 
               nitrogen_balance_g = total_nitrogen_ingested_g - total_nitrogen_excreted_g - milk_n_output_g,
@@ -533,6 +556,9 @@ mod_animal_server <- function(id){
             dplyr::summarise(
               total_animals = round(sum(NumberAnimals)),
               milk_yield_kg = stats::weighted.mean(milk_yield_kg_cow2, NumberAnimals),
+              milk_cp_pct = stats::weighted.mean(milk_protein, NumberAnimals),
+              milk_fat_pct = milk_fat,
+              milk_yield_kg_fpc = stats::weighted.mean(milk_yield_kg_fpc, NumberAnimals),
               dmi_kg = stats::weighted.mean(dry_matter_intake_kg_animal, NumberAnimals),
               total_ch4_kg = sum(NumberAnimals * enteric_methane_g_animal_day / 1000),
               total_n2o_kg = sum(NumberAnimals * n2o_emissions_g / 1000),
