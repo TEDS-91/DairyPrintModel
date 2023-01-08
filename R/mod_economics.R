@@ -64,10 +64,6 @@ mod_economics_server <- function(id,
         dplyr::pull("dmi_kg")
 
 
-
-
-
-
       #my_lactating <- input$milk_yield
       my_lactating <- animal_data %>%
         dplyr::filter(Categories == "Cow") %>%

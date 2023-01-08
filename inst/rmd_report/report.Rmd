@@ -13,8 +13,7 @@ params:
 
 ```{r}
 
-params$suma_table %>% 
-  reactable::reactable()
+params$suma_table 
 
 ```
 

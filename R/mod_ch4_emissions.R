@@ -12,6 +12,7 @@ mod_ch4_emissions_ui <- function(id){
   tagList(
 
     plotOutput(ns("plot")),
+
     tableOutput(ns("tabela"))
 
 

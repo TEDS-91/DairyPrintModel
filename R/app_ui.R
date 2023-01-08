@@ -23,6 +23,8 @@ app_ui <- function(request) {
 
       mod_nitrous_oxide_emissions_ui("nitrous_oxide"),
 
+      mod_fuel_combustion_ui("fuel_combustion"),
+
       mod_economics_ui("economics"),
 
       mod_crop_ui("crop")

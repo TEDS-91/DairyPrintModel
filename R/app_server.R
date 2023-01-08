@@ -36,6 +36,8 @@ app_server <- function(input, output, session) {
 
   animal_data <- mod_animal_server("animal")
 
+  mod_fuel_combustion_server("fuel_combustion")
+
   mod_economics_server("economics",
                        animal_data = animal_data)
 
@@ -68,8 +70,6 @@ app_server <- function(input, output, session) {
   mod_crop_server("crop",
                   animal_data = animal_data)
 
-
-
   report <- reactive({
 
     animal_data()
@@ -82,6 +82,8 @@ app_server <- function(input, output, session) {
 
       content =
         function(file) {
+
+          withProgress(message = "Rendering the report...", {
 
           rmarkdown::render(
             input       = "inst/rmd_report/report.Rmd",
@@ -97,7 +99,10 @@ app_server <- function(input, output, session) {
                   n    = file.info("inst/rmd_report/built_report.html")[ , "size"]) %>%
 
             writeBin(con = file)
-        }
+
+        })
+
+      }
     )
 
 }

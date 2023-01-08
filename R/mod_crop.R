@@ -107,7 +107,8 @@ mod_crop_server <- function(id, animal_data){
          dplyr::mutate_at(c(3:9, 11), as.numeric) %>%
          dplyr::mutate(
            co2_lime = lime_decomposition_co2(lime_applied = lime_applied * 1000),
-           co2_urea = urea_decomposition_co2(urea_applied = (urea_pct_applied / 100 * total_n_applied))
+           co2_urea = urea_decomposition_co2(urea_applied = (urea_pct_applied / 100 * total_n_applied)),
+           nh3_n_fertilizer = fertilizer_nh3(nitrogen_applied = total_n_applied)
           )
 
        valores %>%
