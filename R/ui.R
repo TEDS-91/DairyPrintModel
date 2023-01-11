@@ -86,8 +86,6 @@ animal_ui_prms <- function(prm) {
 
   animal_ui_prms <- list(
 
-    fluidRow(
-
       column(3,
              numericInput(paste0(prm, "_n_cows"),              "Number of cows:",            value = 120, min = 0,  max = 30000)),
       column(3,
@@ -95,9 +93,7 @@ animal_ui_prms <- function(prm) {
       column(3,
              numericInput(paste0(prm, "_cow_rep_rate"),        "Cow Culling Rate (%):",      value = 30,  min = 20, max = 50)),
       column(3,
-             numericInput(paste0(prm, "_time_first_calv"),     "First Calving (mo):",        value = 24,  min = 18, max = 36))),
-
-    fluidRow(
+             numericInput(paste0(prm, "_time_first_calv"),     "First Calving (mo):",        value = 24,  min = 18, max = 36)),
 
       column(3,
              numericInput(paste0(prm, "_calves_heifers_cul"),  "Heifers Culling Rate (%):",  value = 20,  min = 10, max = 50)),
@@ -108,7 +104,7 @@ animal_ui_prms <- function(prm) {
       column(2,
              numericInput(paste0(prm, "_average_milk_yield"),  "Average Milk Yield (kg):",   value = 40,  min = 30, max = 60)),
       column(3,
-             selectInput(paste0(prm, "_milk_freq"), "Milk Frequence:", choices = c(2, 3))))
+             selectInput(paste0(prm, "_milk_freq"), "Milk Frequence:", choices = c(2, 3)))
   )
 
   return(animal_ui_prms)

@@ -14,7 +14,7 @@ app_ui <- function(request) {
       fullscreen = TRUE,
       bs4Dash::bs4DashNavbar(
         title = "DairyPrint"
-      ),
+        ),
       bs4Dash::bs4DashSidebar(
         bs4Dash::bs4SidebarMenu(
           bs4Dash::bs4SidebarMenuItem(

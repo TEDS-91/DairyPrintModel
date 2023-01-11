@@ -11,21 +11,21 @@ mod_animal_ui <- function(id){
   ns <- NS(id)
   tagList(
 
-    wellPanel(
+      fluidRow(
+        bs4Dash::bs4Card(
+          title = h3(icon("fa-duotone fa-cow", verify_fa = FALSE), strong("Herd Information"), align = "center"),
+          width = 12,
+          fluidRow(
+            animal_ui_prms(ns("animal"))))),
 
-      h3(icon("fa-duotone fa-cow", verify_fa = FALSE), strong("Herd Information"), align = "center"),
+      fluidRow(
+        bs4Dash::bs4Card(
+          title = h3(icon("fa-duotone fa-cow", verify_fa = FALSE), strong("Milk"), align = "center"),
+          width = 12,
+          fluidRow(
+            milk_ui_prms(ns("milk"))
 
-      style = "background-color:#E2EBF4",
-
-      animal_ui_prms(ns("animal"))),
-
-    wellPanel(
-
-      style = "background-color:#E2EBF4",
-
-      milk_ui_prms(ns("milk"))
-
-    ),
+    ))),
 
     wellPanel(
 
