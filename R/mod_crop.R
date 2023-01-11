@@ -11,15 +11,29 @@ mod_crop_ui <- function(id){
   ns <- NS(id)
   tagList(
 
-    h3(strong("Crops"), align = "center"),
+    fluidRow(
+      bs4Dash::bs4Card(
+               "Crops",
+               width = 12,
+               fluidRow(
+               column(12,
+                      selectInput(ns("number_crops"), label = "Number of Crops:", choices = seq(1, 10, 1), selected = 5)))
+    )),
 
-    selectInput(ns("number_crops"), label = "Number of Crops:", choices = seq(1, 10, 1), selected = 5),
+    fluidRow(
+    bs4Dash::bs4Card(
+      "Crops2",
+      width = 12,
+      fluidRow(
+        column(12,
+               uiOutput(ns("crop_types")))))),
 
-    uiOutput(ns("crop_types")),
+    bs4Dash::bs4Card(
+      "Crops3",
 
     tableOutput(ns("df")),
 
-    tableOutput(ns("teste"))
+    tableOutput(ns("teste")))
 
 
   )

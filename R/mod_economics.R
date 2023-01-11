@@ -11,22 +11,35 @@ mod_economics_ui <- function(id){
   ns <- NS(id)
   tagList(
 
-    h3(strong("Economics - Diet Costs"), align = "center"),
-
     fluidRow(
-      column(2,
-             numericInput(ns("lact_diet_cost"),   label = "Lactation Cows ($/DM)", value = 0.41)),
-      column(2,
-             numericInput(ns("dry_diet_cost"),    label = "Dry ($/DM)", value = 0.35)),
-      column(2,
-             numericInput(ns("heifer_diet_cost"), label = "Heifers ($/DM)", value = 0.28)),
-      column(2,
-             numericInput(ns("milk_price"),       label = "Milk Price ($/wt)", value = 21))),
+      bs4Dash::bs4Card(
+        title = h4(strong("Economics"), align = "center"),
+        width = 12,
+        fluidRow(
+
+          column(3,
+                 numericInput(ns("lact_diet_cost"),   label = "Lactation Cows ($/DM)", value = 0.41)),
+          column(3,
+                 numericInput(ns("dry_diet_cost"),    label = "Dry ($/DM)", value = 0.35)),
+          column(3,
+                 numericInput(ns("heifer_diet_cost"), label = "Heifers ($/DM)", value = 0.28)),
+          column(3,
+                 numericInput(ns("milk_price"),       label = "Milk Price ($/wt)", value = 21))))),
 
     #h4(strong("Economics"), align = "center"),
 
-    tableOutput(ns("tabela"))
+    fluidRow(
+      bs4Dash::bs4Card(
+        title = h4(strong("Economics"), align = "center"),
+        width = 12,
+        fluidRow(
+          tableOutput(ns("tabela")),
+          bs4Dash::valueBoxOutput(ns("vbox")),
+          bs4Dash::valueBoxOutput(ns("vbox2"))
 
+        )
+      )
+    )
   )
 }
 
@@ -107,6 +120,30 @@ mod_economics_server <- function(id,
       economics
 
     })
+
+    # testing value box
+
+    output$vbox <- bs4Dash::renderValueBox({
+      bs4Dash::valueBox(
+        value = tags$p(round(economics()[1], 2), style = "font-size: 200%;"),
+        subtitle = "Feed Efficiency",
+        color = "lightblue",
+        icon = icon("fa-thin fa-leaf", verify_fa = FALSE),
+        elevation = c(1)
+      )
+    })
+
+    output$vbox2 <- bs4Dash::renderValueBox({
+      bs4Dash::valueBox(
+        value = tags$p(round(economics()[4], 2), style = "font-size: 200%;"),
+        subtitle = tags$p("Income Over Feed Cost ($/Cow)", style = "font-size: 100%;"),
+        color = "lightblue",
+        icon = icon("fa-solid fa-dollar-sign", verify_fa = FALSE),
+        elevation = c(1)
+      )
+    })
+
+
 
   })
 }

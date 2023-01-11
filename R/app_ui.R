@@ -9,27 +9,94 @@ app_ui <- function(request) {
     # Leave this function for adding external resources
     golem_add_external_resources(),
     # Your application UI logic
-    fluidPage(
 
-      h1("EZMoneyTool", align = "center"),
 
-      mod_animal_ui("animal"),
 
-      general_ui_prms(),
-
-      mod_nh3_emissions_ui("nh3_emissions"),
-
-      mod_ch4_emissions_ui("ch4_emissions"),
-
-      mod_nitrous_oxide_emissions_ui("nitrous_oxide"),
-
-      mod_fuel_combustion_ui("fuel_combustion"),
-
-      mod_economics_ui("economics"),
-
-      mod_crop_ui("crop")
-
+    bs4Dash::bs4DashPage(
+      bs4Dash::bs4DashNavbar(),
+      bs4Dash::bs4DashSidebar(
+        bs4Dash::bs4SidebarMenu(
+          bs4Dash::bs4SidebarMenuItem(
+            "Herd Calibration",
+            tabName = "herd_calibration",
+            icon = icon("fa-thin fa-cow", verify_fa = FALSE)
+          ),
+          bs4Dash::bs4SidebarMenuItem(
+            "Economics",
+            tabName = "economics",
+            icon = icon("fa-solid fa-dollar-sign", verify_fa = FALSE)
+          ),
+          bs4Dash::bs4SidebarMenuItem(
+            "Manure Handling",
+            tabName = "manure",
+            icon = icon("fa-thin fa-poop", verify_fa = FALSE)
+          ),
+          bs4Dash::bs4SidebarMenuItem(
+            "Crops",
+            tabName = "crop",
+            icon = icon("fa-solid fa-wheat-awn", verify_fa = FALSE)
+          ),
+          bs4Dash::bs4SidebarMenuItem(
+            "Dashboard",
+            tabName = "dashboard",
+            icon = icon("fa-solid fa-gauge", verify_fa = FALSE)
+          )
+        )
+      ),
+      bs4Dash::bs4DashBody(
+        bs4Dash::bs4TabItems(
+          bs4Dash::bs4TabItem(
+            tabName = "herd_calibration",
+            mod_animal_ui("animal")
+          ),
+          bs4Dash::bs4TabItem(
+            tabName = "economics",
+            mod_economics_ui("economics")
+          ),
+          bs4Dash::bs4TabItem(
+            tabName = "manure",
+            general_ui_prms(),
+            mod_ch4_emissions_ui("ch4_emissions")
+          ),
+          bs4Dash::bs4TabItem(
+            tabName = "crop",
+            mod_crop_ui("crop")
+          ),
+          bs4Dash::bs4TabItem(
+            tabName = "dashboard",
+          )
+        )
+      )
     )
+
+
+
+
+
+
+
+
+    #fluidPage(
+
+      #h1("EZMoneyTool", align = "center"),
+
+      #mod_animal_ui("animal"),
+
+      #general_ui_prms(),
+
+      #mod_nh3_emissions_ui("nh3_emissions"),
+
+      #mod_ch4_emissions_ui("ch4_emissions"),
+
+      #mod_nitrous_oxide_emissions_ui("nitrous_oxide"),
+
+      #mod_fuel_combustion_ui("fuel_combustion"),
+
+      #mod_economics_ui("economics"),
+
+      #mod_crop_ui("crop")
+
+    #)
   )
 }
 
