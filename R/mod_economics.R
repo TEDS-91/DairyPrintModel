@@ -33,7 +33,7 @@ mod_economics_ui <- function(id){
         title = h4(strong("Economics"), align = "center"),
         width = 12,
         fluidRow(
-          tableOutput(ns("tabela")),
+          #tableOutput(ns("tabela")),
           bs4Dash::valueBoxOutput(ns("vbox")),
           bs4Dash::valueBoxOutput(ns("vbox2"))
 

@@ -10,10 +10,11 @@ app_ui <- function(request) {
     golem_add_external_resources(),
     # Your application UI logic
 
-
-
     bs4Dash::bs4DashPage(
-      bs4Dash::bs4DashNavbar(),
+      fullscreen = TRUE,
+      bs4Dash::bs4DashNavbar(
+        title = "DairyPrint"
+      ),
       bs4Dash::bs4DashSidebar(
         bs4Dash::bs4SidebarMenu(
           bs4Dash::bs4SidebarMenuItem(
