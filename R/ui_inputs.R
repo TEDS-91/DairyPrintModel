@@ -94,7 +94,6 @@ animal_ui_prms <- function(prm) {
              numericInput(paste0(prm, "_cow_rep_rate"),        "Cow Culling Rate (%):",      value = 30,  min = 20, max = 50)),
       column(3,
              numericInput(paste0(prm, "_time_first_calv"),      "Age at First Calving (mo):",  value = 24, min = 0, max = 36)),
-
       column(3,
              numericInput(paste0(prm, "_calves_heifers_cul"),  "Heifers Culling Rate (%):",  value = 20,  min = 10, max = 50)),
       column(3,
@@ -119,51 +118,24 @@ calf_ui_prms <- function(prm) {
 
   calf_ui_prms <- list(
 
-    fluidRow(
-
       column(3,
-             numericInput(paste0(prm, "_milk_sup"),    "Milk Suply (l/d):", value = 6,   min = 2, max = 15)),
-      column(6,
+             numericInput(paste0(prm, "_milk_sup"),    "Milk Suply (l/d):",         value = 6,   min = 2, max = 15)),
+      column(3,
              numericInput(paste0(prm, "_protein"),     "Milk Protein (%):",         value = 3.25, min = 2, max = 5)),
-      column(6,
-             numericInput(paste0(prm, "_fat"),         "Milk Fat (%):",                 value = 3.50,  min = 2, max = 5)),
-      column(2,
-             numericInput(paste0(prm, "_starter_cp"),  "Starter Crude Protein (%):", value = 20,   min = 15, max = 30)),
-      column(2,
-             numericInput(paste0(prm, "_starter_ndf"), "Starter P (%):", value = 20,   min = 15, max = 30)),
-      column(2,
-             numericInput(paste0(prm, "_forage_cp"),   "Forage Crude Protein (%):", value = 20,   min = 15, max = 30)),
       column(3,
-             numericInput(paste0(prm, "_forage_ndf"),  "Forage P (%):", value = 20,   min = 15, max = 30))
+             numericInput(paste0(prm, "_fat"),         "Milk Fat (%):",             value = 3.50,  min = 2, max = 5)),
+      column(3,
+             numericInput(paste0(prm, "_starter_cp"),  "Starter Crude Protein (%):", value = 20,   min = 15, max = 30)),
+      column(4,
+             numericInput(paste0(prm, "_starter_ndf"), "Starter Phosphorous (%):",             value = 20,   min = 15, max = 30)),
+      column(4,
+             numericInput(paste0(prm, "_forage_cp"),   "Forage Crude Protein (%):",  value = 20,   min = 15, max = 30)),
+      column(4,
+             numericInput(paste0(prm, "_forage_ndf"),  "Forage Phosphorous (%):",              value = 20,   min = 15, max = 30))
     )
-
-  )
 
   return(calf_ui_prms)
 
-}
-
-#' Milk UI parameters.
-#'
-#' @param prm Parameter to be concatenated in the module.
-#'
-#' @return Milk UI components.
-#'
-milk_ui_prms <- function(prm) {
-
-  milk_ui_prms <- list(
-
-    fluidRow(
-
-      column(12,
-             h3(strong("Milk composition"), align = "center")),
-      column(6,
-             numericInput(paste0(prm, "_protein"),  "Milk Protein (%):",         value = 3.25, min = 2, max = 5)),
-      column(6,
-             numericInput(paste0(prm, "_fat"),  "Milk Fat (%):",                 value = 3.50,  min = 2, max = 5)))
-  )
-
-  return(milk_ui_prms)
 }
 
 #' Crop UI parameters.
