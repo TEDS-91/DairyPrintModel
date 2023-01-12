@@ -11,68 +11,73 @@ mod_animal_ui <- function(id){
   ns <- NS(id)
   tagList(
 
+# -------------------------------------------------------------------------
+# Including in head, but I should create a CSS file -----------------------
+    tags$head(tags$style('body {color:#696969;}')),
+# -------------------------------------------------------------------------
+
       fluidRow(
         bs4Dash::bs4Card(
-          title = h3(icon("fa-duotone fa-cow", verify_fa = FALSE), strong("Herd Information"), align = "center"),
+          title = "General Herd Information",
+          elevation = 4,
           width = 12,
+          solidHeader = TRUE,
+          status = "teal",
+          collapsible = TRUE,
           fluidRow(
             animal_ui_prms(ns("animal"))))),
 
       fluidRow(
         bs4Dash::bs4Card(
-          title = h3(icon("fa-duotone fa-milk", verify_fa = FALSE), strong("Milk"), align = "center"),
+          title = "Diet Information",
+          elevation = 4,
           width = 12,
+          solidHeader = TRUE,
+          status = "lightblue",
+          collapsible = TRUE,
           fluidRow(
-            milk_ui_prms(ns("milk"))
+            bs4Dash::bs4Card(
+              title = "Lactating Cows",
+              width = 12,
+              fluidRow(
+              diet_ui_prms(ns("diet_lac"))))),
+          fluidRow(
+            bs4Dash::bs4Card(
+              title = "Dry Cows",
+              width = 12,
+              fluidRow(
+                diet_ui_prms(ns("diet_dry"))))),
+          fluidRow(
+            bs4Dash::bs4Card(
+              title = "Heifers",
+              width = 12,
+              fluidRow(
+                diet_ui_prms(ns("diet_hei"))))))),
 
-    ))),
-
-    fluidRow(
-      bs4Dash::bs4Card(
-        title = h3(icon("fa-duotone fa-cow", verify_fa = FALSE), strong("Lactating Cows"), align = "center"),
-        width = 12,
-        fluidRow(
-
-        diet_ui_prms(ns("diet_lac"))))),
-
-    fluidRow(
-      bs4Dash::bs4Card(
-        title = h3(icon("fa-duotone fa-cow", verify_fa = FALSE), strong("Dry Cows"), align = "center"),
-        width = 12,
-        fluidRow(
-
-        diet_ui_prms(ns("diet_dry"))))),
-
-    fluidRow(
-      bs4Dash::bs4Card(
-        title = h3(icon("fa-duotone fa-cow", verify_fa = FALSE), strong("Heifers"), align = "center"),
-        width = 12,
-        fluidRow(
-
-        diet_ui_prms(ns("diet_hei"))))),
-
-    fluidRow(
-      bs4Dash::bs4Card(
-        title = h3(icon("fa-duotone fa-cow", verify_fa = FALSE), strong("Calves"), align = "center"),
-        width = 12,
-        fluidRow(
-
-        calf_ui_prms(ns("calf"))
-
-        ))),
-
-      br(),
+          fluidRow(
+            bs4Dash::bs4Card(
+              title = "Calf Feed Management and Milk Composition",
+              elevation = 4,
+              width = 12,
+              solidHeader = TRUE,
+              status = "teal",
+              collapsible = TRUE,
+              fluidRow(
+                calf_ui_prms(ns("calf"))))),
 
       fluidRow(
-
-        column(3,
-               actionButton(ns("button"),
-                            "Run!",
-                            style = "color: #fff; background-color: #007582; border-color: #007582; height:40px; width:80px")),
-
-        column(9,
-               downloadButton("rmd_report", "Report.html",
-                              style = "color: #fff; background-color: #007582; border-color: #007582"))),
+        bs4Dash::bs4Card(
+          title = "Run and Download",
+          width = 12,
+          fluidRow(
+          column(3, offset = 6,
+                 actionButton(ns("button"),
+                              "Run!",
+                              style = "color: #fff; background-color: #007582; border-color: #007582; height:40px; width:160px")),
+          column(3,
+                 downloadButton(ns("rmd_report"),
+                                "Report.html",
+                                style = "color: #fff; background-color: #007582; border-color: #007582; height:40px; width:160px"))))),
 
     fluidRow(
       bs4Dash::bs4Card(
@@ -110,7 +115,7 @@ mod_animal_server <- function(id){
 
       herd_matrix <- herd_projection(time_first_calv    = input$animal_time_first_calv,
                                      heifer_calf_born   = input$animal_heifer_calf_born,
-                                     stillbirth_rate    = input$animal_stillbirth_rate,
+                                     stillbirth_rate    = 3, # Fixed value
                                      calves_heifers_cul = input$animal_calves_heifers_cul,
                                      cow_rep_rate       = input$animal_cow_rep_rate,
                                      cow_calving_int    = input$animal_cow_calving_int,
@@ -155,7 +160,7 @@ mod_animal_server <- function(id){
       prop_secondiparous <- sum(herd_matrix()[[1]][1, (age_first_calv + 1 + cow_calving_int):(age_first_calv + 1 + 2 * cow_calving_int - 1)]) / n_cows
 
 
-      lambda_milk_prot_calc <- lambda_milk_prot(obs_average_milk_prot = input$milk_protein,
+      lambda_milk_prot_calc <- lambda_milk_prot(obs_average_milk_prot = input$calf_protein,
                                              prop_primiparous       = prop_primiparous * 100,
                                              prop_secondiparous     = prop_secondiparous * 100,
                                              cow_calving_interval   = input$animal_cow_calving_int)
@@ -203,8 +208,8 @@ mod_animal_server <- function(id){
       birth_weight_kg <- 40
       milk_sup_l <- input$calf_milk_sup
       mature_body_weight <- 680
-      milk_fat <- input$milk_fat
-      milk_prot <- input$milk_protein
+      milk_fat <- input$calf_fat
+      milk_prot <- input$calf_protein
       milk_p_g_l <- 0.996
       milk_k_g_l <- 1.5
       milk_solids <- (1 - (100 - milk_fat - milk_prot - 4.6 - 0.8) / 100) * 100

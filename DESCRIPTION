@@ -20,7 +20,6 @@ Imports:
     rmarkdown,
     shiny (>= 1.7.1),
     shinycssloaders,
-    shinydashboard,
     stats,
     tibble,
     tidyr

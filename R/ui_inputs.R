@@ -89,22 +89,20 @@ animal_ui_prms <- function(prm) {
       column(3,
              numericInput(paste0(prm, "_n_cows"),              "Number of cows:",            value = 120, min = 0,  max = 30000)),
       column(3,
-             numericInput(paste0(prm, "_cow_calving_int"),     "Calving Interval (mo):",     value = 14,  min = 10, max = 20)),
+             numericInput(paste0(prm, "_cow_calving_int"),      "Calving Interval (mo):",     value = 14, min = 12, max = 20)),
       column(3,
              numericInput(paste0(prm, "_cow_rep_rate"),        "Cow Culling Rate (%):",      value = 30,  min = 20, max = 50)),
       column(3,
-             numericInput(paste0(prm, "_time_first_calv"),     "First Calving (mo):",        value = 24,  min = 18, max = 36)),
+             numericInput(paste0(prm, "_time_first_calv"),      "Age at First Calving (mo):",  value = 24, min = 0, max = 36)),
 
       column(3,
              numericInput(paste0(prm, "_calves_heifers_cul"),  "Heifers Culling Rate (%):",  value = 20,  min = 10, max = 50)),
-      column(2,
-             numericInput(paste0(prm, "_stillbirth_rate"),     "Stillbirth Rate (%):",       value = 7,   min = 0,  max = 15)),
-      column(2,
-             numericInput(paste0(prm, "_heifer_calf_born"),    "Percentage Heifers (%):",    value = 50,  min = 45, max = 55)),
-      column(2,
-             numericInput(paste0(prm, "_average_milk_yield"),  "Average Milk Yield (kg):",   value = 40,  min = 30, max = 60)),
       column(3,
-             selectInput(paste0(prm, "_milk_freq"), "Milk Frequence:", choices = c(2, 3)))
+             numericInput(paste0(prm, "_heifer_calf_born"),    "Female Calf Born (%):",    value = 50,  min = 45, max = 55)),
+      column(3,
+             numericInput(paste0(prm, "_average_milk_yield"),  "Average Milk Yield (kg/cow):",   value = 40,  min = 30, max = 60)),
+      column(3,
+             selectInput(paste0(prm, "_milk_freq"),            "Milking Frequence:", choices = c(2, 3), selected = 2))
   )
 
   return(animal_ui_prms)
@@ -124,7 +122,11 @@ calf_ui_prms <- function(prm) {
     fluidRow(
 
       column(3,
-             numericInput(paste0(prm, "_milk_sup"),   "Milk Suply (l/d):", value = 6,   min = 2, max = 15)),
+             numericInput(paste0(prm, "_milk_sup"),    "Milk Suply (l/d):", value = 6,   min = 2, max = 15)),
+      column(6,
+             numericInput(paste0(prm, "_protein"),     "Milk Protein (%):",         value = 3.25, min = 2, max = 5)),
+      column(6,
+             numericInput(paste0(prm, "_fat"),         "Milk Fat (%):",                 value = 3.50,  min = 2, max = 5)),
       column(2,
              numericInput(paste0(prm, "_starter_cp"),  "Starter Crude Protein (%):", value = 20,   min = 15, max = 30)),
       column(2,
