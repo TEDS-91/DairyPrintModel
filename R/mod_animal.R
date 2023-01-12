@@ -20,38 +20,46 @@ mod_animal_ui <- function(id){
 
       fluidRow(
         bs4Dash::bs4Card(
-          title = h3(icon("fa-duotone fa-cow", verify_fa = FALSE), strong("Milk"), align = "center"),
+          title = h3(icon("fa-duotone fa-milk", verify_fa = FALSE), strong("Milk"), align = "center"),
           width = 12,
           fluidRow(
             milk_ui_prms(ns("milk"))
 
     ))),
 
-    wellPanel(
+    fluidRow(
+      bs4Dash::bs4Card(
+        title = h3(icon("fa-duotone fa-cow", verify_fa = FALSE), strong("Lactating Cows"), align = "center"),
+        width = 12,
+        fluidRow(
 
-      style = "background-color:#E2EBF4",
+        diet_ui_prms(ns("diet_lac"))))),
 
-      fluidRow(
+    fluidRow(
+      bs4Dash::bs4Card(
+        title = h3(icon("fa-duotone fa-cow", verify_fa = FALSE), strong("Dry Cows"), align = "center"),
+        width = 12,
+        fluidRow(
 
-        column(12,
+        diet_ui_prms(ns("diet_dry"))))),
 
-               h3(strong("Diet Information"), align = "center")),
+    fluidRow(
+      bs4Dash::bs4Card(
+        title = h3(icon("fa-duotone fa-cow", verify_fa = FALSE), strong("Heifers"), align = "center"),
+        width = 12,
+        fluidRow(
 
-        h4(strong("Lactation Cows"), align = "left"),
+        diet_ui_prms(ns("diet_hei"))))),
 
-        diet_ui_prms(ns("diet_lac")),
+    fluidRow(
+      bs4Dash::bs4Card(
+        title = h3(icon("fa-duotone fa-cow", verify_fa = FALSE), strong("Calves"), align = "center"),
+        width = 12,
+        fluidRow(
 
-        h4(strong("Dry Cows"), align = "left"),
+        calf_ui_prms(ns("calf"))
 
-        diet_ui_prms(ns("diet_dry")),
-
-        h4(strong("Heifers"), align = "left"),
-
-        diet_ui_prms(ns("diet_hei")),
-
-        h4(strong("Calves"), align = "left"),
-
-        calf_ui_prms(ns("calf"))),
+        ))),
 
       br(),
 
@@ -64,7 +72,19 @@ mod_animal_ui <- function(id){
 
         column(9,
                downloadButton("rmd_report", "Report.html",
-                              style = "color: #fff; background-color: #007582; border-color: #007582")))),
+                              style = "color: #fff; background-color: #007582; border-color: #007582"))),
+
+    fluidRow(
+      bs4Dash::bs4Card(
+        title = h4(strong("Economics"), align = "center"),
+        width = 12,
+        fluidRow(
+          bs4Dash::valueBoxOutput(ns("card_teste"))
+        )
+      )
+    ),
+
+
 
     h4("Hyperparameter to correct milk yiled:"),
 
@@ -583,6 +603,35 @@ mod_animal_server <- function(id){
       df()
 
     })
+
+
+    output$card_teste <- bs4Dash::renderValueBox({
+
+      wi <- wi_weather %>%
+        dplyr::filter(county == "Adams")
+
+      hc <- highcharter::hchart(wi, "area", highcharter::hcaes(yday, aver_tempC), name = "Temperature")  %>%
+        highcharter::hc_size(height = 100) %>%
+        highcharter::hc_credits(enabled = FALSE) %>%
+        highcharter::hc_add_theme(highcharter::hc_theme_sparkline_vb())
+
+      vb <- value_box_spark(
+        value    = round(mean(wi$aver_tempC), 2),
+        title    = toupper("Temperature"),
+        sparkobj = hc,
+        subtitle = tagList(HTML("&uarr;"), "25% Since last day"),
+        info     = "Temperature in Madison",
+        icon     = icon("fa-solid fa-temperature-low", verify_fa = FALSE),
+        width    = 1,
+        color    = "teal",
+        href     = NULL
+      )
+
+      vb
+
+    })
+
+
 
     return(df)
 

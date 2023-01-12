@@ -5,9 +5,9 @@ account: tadeuedersilva
 server: shinyapps.io
 hostUrl: https://api.shinyapps.io/v1
 appId: 7209090
-bundleId: 6722216
+bundleId: 6722349
 url: https://tadeuedersilva.shinyapps.io/EZMoneyTool/
-when: 1673453526.78089
-lastSyncTime: 1673453526.78091
+when: 1673455623.60242
+lastSyncTime: 1673455623.60244
 asMultiple: FALSE
 asStatic: FALSE

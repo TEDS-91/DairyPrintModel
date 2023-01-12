@@ -13,9 +13,13 @@ app_ui <- function(request) {
     bs4Dash::bs4DashPage(
       fullscreen = TRUE,
       bs4Dash::bs4DashNavbar(
-        title = "DairyPrint"
+        #title = "DairyPrint"
         ),
       bs4Dash::bs4DashSidebar(
+        bs4Dash::sidebarUserPanel(
+          image = "www/favicon.ico",
+          name = "DairyPrint"
+        ),
         bs4Dash::bs4SidebarMenu(
           bs4Dash::bs4SidebarMenuItem(
             "Herd Calibration",

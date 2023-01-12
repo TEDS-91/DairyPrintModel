@@ -8,6 +8,8 @@
 #' @export
 #'
 #' @examples
+#'fertilizer_nh3(nitrogen_applied = 100)
+#
 fertilizer_nh3 <- function(nitrogen_applied) {
 
   fertilizer_nh3 <- 0.1 * nitrogen_applied

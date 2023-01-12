@@ -15,6 +15,9 @@ Ammonia emitted per kg N applied (kg).
 \description{
 Ammonia emissions from fertilizer application.
 }
+\examples{
+fertilizer_nh3(nitrogen_applied = 100)
+}
 \seealso{
 The equation used here is also available in \href{https://www.ipcc-nggip.iges.or.jp/public/2006gl/pdf/4_Volume4/V4_10_Ch10_Livestock.pdf}{IPCC (2006)}.
 }
