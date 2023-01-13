@@ -40,7 +40,7 @@ mod_animal_ui <- function(id){
               title = "Lactating Cows",
               width = 12,
               fluidRow(
-              diet_ui_prms(ns("diet_lac"))))),
+                diet_ui_prms(ns("diet_lac"))))),
           fluidRow(
             bs4Dash::bs4Card(
               title = "Dry Cows",
@@ -60,45 +60,66 @@ mod_animal_ui <- function(id){
               elevation = 4,
               width = 12,
               solidHeader = TRUE,
-              status = "teal",
+              status = "success",
               collapsible = TRUE,
               fluidRow(
                 calf_ui_prms(ns("calf"))))),
 
       fluidRow(
         bs4Dash::bs4Card(
-          title = "Run and Download",
           width = 12,
+          collapsible = FALSE,
           fluidRow(
-          column(3, offset = 6,
+          column(1, offset = 8,
                  actionButton(ns("button"),
                               "Run!",
                               style = "color: #fff; background-color: #007582; border-color: #007582; height:40px; width:160px")),
-          column(3,
+          column(offset = 1,
+                 1,
                  downloadButton(ns("rmd_report"),
                                 "Report.html",
                                 style = "color: #fff; background-color: #007582; border-color: #007582; height:40px; width:160px"))))),
 
-    fluidRow(
-      bs4Dash::bs4Card(
-        title = h4(strong("Economics"), align = "center"),
-        width = 12,
-        fluidRow(
-          bs4Dash::valueBoxOutput(ns("card_teste"))
-        )
-      )
-    ),
+    #textOutput(ns("lambda")),
 
+       # h4("Herd summarised statistics:"),
 
+      tableOutput(ns("herd_stab2")),
 
-    h4("Hyperparameter to correct milk yiled:"),
-
-    textOutput(ns("lambda")),
-
-        h4("Herd summarised statistics:"),
-
-    shinycssloaders::withSpinner(tableOutput(ns("herd_stab2")), type = 1, color = "#0dc5c1", size = 5)#,
     #plotOutput(ns("graphic"))
+
+
+      fluidRow(
+        bs4Dash::bs4Card(
+          title = "Animal Dashboard",
+          elevation = 4,
+          width = 12,
+          solidHeader = TRUE,
+          status = "teal",
+          collapsible = TRUE,
+          fluidRow(
+            bs4Dash::valueBoxOutput(ns("herd_metrics"))))),
+
+      fluidRow(
+        bs4Dash::bs4Card(
+          title = "Lactation and Dy Matter Intake Curves",
+          elevation = 4,
+          width = 12,
+          solidHeader = TRUE,
+          status = "teal",
+          collapsible = TRUE,
+          fluidRow(
+            bs4Dash::bs4Card(
+              title = "Milk Yield",
+              width = 6,
+              footer = "Milk yield calculated according to the Wood's model (1986).",
+            plotly::plotlyOutput(ns("lactation_curves_plotly"))),
+              bs4Dash::bs4Card(
+                title = "Dry Matter Intake",
+                width = 6,
+                footer = "Dry matter intake calculated according to the NRC (2001) proposed equation.",
+                plotly::plotlyOutput(ns("dmi_curves_plotly")))
+          )))
 
   )
 
@@ -170,16 +191,16 @@ mod_animal_server <- function(id){
     })
 
 
-    output$lambda <- renderPrint({
+    #output$lambda <- renderPrint({
 
-      paste("the lambda value is:", lambda_milk_prot_calc())
+      #paste("the lambda value is:", lambda_milk_prot_calc())
 
-    })
+    #})
 
 
     df <- eventReactive(input$button, {
 
-      withProgress(message = "Running the model...", {
+      withProgress(message = "Running the model...", detail = 'This may take a while...', value = 0.1, {
 
 
       # converting the herd_matrix to tibble
@@ -493,6 +514,8 @@ mod_animal_server <- function(id){
 
               volatile_solids_digestibility = digestible_volatile_solids_kg_d / volatile_solids_kg_d)
 
+          incProgress(1/15, message = "We are almost there...")
+
           # Nitrogen calculations
 
           df_nitrogen <- df_volatile_solids %>%
@@ -576,26 +599,9 @@ mod_animal_server <- function(id){
                                                                                           (milk_sup_l * milk_k_g_l * (1 - 0.85) + starter_intake_kg * starter_k / 100 * (1 - 0.85) + forage_intake_kg * forage_k / 100 * (1 - 0.70) * 1000), #TODO
                                                                                           total_potassium_ingested_g - total_potassium_excretion_milk))))
 
-          df_sum <- df_potassium %>%
-            dplyr::group_by(MonthSimulated, Categories) %>%
-            dplyr::summarise(
-              total_animals = round(sum(NumberAnimals)),
-              milk_yield_kg = stats::weighted.mean(milk_yield_kg_cow2, NumberAnimals),
-              milk_cp_pct = stats::weighted.mean(milk_protein, NumberAnimals),
-              milk_fat_pct = milk_fat,
-              milk_yield_kg_fpc = stats::weighted.mean(milk_yield_kg_fpc, NumberAnimals),
-              dmi_kg = stats::weighted.mean(dry_matter_intake_kg_animal, NumberAnimals),
-              total_ch4_kg = sum(NumberAnimals * enteric_methane_g_animal_day / 1000),
-              total_n2o_kg = sum(NumberAnimals * n2o_emissions_g / 1000),
-              total_manure_kg = sum(NumberAnimals * fresh_manure_output_kg_day),
-              total_solids_kg = sum(NumberAnimals * dm_manure_output_kg_day),
-              total_volatile_solids_kg = sum(NumberAnimals * volatile_solids_kg_d),
-              .groups = "drop",
-            ) %>%
-            dplyr::filter(MonthSimulated == 1) %>%
-            dplyr::select(-MonthSimulated)
+          df_potassium %>%
+            dplyr::ungroup()
 
-          df_sum
 
         }
 
@@ -603,32 +609,52 @@ mod_animal_server <- function(id){
 
     })
 
+
+    df_sum <- reactive({
+
+      df_sum <- df() %>%
+        dplyr::group_by(MonthSimulated, Categories) %>%
+        dplyr::summarise(
+          total_animals = round(sum(NumberAnimals)),
+          milk_yield_kg = stats::weighted.mean(milk_yield_kg_cow2, NumberAnimals),
+          milk_cp_pct = stats::weighted.mean(milk_protein, NumberAnimals),
+          milk_fat_pct = input$calf_fat,
+          milk_yield_kg_fpc = stats::weighted.mean(milk_yield_kg_fpc, NumberAnimals),
+          dmi_kg = stats::weighted.mean(dry_matter_intake_kg_animal, NumberAnimals),
+          total_ch4_kg = sum(NumberAnimals * enteric_methane_g_animal_day / 1000),
+          total_n2o_kg = sum(NumberAnimals * n2o_emissions_g / 1000),
+          total_manure_kg = sum(NumberAnimals * fresh_manure_output_kg_day),
+          total_solids_kg = sum(NumberAnimals * dm_manure_output_kg_day),
+          total_volatile_solids_kg = sum(NumberAnimals * volatile_solids_kg_d),
+          .groups = "drop",
+        ) %>%
+        dplyr::filter(MonthSimulated == 1) %>%
+        dplyr::select(-MonthSimulated)
+
+      df_sum
+
+    })
+
     output$herd_stab2 <- renderTable({
 
-      df()
+      #df_sum()
 
     })
 
 
-    output$card_teste <- bs4Dash::renderValueBox({
+    output$herd_metrics <- bs4Dash::renderValueBox({
 
-      wi <- wi_weather %>%
-        dplyr::filter(county == "Adams")
-
-      hc <- highcharter::hchart(wi, "area", highcharter::hcaes(yday, aver_tempC), name = "Temperature")  %>%
-        highcharter::hc_size(height = 100) %>%
-        highcharter::hc_credits(enabled = FALSE) %>%
-        highcharter::hc_add_theme(highcharter::hc_theme_sparkline_vb())
+      df_sum <- df_sum()
 
       vb <- value_box_spark(
-        value    = round(mean(wi$aver_tempC), 2),
-        title    = toupper("Temperature"),
-        sparkobj = hc,
-        subtitle = tagList(HTML("&uarr;"), "25% Since last day"),
-        info     = "Temperature in Madison",
-        icon     = icon("fa-solid fa-temperature-low", verify_fa = FALSE),
+        value    = round(df_sum$total_ch4_kg[2] / df_sum$total_animals[2] * 1000, 2),
+        title    = toupper("Methane Emissions / Milking Cow (g)"),
+        sparkobj = NULL,
+        subtitle = tagList(),
+        info     = " ",
+        icon     = icon("fa-solid fa-fire-flame-simple", verify_fa = FALSE),
         width    = 1,
-        color    = "teal",
+        color    = "danger",
         href     = NULL
       )
 
@@ -638,7 +664,45 @@ mod_animal_server <- function(id){
 
 
 
-    return(df)
+
+
+
+
+
+    output$lactation_curves_plotly <- plotly::renderPlotly({
+
+      df() %>%
+        dplyr::filter(Categories == "Cow") %>%
+        plotly::plot_ly(x = ~ Month,
+                        y = ~ milk_yield_kg_cow2,
+                        color = ~ Phase,
+                        type = "scatter",
+                        mode = "markers") %>%
+        plotly::layout(yaxis = list(title = "Milk Yield (kg/day)"),
+                       xaxis = list(title = "Months in Lactation")) %>%
+        plotly::config(displayModeBar = FALSE)
+
+    })
+
+    output$dmi_curves_plotly <- plotly::renderPlotly({
+
+      df() %>%
+        dplyr::filter(Categories == "Cow") %>%
+        plotly::plot_ly(x = ~ Month,
+                        y = ~ dry_matter_intake_kg_animal,
+                        color = ~ Phase,
+                        type = "scatter",
+                        mode = "markers") %>%
+        plotly::layout(yaxis = list(title = "Dry Matter Intake (kg/day)"),
+                       xaxis = list(title = "Months in Lactation")) %>%
+        plotly::config(displayModeBar = FALSE)
+
+    })
+
+
+
+
+    return(df_sum)
 
  })
 

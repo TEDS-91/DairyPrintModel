@@ -16,10 +16,10 @@ Imports:
     highcharter,
     magrittr,
     patchwork,
+    plotly,
     purrr,
     rmarkdown,
     shiny (>= 1.7.1),
-    shinycssloaders,
     stats,
     tibble,
     tidyr

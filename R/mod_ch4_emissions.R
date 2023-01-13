@@ -11,9 +11,51 @@ mod_ch4_emissions_ui <- function(id){
   ns <- NS(id)
   tagList(
 
-    plotOutput(ns("plot")),
+    fluidRow(
+      bs4Dash::bs4Card(
+        title = "Manure Handling and Management",
+        elevation = 4,
+        width = 12,
+        solidHeader = TRUE,
+        status = "teal",
+        collapsible = TRUE,
+        fluidRow(
+          general_ui_prms()))),
 
-    tableOutput(ns("tabela"))
+    fluidRow(
+      bs4Dash::bs4Card(
+        title = "Manure Dashboard",
+        elevation = 4,
+        width = 12,
+        solidHeader = TRUE,
+        status = "teal",
+        collapsible = TRUE,
+        fluidRow(
+          bs4Dash::valueBoxOutput(ns("herd_methane")),
+          bs4Dash::valueBoxOutput(ns("facilitie_methane")),
+          bs4Dash::valueBoxOutput(ns("manure_storage_methane")),
+          br(),
+          #tableOutput(ns("tabela"))
+          )),
+          bs4Dash::bs4Card(
+            title = "Methane Proportion by Source",
+            elevation = 4,
+            width = 6,
+            status = "teal",
+            fluidRow(
+              plotly::plotlyOutput(ns("pie_chart"))
+              ))),
+
+    fluidRow(
+      bs4Dash::bs4Card(
+        title = "Plots",
+        elevation = 4,
+        width = 12,
+        solidHeader = TRUE,
+        status = "navy",
+        collapsible = TRUE,
+        fluidRow(
+          plotOutput(ns("plot")))))
 
 
   )
@@ -371,20 +413,138 @@ mod_ch4_emissions_server <- function(id,
 
     })
 
+    summarized_data <- reactive({
+
+      emissions() %>%
+        dplyr::filter(yday > 365) %>%
+        dplyr::summarise(
+          total_ch4_herd = sum(herd_ch4_emissions_kg),
+          total_ch4_fac  = sum(barn_ch4_emissions_kg),
+          total_ch4_liq  = sum(ch4_liq_emission_kg_day),
+          total_ch4_soli = sum(ch4_emissions_solid_storage_kg)
+
+        )
+    })
+
+
     output$tabela <- renderTable({
 
-       emissions() %>%
-         dplyr::filter(yday > 365) %>%
-          dplyr::summarise(
-            total_ch4_herd = sum(herd_ch4_emissions_kg),
-            total_ch4_fac  = sum(barn_ch4_emissions_kg),
-            total_ch4_liq  = sum(ch4_liq_emission_kg_day),
-            total_ch4_soli = sum(ch4_emissions_solid_storage_kg)
-
-          )
-
+      #summarized_data()
 
     })
+
+
+    output$herd_methane <- bs4Dash::renderValueBox({
+
+      emissions <- emissions() %>%
+        tibble::as_tibble() %>%
+        dplyr::filter(yday > 365)
+
+      hc <- highcharter::hchart(emissions, "area", highcharter::hcaes(yday, round(herd_ch4_emissions_kg), 3), name = "Daily Methane Emissions (kg)")  %>%
+        highcharter::hc_size(height = 100) %>%
+        highcharter::hc_credits(enabled = FALSE) %>%
+        highcharter::hc_add_theme(highcharter::hc_theme_sparkline_vb())
+
+
+      herd_methane_card <- value_box_spark(
+        value    = round(summarized_data()[1], 1),
+        title    = toupper("Total Herd Methane Emissions (kg)"),
+        sparkobj = hc,
+        subtitle = tagList(),
+        info     = "Temperature in Madison",
+        icon     = icon("fa-solid fa-fire-flame-simple", verify_fa = FALSE),
+        width    = 1,
+        color    = "danger",
+        href     = NULL
+      )
+
+      herd_methane_card
+
+    })
+
+    output$facilitie_methane <- bs4Dash::renderValueBox({
+
+      emissions <- emissions() %>%
+        tibble::as_tibble() %>%
+        dplyr::filter(yday > 365)
+
+       hc <- highcharter::hchart(emissions, "area", highcharter::hcaes(yday, barn_ch4_emissions_kg), name = "Daily Methane Emissions (kg)")  %>%
+         highcharter::hc_size(height = 100) %>%
+         highcharter::hc_credits(enabled = FALSE) %>%
+         highcharter::hc_add_theme(highcharter::hc_theme_sparkline_vb())
+
+      vb <- value_box_spark(
+        value    = round(summarized_data()[2], 2),
+        title    = toupper("Total Barn Methane Emissions (kg)"),
+        sparkobj = hc,
+        subtitle = tagList(),
+        info     = " ",
+        icon     = icon("fa-solid fa-fire-flame-simple", verify_fa = FALSE),
+        width    = 1,
+        color    = "danger",
+        href     = NULL
+      )
+
+      vb
+
+    })
+
+    output$manure_storage_methane <- bs4Dash::renderValueBox({
+
+      # TODO - manure
+
+      emissions <- emissions() %>%
+        tibble::as_tibble() %>%
+        dplyr::filter(yday > 365) %>%
+        dplyr::mutate(
+          total_storage_kg = ch4_emissions_solid_storage_kg + ch4_liq_emission_kg_day
+        )
+
+      hc <- highcharter::hchart(emissions, "area", highcharter::hcaes(yday, round(total_storage_kg), 2), name = "Daily Methane Emissions (kg)")  %>%
+        highcharter::hc_size(height = 100) %>%
+        highcharter::hc_credits(enabled = FALSE) %>%
+        highcharter::hc_add_theme(highcharter::hc_theme_sparkline_vb())
+
+      vb <- value_box_spark(
+        value    = round(sum(summarized_data()[4], summarized_data()[3], na.rm = TRUE), 1),
+        title    = toupper("Total Storage Methane Emissions (kg)"),
+        sparkobj = hc,
+        subtitle = tagList(),
+        info     = " ",
+        icon     = icon("fa-solid fa-fire-flame-simple", verify_fa = FALSE),
+        width    = 1,
+        color    = "danger",
+        href     = NULL
+      )
+
+      vb
+
+    })
+
+
+    output$pie_chart <- plotly::renderPlotly({
+
+      herd <- summarized_data()[1]$total_ch4_herd
+
+      fac <- summarized_data()[2]$total_ch4_fac
+
+      storage <- summarized_data()[4]$total_ch4_soli + summarized_data()[3]$total_ch4_liq
+
+      values = c(herd, fac, storage)
+
+      labels = c("Herd", "Barn", "Manure Storage")
+
+      plotly::plot_ly(type = 'pie',
+                      labels = labels,
+                      values = values,
+              textinfo= 'label+percent',
+              insidetextorientation = 'radial')
+
+    })
+
+
+
+
 
     output$plot <- renderPlot({
 

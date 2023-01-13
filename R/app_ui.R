@@ -45,6 +45,11 @@ app_ui <- function(request) {
             "Dashboard",
             tabName = "dashboard",
             icon = icon("fa-solid fa-gauge", verify_fa = FALSE)
+          ),
+          bs4Dash::bs4SidebarMenuItem(
+            "About this tool",
+            tabName = "info",
+            icon = icon("fa-solid fa-circle-info", verify_fa = FALSE)
           )
         )
       ),
@@ -60,7 +65,6 @@ app_ui <- function(request) {
           ),
           bs4Dash::bs4TabItem(
             tabName = "manure",
-            general_ui_prms(),
             mod_ch4_emissions_ui("ch4_emissions")
           ),
           bs4Dash::bs4TabItem(
@@ -69,6 +73,9 @@ app_ui <- function(request) {
           ),
           bs4Dash::bs4TabItem(
             tabName = "dashboard",
+          ),
+          bs4Dash::bs4TabItem(
+            tabName = "info",
           )
         )
       )

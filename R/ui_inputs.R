@@ -41,34 +41,28 @@ general_ui_prms <- function() {
 
   general_ui_prms <- list(
 
-    fluidRow(
-
       column(3,
              selectInput("facilitie",       label = "Facilitie",                 choices = c("freestall", "tie-stall"), selected = "tie-stall")),
       column(3,
              selectInput("county",          label = "County",                    choices = unique(wi_weather$county), selected = "Adams")),
       column(3,
-             selectInput("bedding_type",    label = "Bedding type",              choices = c("Sand", "Sawdust", "Chopped straw"), selected = "Sawdust")),
+             selectInput("bedding_type",    label = "Bedding Type",              choices = c("Sand", "Sawdust", "Chopped straw"), selected = "Sawdust")),
       column(3,
-             selectInput("biodigester",     label = "Biodigester",               choices = c("yes", "no"), selected = "yes"))),
-
-    fluidRow(
-
-      column(2,
-             numericInput("biod_ef",        label = "Biodigester efficiency:",  value = 30)),
-      column(2,
-             selectInput("solid_liquid",    label = "Solid-liquid separation:",  choices = c("yes", "no"), selected = "yes")),
-      column(2,
+             selectInput("biodigester",     label = "Biodigester",               choices = c("yes", "no"), selected = "yes")),
+      column(3,
+             numericInput("biod_ef",        label = "Biodigester Efficiency:",  value = 30)),
+      column(3,
+             selectInput("solid_liquid",    label = "Solid-liquid Separation:",  choices = c("yes", "no"), selected = "yes")),
+      column(3,
              selectInput("type_manure",     label = "Manure",                    choices = c("slurry", "solid"), selected = "solid")),
-      column(2,
-             selectInput("enclosed_manure", label = "Enclosed manure store:",    choices = c("yes", "no"), selected = "no")),
-      column(2,
-             selectInput("empty",           label = "Empty time:",               choices = c("Fall", "Spring", "Fall and Spring"), selected = "Fall")),
-      column(2,
-             selectInput("crust",           label = "Crust formation:",          choices = c("yes", "no"), selected = "no")),
-      column(2,
+      column(3,
+             selectInput("enclosed_manure", label = "Enclosed Manure Store:",    choices = c("yes", "no"), selected = "no")),
+      column(3,
+             selectInput("empty",           label = "Empty Time:",               choices = c("Fall", "Spring", "Fall and Spring"), selected = "Fall")),
+      column(3,
+             selectInput("crust",           label = "Crust Formation:",          choices = c("yes", "no"), selected = "no")),
+      column(3,
              numericInput("storage_area",   label = "Manure Storage Area (m2):", value = 200))
-    )
 
   )
 
@@ -127,11 +121,11 @@ calf_ui_prms <- function(prm) {
       column(3,
              numericInput(paste0(prm, "_starter_cp"),  "Starter Crude Protein (%):", value = 20,   min = 15, max = 30)),
       column(4,
-             numericInput(paste0(prm, "_starter_ndf"), "Starter Phosphorous (%):",             value = 20,   min = 15, max = 30)),
+             numericInput(paste0(prm, "_starter_ndf"), "Starter Phosphorous (%):",   value = 20,   min = 15, max = 30)),
       column(4,
              numericInput(paste0(prm, "_forage_cp"),   "Forage Crude Protein (%):",  value = 20,   min = 15, max = 30)),
       column(4,
-             numericInput(paste0(prm, "_forage_ndf"),  "Forage Phosphorous (%):",              value = 20,   min = 15, max = 30))
+             numericInput(paste0(prm, "_forage_ndf"),  "Forage Phosphorous (%):",    value = 20,   min = 15, max = 30))
     )
 
   return(calf_ui_prms)

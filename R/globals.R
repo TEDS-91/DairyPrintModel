@@ -83,6 +83,9 @@ utils::globalVariables(
     "total_ch4_kg",
     "total_n_fixed",
     "total_n_removal",
+    "total_storage_kg",
+    "y",
+    "name",
 
 
 
