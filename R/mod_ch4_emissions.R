@@ -510,7 +510,7 @@ mod_ch4_emissions_server <- function(id,
         title    = toupper("Total Storage Methane Emissions (kg)"),
         sparkobj = hc,
         subtitle = tagList(),
-        info     = " ",
+        info     = "Teste",
         icon     = icon("fa-solid fa-fire-flame-simple", verify_fa = FALSE),
         width    = 1,
         color    = "danger",
@@ -537,13 +537,11 @@ mod_ch4_emissions_server <- function(id,
       plotly::plot_ly(type = 'pie',
                       labels = labels,
                       values = values,
-              textinfo= 'label+percent',
-              insidetextorientation = 'radial')
+              textinfo = 'label+percent',
+              insidetextorientation = 'radial') #+
+        #plotly::config(displayModeBar = FALSE)
 
     })
-
-
-
 
 
     output$plot <- renderPlot({

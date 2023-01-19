@@ -14,18 +14,21 @@ diet_ui_prms <- function(category = "diet_lac", cp = 16, ndf = 25, adf = 15, ee 
 
   diet_ui_prms <- list(
 
-    column(2,
-           numericInput(inputId = paste0(category, "_cp"),  label = "Crude Protein (%):", value = cp,    min = 0,   max = 60)),
-    column(2,
+    fluidRow(
+
+    column(4,
+           numericInput(inputId = paste0(category, "_cp"),  label = "CP (%):", value = cp,    min = 0,   max = 60)),
+    column(4,
            numericInput(inputId = paste0(category, "_ndf"), label = "NDF (%):",           value = ndf,   min = 0,   max = 60)),
-    column(2,
+    column(4,
            numericInput(inputId = paste0(category, "_adf"), label = "ADF (%):",           value = adf,   min = 0,   max = 60)),
-    column(2,
+
+    column(4,
            numericInput(inputId = paste0(category, "_ee"),  label = "EE (%):",            value = ee,    min = 0,   max = 60)),
-    column(2,
-           numericInput(inputId = paste0(category, "_p"),   label = "Phosphorous (%):",   value = p,     min = 0,   max = 60)),
-    column(2,
-           numericInput(inputId = paste0(category, "_k"),   label = "Potassium (%):",     value = p,     min = 0,   max = 60))
+    column(4,
+           numericInput(inputId = paste0(category, "_p"),   label = "P (%):",   value = p,     min = 0,   max = 60)),
+    column(4,
+           numericInput(inputId = paste0(category, "_k"),   label = "K (%):",     value = p,     min = 0,   max = 60)))
   )
 
   return(diet_ui_prms)
@@ -41,25 +44,25 @@ general_ui_prms <- function() {
 
   general_ui_prms <- list(
 
-      column(3,
+      column(2,
              selectInput("facilitie",       label = "Facilitie",                 choices = c("freestall", "tie-stall"), selected = "tie-stall")),
-      column(3,
+      column(2,
              selectInput("county",          label = "County",                    choices = unique(wi_weather$county), selected = "Adams")),
-      column(3,
+      column(2,
              selectInput("bedding_type",    label = "Bedding Type",              choices = c("Sand", "Sawdust", "Chopped straw"), selected = "Sawdust")),
-      column(3,
+      column(2,
              selectInput("biodigester",     label = "Biodigester",               choices = c("yes", "no"), selected = "yes")),
-      column(3,
+      column(2,
              numericInput("biod_ef",        label = "Biodigester Efficiency:",  value = 30)),
-      column(3,
+      column(2,
              selectInput("solid_liquid",    label = "Solid-liquid Separation:",  choices = c("yes", "no"), selected = "yes")),
-      column(3,
+      column(2,
              selectInput("type_manure",     label = "Manure",                    choices = c("slurry", "solid"), selected = "solid")),
       column(3,
              selectInput("enclosed_manure", label = "Enclosed Manure Store:",    choices = c("yes", "no"), selected = "no")),
-      column(3,
+      column(2,
              selectInput("empty",           label = "Empty Time:",               choices = c("Fall", "Spring", "Fall and Spring"), selected = "Fall")),
-      column(3,
+      column(2,
              selectInput("crust",           label = "Crust Formation:",          choices = c("yes", "no"), selected = "no")),
       column(3,
              numericInput("storage_area",   label = "Manure Storage Area (m2):", value = 200))
@@ -93,7 +96,7 @@ animal_ui_prms <- function(prm) {
       column(3,
              numericInput(paste0(prm, "_heifer_calf_born"),    "Female Calf Born (%):",    value = 50,  min = 45, max = 55)),
       column(3,
-             numericInput(paste0(prm, "_average_milk_yield"),  "Average Milk Yield (kg/cow):",   value = 40,  min = 30, max = 60)),
+             numericInput(paste0(prm, "_average_milk_yield"),  "Milk Yield (kg/cow):",   value = 40,  min = 30, max = 60)),
       column(3,
              selectInput(paste0(prm, "_milk_freq"),            "Milking Frequence:", choices = c(2, 3), selected = 2))
   )
@@ -119,13 +122,13 @@ calf_ui_prms <- function(prm) {
       column(3,
              numericInput(paste0(prm, "_fat"),         "Milk Fat (%):",             value = 3.50,  min = 2, max = 5)),
       column(3,
-             numericInput(paste0(prm, "_starter_cp"),  "Starter Crude Protein (%):", value = 20,   min = 15, max = 30)),
+             numericInput(paste0(prm, "_starter_cp"),  "Starter CP (%):", value = 20,   min = 15, max = 30)),
       column(4,
-             numericInput(paste0(prm, "_starter_ndf"), "Starter Phosphorous (%):",   value = 20,   min = 15, max = 30)),
+             numericInput(paste0(prm, "_starter_ndf"), "Starter P (%):",   value = 20,   min = 15, max = 30)),
       column(4,
-             numericInput(paste0(prm, "_forage_cp"),   "Forage Crude Protein (%):",  value = 20,   min = 15, max = 30)),
+             numericInput(paste0(prm, "_forage_cp"),   "Forage CP (%):",  value = 20,   min = 15, max = 30)),
       column(4,
-             numericInput(paste0(prm, "_forage_ndf"),  "Forage Phosphorous (%):",    value = 20,   min = 15, max = 30))
+             numericInput(paste0(prm, "_forage_ndf"),  "Forage P (%):",    value = 20,   min = 15, max = 30))
     )
 
   return(calf_ui_prms)

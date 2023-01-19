@@ -13,14 +13,14 @@ app_ui <- function(request) {
     bs4Dash::bs4DashPage(
       fullscreen = TRUE,
       bs4Dash::bs4DashNavbar(
-        #title = "DairyPrint"
         ),
       bs4Dash::bs4DashSidebar(
         bs4Dash::sidebarUserPanel(
-          image = "www/favicon.ico",
+          image = "www/dih_logo.png",
           name = "DairyPrint"
         ),
         bs4Dash::bs4SidebarMenu(
+
           bs4Dash::bs4SidebarMenuItem(
             "Herd Calibration",
             tabName = "herd_calibration",
@@ -50,7 +50,16 @@ app_ui <- function(request) {
             "About this tool",
             tabName = "info",
             icon = icon("fa-solid fa-circle-info", verify_fa = FALSE)
-          )
+          ),
+          fluidRow(
+            column(offset = 1,
+                   4,
+                   h6("Supported by:"))),
+          fluidRow(
+            column(offset = 1,
+                   4,
+                   img(src='www/DIH_logo.png', align = "left", width = 91, height = 75))
+        )
         )
       ),
       bs4Dash::bs4DashBody(
@@ -68,6 +77,7 @@ app_ui <- function(request) {
             mod_ch4_emissions_ui("ch4_emissions")
           ),
           bs4Dash::bs4TabItem(
+            "Crop",
             tabName = "crop",
             mod_crop_ui("crop")
           ),

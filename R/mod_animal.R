@@ -14,59 +14,58 @@ mod_animal_ui <- function(id){
 # -------------------------------------------------------------------------
 # Including in head, but I should create a CSS file -----------------------
     tags$head(tags$style('body {color:#696969;}')),
+    tags$head(tags$style(HTML(".small-box {height: 92px}"))),
 # -------------------------------------------------------------------------
+      h1("Herd calibration"),
 
       fluidRow(
         bs4Dash::bs4Card(
-          title = "General Herd Information",
-          elevation = 4,
+          title = "Herd Information",
+          elevation = 1,
+          width = 7,
+          solidHeader = TRUE,
+          status = "teal",
+          collapsible = TRUE,
+          fluidRow(
+            animal_ui_prms(ns("animal")))),
+
+        bs4Dash::bs4Card(
+          title = "Calf Feed Management and Milk Composition",
+          elevation = 1,
+          width = 5,
+          solidHeader = TRUE,
+          status = "teal",
+          collapsible = TRUE,
+          fluidRow(
+            calf_ui_prms(ns("calf"))))),
+
+      fluidRow(
+        bs4Dash::bs4Card(
+          title = "Diet Information",
+          elevation = 1,
           width = 12,
           solidHeader = TRUE,
           status = "teal",
           collapsible = TRUE,
           fluidRow(
-            animal_ui_prms(ns("animal"))))),
-
-      fluidRow(
-        bs4Dash::bs4Card(
-          title = "Diet Information",
-          elevation = 4,
-          width = 12,
-          solidHeader = TRUE,
-          status = "lightblue",
-          collapsible = TRUE,
-          fluidRow(
             bs4Dash::bs4Card(
               title = "Lactating Cows",
-              width = 12,
+              width = 4,
               fluidRow(
-                diet_ui_prms(ns("diet_lac"))))),
-          fluidRow(
+                diet_ui_prms(ns("diet_lac")))),
             bs4Dash::bs4Card(
               title = "Dry Cows",
-              width = 12,
+              width = 4,
               fluidRow(
-                diet_ui_prms(ns("diet_dry"))))),
-          fluidRow(
+                diet_ui_prms(ns("diet_dry")))),
             bs4Dash::bs4Card(
               title = "Heifers",
-              width = 12,
+              width = 4,
               fluidRow(
                 diet_ui_prms(ns("diet_hei"))))))),
 
-          fluidRow(
-            bs4Dash::bs4Card(
-              title = "Calf Feed Management and Milk Composition",
-              elevation = 4,
-              width = 12,
-              solidHeader = TRUE,
-              status = "success",
-              collapsible = TRUE,
-              fluidRow(
-                calf_ui_prms(ns("calf"))))),
-
       fluidRow(
-        bs4Dash::bs4Card(
+        bs4Dash::box(
           width = 12,
           collapsible = FALSE,
           fluidRow(
@@ -88,38 +87,81 @@ mod_animal_ui <- function(id){
 
     #plotOutput(ns("graphic"))
 
-
       fluidRow(
         bs4Dash::bs4Card(
-          title = "Animal Dashboard",
-          elevation = 4,
+          title = "Herd Dashboard",
+          elevation = 1,
           width = 12,
           solidHeader = TRUE,
           status = "teal",
           collapsible = TRUE,
-          fluidRow(
-            bs4Dash::valueBoxOutput(ns("herd_metrics"))))),
 
-      fluidRow(
-        bs4Dash::bs4Card(
-          title = "Lactation and Dy Matter Intake Curves",
-          elevation = 4,
-          width = 12,
-          solidHeader = TRUE,
-          status = "teal",
-          collapsible = TRUE,
-          fluidRow(
-            bs4Dash::bs4Card(
-              title = "Milk Yield",
-              width = 6,
-              footer = "Milk yield calculated according to the Wood's model (1986).",
-            plotly::plotlyOutput(ns("lactation_curves_plotly"))),
+          bs4Dash::tabBox(
+            id = "tabcard",
+            status = "primary",
+            solidHeader = FALSE,
+            type = "tabs",
+            width = 12,
+            tabPanel(
+              title = "Performance Metrics",
+
+              fluidRow(
+
+                # metric cards
+
+                # DMI
+                bs4Dash::valueBoxOutput(ns("heifer_dmi")),
+                bs4Dash::valueBoxOutput(ns("dry_dmi")),
+                bs4Dash::valueBoxOutput(ns("lac_dmi")),
+                # Milk Yield
+                bs4Dash::valueBoxOutput(ns("lac_my")),
+                bs4Dash::valueBoxOutput(ns("lac_my_fpc")),
+                bs4Dash::valueBoxOutput(ns("feed_ef")),
+                # Plots
+                bs4Dash::bs4Card(
+                  title = "Milk Yield",
+                  width = 6,
+                  footer = "Milk yield calculated according to the Wood's model (1986).",
+                  plotly::plotlyOutput(ns("lactation_curves_plotly"))),
+                bs4Dash::bs4Card(
+                  title = "Dry Matter Intake",
+                  width = 6,
+                  footer = "Dry matter intake calculated according to the NRC (2001) proposed equation.",
+                  plotly::plotlyOutput(ns("dmi_curves_plotly")))
+                )),
+            tabPanel(
+              title = "Manure Excretion and GHG emissions",
+              fluidRow(
+                bs4Dash::valueBoxOutput(ns("hei_manure")),
+                bs4Dash::valueBoxOutput(ns("dry_manure")),
+                bs4Dash::valueBoxOutput(ns("lac_manure")),
+                bs4Dash::valueBoxOutput(ns("hei_ch4")),
+                bs4Dash::valueBoxOutput(ns("dry_ch4")),
+                bs4Dash::valueBoxOutput(ns("lac_ch4")),
+              # Plots
               bs4Dash::bs4Card(
-                title = "Dry Matter Intake",
+                title = "Methane Emissions",
                 width = 6,
-                footer = "Dry matter intake calculated according to the NRC (2001) proposed equation.",
-                plotly::plotlyOutput(ns("dmi_curves_plotly")))
-          )))
+                footer = NULL,
+                plotly::plotlyOutput(ns("methane_curves_plotly"))),
+              bs4Dash::bs4Card(
+                title = "Manure Excretion",
+                width = 6,
+                footer = NULL,
+                plotly::plotlyOutput(ns("manure_curves_plotly"))))
+
+
+
+
+            ),
+            tabPanel(
+              title = "Nutrient balances",
+              "Content 3"
+            )
+          ) )
+
+              )
+
 
   )
 
@@ -141,7 +183,7 @@ mod_animal_server <- function(id){
                                      cow_rep_rate       = input$animal_cow_rep_rate,
                                      cow_calving_int    = input$animal_cow_calving_int,
                                      n_adult_cows       = input$animal_n_cows,
-                                     months_to_project  = 12)
+                                     months_to_project  = 2)
 
     })
 
@@ -629,7 +671,8 @@ mod_animal_server <- function(id){
           .groups = "drop",
         ) %>%
         dplyr::filter(MonthSimulated == 1) %>%
-        dplyr::select(-MonthSimulated)
+        dplyr::select(-MonthSimulated) %>%
+        dplyr::mutate_if(is.numeric, round, 5)
 
       df_sum
 
@@ -637,37 +680,119 @@ mod_animal_server <- function(id){
 
     output$herd_stab2 <- renderTable({
 
-      #df_sum()
+      df_sum()
 
     })
 
+# -------------------------------------------------------------------------
+# performance metrics -----------------------------------------------------
+# -------------------------------------------------------------------------
 
-    output$herd_metrics <- bs4Dash::renderValueBox({
+    # DMI
 
-      df_sum <- df_sum()
-
-      vb <- value_box_spark(
-        value    = round(df_sum$total_ch4_kg[2] / df_sum$total_animals[2] * 1000, 2),
-        title    = toupper("Methane Emissions / Milking Cow (g)"),
+    output$heifer_dmi <- bs4Dash::renderValueBox({
+      value_box_spark(
+        value    = round(df_sum()$dmi_kg[4], 2),
+        title    = toupper("Heifer DMI (kg/d)"),
         sparkobj = NULL,
         subtitle = tagList(),
         info     = " ",
-        icon     = icon("fa-solid fa-fire-flame-simple", verify_fa = FALSE),
+        icon     = icon("fa-thin fa-leaf", verify_fa = FALSE),
         width    = 1,
-        color    = "danger",
+        color    = "white",
+        href     = NULL
+      )
+    })
+
+    output$dry_dmi <- bs4Dash::renderValueBox({
+      value_box_spark(
+        value    = round(df_sum()$dmi_kg[3], 2),
+        title    = toupper("Dry Cows DMI (kg/d)"),
+        sparkobj = NULL,
+        subtitle = tagList(),
+        info     = " ",
+        icon     = icon("fa-thin fa-leaf", verify_fa = FALSE),
+        width    = 1,
+        color    = "white",
+        href     = NULL
+      )
+    })
+
+    output$lac_dmi <- bs4Dash::renderValueBox({
+
+      value_box_spark(
+        value    = round(df_sum()$dmi_kg[2], 2),
+        title    = toupper("Milking Cows DMI (kg/d)"),
+        sparkobj = NULL,
+        subtitle = tagList(),
+        info     = " ",
+        icon     = icon("fa-thin fa-leaf", verify_fa = FALSE),
+        width    = 4,
+        color    = "white",
         href     = NULL
       )
 
-      vb
+    })
+
+    # Milk Yield - non corrected for fat and Protein
+
+    output$lac_my <- bs4Dash::renderValueBox({
+
+      value_box_spark(
+        value    = round(df_sum()$milk_yield_kg[2], 1),
+        title    = toupper("Milking Cows Milk Yield (kg/d)"),
+        sparkobj = NULL,
+        subtitle = tagList(),
+        info     = " ",
+        icon     = icon("fa-solid fa-cow", verify_fa = FALSE),
+        width    = 4,
+        color    = "white",
+        href     = NULL
+      )
 
     })
 
+    # Milk Yield - corrected for fat and protein
 
+    output$lac_my_fpc <- bs4Dash::renderValueBox({
 
+      value_box_spark(
+        value    = round(df_sum()$milk_yield_kg_fpc[2], 1),
+        title    = toupper("Milking Cows Milk Yield cFP (kg/d)"),
+        sparkobj = NULL,
+        subtitle = tagList(),
+        info     = " ",
+        icon     = icon("fa-solid fa-cow", verify_fa = FALSE),
+        width    = 4,
+        color    = "white",
+        href     = NULL
+      )
 
+    })
 
+    # Feed Efficiency
 
+    output$feed_ef <- bs4Dash::renderValueBox({
 
+      value_box_spark(
+        value    = round(df_sum()$milk_yield_kg_fpc[2] / df_sum()$dmi_kg[2], 2),
+        title    = toupper("Feed Efficiency"),
+        sparkobj = NULL,
+        subtitle = tagList(" "),
+        info     = " ",
+        icon     = icon("fa-solid fa-fire", verify_fa = FALSE),
+        width    = 4,
+        color    = "white",
+        href     = NULL
+      )
+
+    })
+
+# -------------------------------------------------------------------------
+# Plots performance metrics -----------------------------------------------
+# -------------------------------------------------------------------------
+
+    # lactation curves
 
     output$lactation_curves_plotly <- plotly::renderPlotly({
 
@@ -684,6 +809,8 @@ mod_animal_server <- function(id){
 
     })
 
+    # DMI curves
+
     output$dmi_curves_plotly <- plotly::renderPlotly({
 
       df() %>%
@@ -698,6 +825,154 @@ mod_animal_server <- function(id){
         plotly::config(displayModeBar = FALSE)
 
     })
+
+# -------------------------------------------------------------------------
+# Methane metrics ---------------------------------------------------------
+# -------------------------------------------------------------------------
+
+    output$hei_ch4 <- bs4Dash::renderValueBox({
+
+      value_box_spark(
+        value    = round(df_sum()$total_ch4_kg[4] / df_sum()$total_animals[4], 3),
+        title    = toupper("Heifers Methane Emissions (kg/d)"),
+        sparkobj = NULL,
+        subtitle = tagList(),
+        info     = " ",
+        icon     = icon("fa-solid fa-cow", verify_fa = FALSE),
+        width    = 4,
+        color    = "white",
+        href     = NULL
+      )
+
+    })
+
+    output$dry_ch4 <- bs4Dash::renderValueBox({
+
+      value_box_spark(
+        value    = round(df_sum()$total_ch4_kg[3] / df_sum()$total_animals[3], 3),
+        title    = toupper("Dry Cows Methane Emissions (kg/d)"),
+        sparkobj = NULL,
+        subtitle = tagList(),
+        info     = " ",
+        icon     = icon("fa-solid fa-cow", verify_fa = FALSE),
+        width    = 4,
+        color    = "white",
+        href     = NULL
+      )
+
+    })
+
+    output$lac_ch4 <- bs4Dash::renderValueBox({
+
+      value_box_spark(
+        value    = round(df_sum()$total_ch4_kg[2] / df_sum()$total_animals[2], 3),
+        title    = toupper("Milking Cows Methane Emissions (kg/d)"),
+        sparkobj = NULL,
+        subtitle = tagList(),
+        info     = " ",
+        icon     = icon("fa-solid fa-cow", verify_fa = FALSE),
+        width    = 4,
+        color    = "white",
+        href     = NULL
+      )
+
+    })
+
+
+# -------------------------------------------------------------------------
+# Manure ------------------------------------------------------------------
+# -------------------------------------------------------------------------
+
+    output$hei_manure <- bs4Dash::renderValueBox({
+
+      value_box_spark(
+        value    = round(df_sum()$total_manure_kg[4] / df_sum()$total_animals[4], 2),
+        title    = toupper("Heifer Manure Excretion (kg/d)"),
+        sparkobj = NULL,
+        subtitle = tagList(),
+        info     = " ",
+        icon     = icon("fa-solid fa-cow", verify_fa = FALSE),
+        width    = 4,
+        color    = "white",
+        href     = NULL
+      )
+
+    })
+
+    output$dry_manure <- bs4Dash::renderValueBox({
+
+      value_box_spark(
+        value    = round(df_sum()$total_manure_kg[3] / df_sum()$total_animals[3], 2),
+        title    = toupper("Dry Cows Manure Excretion (kg/d)"),
+        sparkobj = NULL,
+        subtitle = tagList(),
+        info     = " ",
+        icon     = icon("fa-solid fa-cow", verify_fa = FALSE),
+        width    = 4,
+        color    = "white",
+        href     = NULL
+      )
+
+    })
+
+    output$lac_manure <- bs4Dash::renderValueBox({
+
+      value_box_spark(
+        value    = round(df_sum()$total_manure_kg[2] / df_sum()$total_animals[2], 2),
+        title    = toupper("Milking Cows Manure Excretion (kg/d)"),
+        sparkobj = NULL,
+        subtitle = tagList(),
+        info     = " ",
+        icon     = icon("fa-solid fa-cow", verify_fa = FALSE),
+        width    = 4,
+        color    = "white",
+        href     = NULL
+      )
+
+    })
+
+# -------------------------------------------------------------------------
+# Methane and Manure plots ------------------------------------------------
+# -------------------------------------------------------------------------
+
+    # Methane curves
+
+    output$methane_curves_plotly <- plotly::renderPlotly({
+
+      df() %>%
+        dplyr::filter(Categories == "Cow") %>%
+        plotly::plot_ly(x = ~ Month,
+                        y = ~ enteric_methane_g_animal_day / 1000,
+                        color = ~ Phase,
+                        type = "scatter",
+                        mode = "markers") %>%
+        plotly::layout(yaxis = list(title = "Methane Emissions (kg/day)"),
+                       xaxis = list(title = "Months in Lactation")) %>%
+        plotly::config(displayModeBar = FALSE)
+
+    })
+
+    # Manure curves
+
+    output$manure_curves_plotly <- plotly::renderPlotly({
+
+      df() %>%
+        dplyr::filter(Categories == "Cow") %>%
+        plotly::plot_ly(x = ~ Month,
+                        y = ~ fresh_manure_output_kg_day,
+                        color = ~ Phase,
+                        type = "scatter",
+                        mode = "markers") %>%
+        plotly::layout(yaxis = list(title = "Manure Excretion (kg/day)"),
+                       xaxis = list(title = "Months in Lactation")) %>%
+        plotly::config(displayModeBar = FALSE)
+
+    })
+
+
+
+
+
 
 
 
