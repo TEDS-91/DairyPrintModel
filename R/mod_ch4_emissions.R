@@ -14,7 +14,7 @@ mod_ch4_emissions_ui <- function(id){
     fluidRow(
       bs4Dash::bs4Card(
         title = "Manure Handling and Management",
-        elevation = 4,
+        elevation = 2,
         width = 12,
         solidHeader = TRUE,
         status = "teal",
@@ -25,7 +25,7 @@ mod_ch4_emissions_ui <- function(id){
     fluidRow(
       bs4Dash::bs4Card(
         title = "Manure Dashboard",
-        elevation = 4,
+        elevation = 2,
         width = 12,
         solidHeader = TRUE,
         status = "teal",
@@ -35,27 +35,57 @@ mod_ch4_emissions_ui <- function(id){
           bs4Dash::valueBoxOutput(ns("facilitie_methane")),
           bs4Dash::valueBoxOutput(ns("manure_storage_methane")),
           br(),
-          #tableOutput(ns("tabela"))
-          )),
-          bs4Dash::bs4Card(
-            title = "Methane Proportion by Source",
-            elevation = 4,
-            width = 6,
-            status = "teal",
-            fluidRow(
-              plotly::plotlyOutput(ns("pie_chart"))
-              ))),
 
-    fluidRow(
-      bs4Dash::bs4Card(
-        title = "Plots",
-        elevation = 4,
-        width = 12,
-        solidHeader = TRUE,
-        status = "navy",
-        collapsible = TRUE,
-        fluidRow(
-          plotOutput(ns("plot")))))
+          bs4Dash::tabBox(
+            id = "tabcard",
+            status = "primary",
+            solidHeader = FALSE,
+            type = "tabs",
+            width = 12,
+            tabPanel(
+              title = "Methane Emissions",
+              fluidRow(
+                bs4Dash::bs4Card(
+                  title = "Barn",
+                  width = 6,
+                  footer = NULL,
+                  plotly::plotlyOutput(ns("barn_ch4_chart"))),
+                bs4Dash::bs4Card(
+                  title = "Manure Storage",
+                  width = 6,
+                  footer = NULL,
+                  plotly::plotlyOutput(ns("storage_ch4_chart")))
+
+              )),
+            tabPanel(
+              title = "Ammonia Emissions",
+              fluidRow(
+                "Add the content"
+                #plotly::plotlyOutput(ns("storage_ch4_chart"))
+              )),
+            tabPanel(
+              title = "Distribution of Emissions",
+              fluidRow(
+                bs4Dash::bs4Card(
+                  title = "Methane",
+                  width = 6,
+                  footer = NULL,
+                plotly::plotlyOutput(ns("pie_chart")))
+              ))
+            )
+          #tableOutput(ns("tabela"))
+          ))),
+
+    # fluidRow(
+    #   bs4Dash::bs4Card(
+    #     title = "Plots",
+    #     elevation = 4,
+    #     width = 12,
+    #     solidHeader = TRUE,
+    #     status = "navy",
+    #     collapsible = TRUE,
+    #     fluidRow(
+    #       plotOutput(ns("plot")))))
 
 
   )
@@ -408,9 +438,6 @@ mod_ch4_emissions_server <- function(id,
 
 
       )
-
-
-
     })
 
     summarized_data <- reactive({
@@ -433,91 +460,127 @@ mod_ch4_emissions_server <- function(id,
 
     })
 
-
     output$herd_methane <- bs4Dash::renderValueBox({
 
-      emissions <- emissions() %>%
-        tibble::as_tibble() %>%
-        dplyr::filter(yday > 365)
-
-      hc <- highcharter::hchart(emissions, "area", highcharter::hcaes(yday, round(herd_ch4_emissions_kg), 3), name = "Daily Methane Emissions (kg)")  %>%
-        highcharter::hc_size(height = 100) %>%
-        highcharter::hc_credits(enabled = FALSE) %>%
-        highcharter::hc_add_theme(highcharter::hc_theme_sparkline_vb())
-
-
-      herd_methane_card <- value_box_spark(
+      value_box_spark(
         value    = round(summarized_data()[1], 1),
         title    = toupper("Total Herd Methane Emissions (kg)"),
-        sparkobj = hc,
-        subtitle = tagList(),
-        info     = "Temperature in Madison",
-        icon     = icon("fa-solid fa-fire-flame-simple", verify_fa = FALSE),
-        width    = 1,
-        color    = "danger",
-        href     = NULL
-      )
-
-      herd_methane_card
-
-    })
-
-    output$facilitie_methane <- bs4Dash::renderValueBox({
-
-      emissions <- emissions() %>%
-        tibble::as_tibble() %>%
-        dplyr::filter(yday > 365)
-
-       hc <- highcharter::hchart(emissions, "area", highcharter::hcaes(yday, barn_ch4_emissions_kg), name = "Daily Methane Emissions (kg)")  %>%
-         highcharter::hc_size(height = 100) %>%
-         highcharter::hc_credits(enabled = FALSE) %>%
-         highcharter::hc_add_theme(highcharter::hc_theme_sparkline_vb())
-
-      vb <- value_box_spark(
-        value    = round(summarized_data()[2], 2),
-        title    = toupper("Total Barn Methane Emissions (kg)"),
-        sparkobj = hc,
+        sparkobj = NULL,
         subtitle = tagList(),
         info     = " ",
         icon     = icon("fa-solid fa-fire-flame-simple", verify_fa = FALSE),
-        width    = 1,
-        color    = "danger",
+        width    = 4,
+        color    = "white",
         href     = NULL
       )
 
-      vb
+    })
+
+    # output$facilitie_methane <- bs4Dash::renderValueBox({
+    #
+    #   emissions <- emissions() %>%
+    #     tibble::as_tibble() %>%
+    #     dplyr::filter(yday > 365)
+    #
+    #    hc <- highcharter::hchart(emissions, "area", highcharter::hcaes(yday, barn_ch4_emissions_kg), name = "Daily Methane Emissions (kg)")  %>%
+    #      highcharter::hc_size(height = 100) %>%
+    #      highcharter::hc_credits(enabled = FALSE) %>%
+    #      highcharter::hc_add_theme(highcharter::hc_theme_sparkline_vb())
+    #
+    #   vb <- value_box_spark(
+    #     value    = round(summarized_data()[2], 2),
+    #     title    = toupper("Total Barn Methane Emissions (kg)"),
+    #     sparkobj = hc,
+    #     subtitle = tagList(),
+    #     info     = " ",
+    #     icon     = icon("fa-solid fa-fire-flame-simple", verify_fa = FALSE),
+    #     width    = 1,
+    #     color    = "danger",
+    #     href     = NULL
+    #   )
+    #
+    #   vb
+    #
+    # })
+
+    output$facilitie_methane <- bs4Dash::renderValueBox({
+
+      value_box_spark(
+        value    = round(summarized_data()[2], 2),
+        title    = toupper("Total Barn Methane Emissions (kg)"),
+        sparkobj = NULL,
+        subtitle = tagList(),
+        info     = " ",
+        icon     = icon("fa-solid fa-fire-flame-simple", verify_fa = FALSE),
+        width    = 4,
+        color    = "white",
+        href     = NULL
+      )
 
     })
 
     output$manure_storage_methane <- bs4Dash::renderValueBox({
 
-      # TODO - manure
+      value_box_spark(
+        value    = round(sum(summarized_data()[4], summarized_data()[3], na.rm = TRUE), 1),
+        title    = toupper("Total Storage Methane Emissions (kg)"),
+        sparkobj = NULL,
+        subtitle = tagList(),
+        info     = " ",
+        icon     = icon("fa-solid fa-fire-flame-simple", verify_fa = FALSE),
+        width    = 4,
+        color    = "white",
+        href     = NULL
+      )
+
+    })
+
+# -------------------------------------------------------------------------
+# Methane plots -----------------------------------------------------------
+# -------------------------------------------------------------------------
+
+    # Barn CH4
+
+    output$barn_ch4_chart <- plotly::renderPlotly({
+
+     emissions <- emissions() %>%
+       tibble::as_tibble() %>%
+       dplyr::filter(yday > 365) %>%
+       dplyr::mutate(
+         yday = yday - 365
+       )
+
+      emissions %>%
+        plotly::plot_ly(x = ~ yday,
+                        y = ~ round(barn_ch4_emissions_kg, 2),
+                        type = "scatter",
+                        mode = "lines+markers") %>%
+        plotly::layout(yaxis = list(title = "Daily Methane Emissions from Barn (kg)"),
+                       xaxis = list(title = "Year Days")) %>%
+        plotly::config(displayModeBar = FALSE)
+
+    })
+
+    # Manure Storage
+
+    output$storage_ch4_chart <- plotly::renderPlotly({
 
       emissions <- emissions() %>%
         tibble::as_tibble() %>%
         dplyr::filter(yday > 365) %>%
         dplyr::mutate(
+          yday = yday - 365,
           total_storage_kg = ch4_emissions_solid_storage_kg + ch4_liq_emission_kg_day
         )
 
-      hc <- highcharter::hchart(emissions, "area", highcharter::hcaes(yday, round(total_storage_kg), 2), name = "Daily Methane Emissions (kg)")  %>%
-        highcharter::hc_size(height = 100) %>%
-        highcharter::hc_credits(enabled = FALSE) %>%
-        highcharter::hc_add_theme(highcharter::hc_theme_sparkline_vb())
-
-      vb <- value_box_spark(
-        value    = round(sum(summarized_data()[4], summarized_data()[3], na.rm = TRUE), 1),
-        title    = toupper("Total Storage Methane Emissions (kg)"),
-        sparkobj = hc,
-        subtitle = tagList(),
-        info     = "Teste",
-        icon     = icon("fa-solid fa-fire-flame-simple", verify_fa = FALSE),
-        width    = 1,
-        color    = "danger",
-        href     = NULL
-      )
-
-      vb
+      emissions %>%
+        plotly::plot_ly(x = ~ yday,
+                        y = ~ round(total_storage_kg, 2),
+                        type = "scatter",
+                        mode = "lines+markers") %>%
+        plotly::layout(yaxis = list(title = "Daily Methane Emissions from Barn (kg)"),
+                       xaxis = list(title = "Year Days")) %>%
+        plotly::config(displayModeBar = FALSE)
 
     })
 
@@ -543,93 +606,86 @@ mod_ch4_emissions_server <- function(id,
 
     })
 
-
-    output$plot <- renderPlot({
-
-    emissoes <- tibble::tibble(emissions())
-
-    if(solid_liquid() == "no" & type_manure() == "slurry") {
-
-      graphics::par(mar = c(5, 4, 4, 4) + 0.3)
-
-      emissoes$ch4_liq_emission_kg_day %>%
-        plot(xlab = "Year days",
-             ylab = "Methane Emission (kg)",
-             type = "b",
-             col = "red",
-             lwd = 5,
-             pch = 17,
-             main = "Daily and Cumulative CH4 Emissions from Manure Storage")
-
-      graphics::par(new = TRUE) # Add new plot
-
-      plot(emissoes$yday,
-           cumsum(emissoes$ch4_liq_emission_kg_day),
-           type = "b",
-           col = "blue",
-           lwd = 5,
-           pch = 15,
-           axes = FALSE, xlab = "", ylab = "") # Create second plot without axes
-
-      graphics::axis(side = 4, at = pretty(range(cumsum(emissoes$ch4_liq_emission_kg_day))))      # Add second axis
-      graphics::mtext("Cumulative Methane Emission (kg)", side = 4, line = 3)
-      graphics::legend("topleft", legend = c("Cum. CH4 (kg)", "Daily CH4 (kg)"),
-                col = c("blue", "red"), pch = 17, cex = 0.9)
-
-
-
-    } else if (solid_liquid() == "no" & type_manure() == "solid") {
-
-      print(
-      ggplot2::ggplot(emissions(), ggplot2::aes(x = yday, y = ch4_emissions_solid_storage_kg)) +
-        ggplot2::geom_point())
-
-    } else {
-
-      liq_plot <- function() {
-
-      graphics::par(mar = c(5, 4, 4, 4) + 0.3)
-
-      emissoes$ch4_liq_emission_kg_day %>%
-        plot(xlab = "Year days",
-             ylab = "Methane Emission (kg)",
-             type = "b",
-             col = "red",
-             lwd = 5,
-             pch = 17,
-             main = "Daily and Cumulative CH4 Emissions from Manure Storage")
-
-      graphics::par(new = TRUE) # Add new plot
-
-      plot(emissoes$yday,
-           cumsum(emissoes$ch4_liq_emission_kg_day),
-           type = "b",
-           col = "blue",
-           lwd = 5,
-           pch = 15,
-           axes = FALSE, xlab = "", ylab = "") # Create second plot without axes
-
-      graphics::axis(side = 4, at = pretty(range(cumsum(emissoes$ch4_liq_emission_kg_day))))      # Add second axis
-      graphics::mtext("Cumulative Methane Emission (kg)", side = 4, line = 3)
-      graphics::legend("topleft", legend = c("Cum. CH4 (kg)", "Daily CH4 (kg)"),
-                       col = c("blue", "red"), pch = 17, cex = 0.9)
-      }
-
-
-
-      graphics::par(mfrow = c(1, 2))
-
-      liq_plot()
-      plot(emissoes$ch4_emissions_solid_storage_kg, ylab = "Methane emissios (kg/day)", xlab = "Year day")
-
-    }
-
-
-
-
-
-    })
-
+    # output$plot <- renderPlot({
+    #
+    # emissoes <- tibble::tibble(emissions())
+    #
+    # if(solid_liquid() == "no" & type_manure() == "slurry") {
+    #
+    #   graphics::par(mar = c(5, 4, 4, 4) + 0.3)
+    #
+    #   emissoes$ch4_liq_emission_kg_day %>%
+    #     plot(xlab = "Year days",
+    #          ylab = "Methane Emission (kg)",
+    #          type = "b",
+    #          col = "red",
+    #          lwd = 5,
+    #          pch = 17,
+    #          main = "Daily and Cumulative CH4 Emissions from Manure Storage")
+    #
+    #   graphics::par(new = TRUE) # Add new plot
+    #
+    #   plot(emissoes$yday,
+    #        cumsum(emissoes$ch4_liq_emission_kg_day),
+    #        type = "b",
+    #        col = "blue",
+    #        lwd = 5,
+    #        pch = 15,
+    #        axes = FALSE, xlab = "", ylab = "") # Create second plot without axes
+    #
+    #   graphics::axis(side = 4, at = pretty(range(cumsum(emissoes$ch4_liq_emission_kg_day))))      # Add second axis
+    #   graphics::mtext("Cumulative Methane Emission (kg)", side = 4, line = 3)
+    #   graphics::legend("topleft", legend = c("Cum. CH4 (kg)", "Daily CH4 (kg)"),
+    #             col = c("blue", "red"), pch = 17, cex = 0.9)
+    #
+    #
+    #
+    # } else if (solid_liquid() == "no" & type_manure() == "solid") {
+    #
+    #   print(
+    #   ggplot2::ggplot(emissions(), ggplot2::aes(x = yday, y = ch4_emissions_solid_storage_kg)) +
+    #     ggplot2::geom_point())
+    #
+    # } else {
+    #
+    #   liq_plot <- function() {
+    #
+    #   graphics::par(mar = c(5, 4, 4, 4) + 0.3)
+    #
+    #   emissoes$ch4_liq_emission_kg_day %>%
+    #     plot(xlab = "Year days",
+    #          ylab = "Methane Emission (kg)",
+    #          type = "b",
+    #          col = "red",
+    #          lwd = 5,
+    #          pch = 17,
+    #          main = "Daily and Cumulative CH4 Emissions from Manure Storage")
+    #
+    #   graphics::par(new = TRUE) # Add new plot
+    #
+    #   plot(emissoes$yday,
+    #        cumsum(emissoes$ch4_liq_emission_kg_day),
+    #        type = "b",
+    #        col = "blue",
+    #        lwd = 5,
+    #        pch = 15,
+    #        axes = FALSE, xlab = "", ylab = "") # Create second plot without axes
+    #
+    #   graphics::axis(side = 4, at = pretty(range(cumsum(emissoes$ch4_liq_emission_kg_day))))      # Add second axis
+    #   graphics::mtext("Cumulative Methane Emission (kg)", side = 4, line = 3)
+    #   graphics::legend("topleft", legend = c("Cum. CH4 (kg)", "Daily CH4 (kg)"),
+    #                    col = c("blue", "red"), pch = 17, cex = 0.9)
+    #   }
+    #
+    #
+    #
+    #   graphics::par(mfrow = c(1, 2))
+    #
+    #   liq_plot()
+    #   plot(emissoes$ch4_emissions_solid_storage_kg, ylab = "Methane emissios (kg/day)", xlab = "Year day")
+    #
+    # }
+    # })
 
   })
 }

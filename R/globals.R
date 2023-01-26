@@ -86,6 +86,7 @@ utils::globalVariables(
     "total_storage_kg",
     "y",
     "name",
+    "total_potassium_excretion_g",
 
 
 

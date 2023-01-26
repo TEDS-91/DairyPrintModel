@@ -74,6 +74,7 @@ app_ui <- function(request) {
           ),
           bs4Dash::bs4TabItem(
             tabName = "manure",
+            #mod_nh3_emissions_ui("nh3_emissions"),
             mod_ch4_emissions_ui("ch4_emissions")
           ),
           bs4Dash::bs4TabItem(

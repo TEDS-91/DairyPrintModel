@@ -213,7 +213,7 @@ mod_nh3_emissions_server <- function(id,
 
     output$tabela <- renderTable({
 
-      #nh3_emissions()
+      nh3_emissions()
 
     })
 
