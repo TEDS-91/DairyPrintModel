@@ -17,18 +17,17 @@ diet_ui_prms <- function(category = "diet_lac", cp = 16, ndf = 25, adf = 15, ee 
     fluidRow(
 
     column(4,
-           numericInput(inputId = paste0(category, "_cp"),  label = "CP (%):", value = cp,    min = 0,   max = 60)),
+           numericInput(inputId = paste0(category, "_cp"),  label = "CP (%):",  value = cp,    min = 0,   max = 60)),
     column(4,
-           numericInput(inputId = paste0(category, "_ndf"), label = "NDF (%):",           value = ndf,   min = 0,   max = 60)),
+           numericInput(inputId = paste0(category, "_ndf"), label = "NDF (%):", value = ndf,   min = 0,   max = 60)),
     column(4,
-           numericInput(inputId = paste0(category, "_adf"), label = "ADF (%):",           value = adf,   min = 0,   max = 60)),
-
+           numericInput(inputId = paste0(category, "_adf"), label = "ADF (%):", value = adf,   min = 0,   max = 60)),
     column(4,
-           numericInput(inputId = paste0(category, "_ee"),  label = "EE (%):",            value = ee,    min = 0,   max = 60)),
+           numericInput(inputId = paste0(category, "_ee"),  label = "EE (%):",  value = ee,    min = 0,   max = 60)),
     column(4,
            numericInput(inputId = paste0(category, "_p"),   label = "P (%):",   value = p,     min = 0,   max = 60)),
     column(4,
-           numericInput(inputId = paste0(category, "_k"),   label = "K (%):",     value = p,     min = 0,   max = 60)))
+           numericInput(inputId = paste0(category, "_k"),   label = "K (%):",   value = k,     min = 0,   max = 60)))
   )
 
   return(diet_ui_prms)
@@ -45,27 +44,27 @@ general_ui_prms <- function() {
   general_ui_prms <- list(
 
       column(2,
-             selectInput("facilitie",       label = "Facilitie",                 choices = c("freestall", "tie-stall"), selected = "tie-stall")),
+           selectInput("county",          label = "County:",                     choices = unique(wi_weather$county), selected = "Dane")),
       column(2,
-             selectInput("county",          label = "County",                    choices = unique(wi_weather$county), selected = "Adams")),
+             selectInput("facilitie",       label = "Facility:",                 choices = c("freestall", "tie-stall"), selected = "freestall")),
       column(2,
-             selectInput("bedding_type",    label = "Bedding Type",              choices = c("Sand", "Sawdust", "Chopped straw"), selected = "Sawdust")),
+             selectInput("bedding_type",    label = "Bedding Type:",             choices = c("Sand", "Sawdust", "Chopped straw"), selected = "Chopped straw")),
       column(2,
-             selectInput("biodigester",     label = "Biodigester",               choices = c("yes", "no"), selected = "yes")),
+             selectInput("biodigester",     label = "Biodigester:",              choices = c("yes", "no"), selected = "no")),
       column(2,
-             numericInput("biod_ef",        label = "Biodigester Efficiency:",  value = 30)),
+             numericInput("biod_ef",        label = "Biodigester Efficiency:",   value = 25)),
       column(2,
-             selectInput("solid_liquid",    label = "Solid-liquid Separation:",  choices = c("yes", "no"), selected = "yes")),
+             selectInput("solid_liquid",    label = "Solid-liquid Separation:",  choices = c("yes", "no"), selected = "no")),
       column(2,
-             selectInput("type_manure",     label = "Manure",                    choices = c("slurry", "solid"), selected = "solid")),
+             selectInput("type_manure",     label = "Manure:",                   choices = c("Semi-solid", "Solid", "Slurry"), selected = "Slurry")),
+      column(2,
+             selectInput("empty",           label = "Emptying Time:",            choices = c("Fall", "Spring", "Fall and Spring"), selected = "Fall")),
       column(3,
-             selectInput("enclosed_manure", label = "Enclosed Manure Store:",    choices = c("yes", "no"), selected = "no")),
-      column(2,
-             selectInput("empty",           label = "Empty Time:",               choices = c("Fall", "Spring", "Fall and Spring"), selected = "Fall")),
-      column(2,
-             selectInput("crust",           label = "Crust Formation:",          choices = c("yes", "no"), selected = "no")),
-      column(3,
-             numericInput("storage_area",   label = "Manure Storage Area (m2):", value = 200))
+             selectInput("enclosed_manure", label = "Enclosed Manure Storage:",    choices = c("yes", "no"), selected = "no"))#,
+      # column(2,
+      #        selectInput("crust",           label = "Crust Formation:",          choices = c("yes", "no"), selected = "no")),
+      # column(3,
+      #        numericInput("storage_area",   label = "Manure Storage Area (m2):", value = 200))
 
   )
 
@@ -84,21 +83,23 @@ animal_ui_prms <- function(prm) {
   animal_ui_prms <- list(
 
       column(3,
-             numericInput(paste0(prm, "_n_cows"),              "Number of cows:",            value = 120, min = 0,  max = 30000)),
+             numericInput(paste0(prm, "_n_cows"),               "Total Cows:",                value = 150, min = 0,  max = 30000)),
       column(3,
-             numericInput(paste0(prm, "_cow_calving_int"),      "Calving Interval (mo):",     value = 14, min = 12, max = 20)),
+             numericInput(paste0(prm, "_cow_calving_int"),      "Calving Interval (mo):",     value = 15, min = 12, max = 20)),
       column(3,
-             numericInput(paste0(prm, "_cow_rep_rate"),        "Cow Culling Rate (%):",      value = 30,  min = 20, max = 50)),
+             numericInput(paste0(prm, "_cow_rep_rate"),         "Cow Culling Rate (%):",      value = 35,  min = 20, max = 50)),
       column(3,
-             numericInput(paste0(prm, "_time_first_calv"),      "Age at First Calving (mo):",  value = 24, min = 0, max = 36)),
+             numericInput(paste0(prm, "_time_first_calv"),      "First Calving (mo):",        value = 24, min = 0, max = 36)),
       column(3,
-             numericInput(paste0(prm, "_calves_heifers_cul"),  "Heifers Culling Rate (%):",  value = 20,  min = 10, max = 50)),
+             numericInput(paste0(prm, "_calves_heifers_cul"),   "Heifers Culling Rate (%):",  value = 5,  min = 10, max = 50)),
       column(3,
-             numericInput(paste0(prm, "_heifer_calf_born"),    "Female Calf Born (%):",    value = 50,  min = 45, max = 55)),
+             numericInput(paste0(prm, "_heifer_calf_born"),     "Female Calf Born (%):",      value = 50,  min = 45, max = 55)),
       column(3,
-             numericInput(paste0(prm, "_average_milk_yield"),  "Milk Yield (kg/cow):",   value = 40,  min = 30, max = 60)),
+             numericInput(paste0(prm, "_average_milk_yield"),   "Milk Yield (kg/cow):",       value = 40,  min = 30, max = 60)),
       column(3,
-             selectInput(paste0(prm, "_milk_freq"),            "Milking Frequence:", choices = c(2, 3), selected = 2))
+             numericInput(paste0(prm, "_mature_weight"),        "Mature Weight (kg):",        value = 680.0,  min = 500, max = 1000)),
+      column(3,
+             selectInput(paste0(prm, "_milk_freq"),             "Milking Freq.:",             choices = c(2, 3), selected = 3))
   )
 
   return(animal_ui_prms)
@@ -116,19 +117,21 @@ calf_ui_prms <- function(prm) {
   calf_ui_prms <- list(
 
       column(3,
-             numericInput(paste0(prm, "_milk_sup"),    "Milk Suply (l/d):",         value = 6,   min = 2, max = 15)),
+             numericInput(paste0(prm, "_birth_weight"),  "Birth Weight (kg):",     value = 40,   min = 20, max = 65)),
       column(3,
-             numericInput(paste0(prm, "_protein"),     "Milk Protein (%):",         value = 3.25, min = 2, max = 5)),
+             numericInput(paste0(prm, "_milk_sup"),      "Milk Suply (l/d):",      value = 6,    min = 2,  max = 15)),
       column(3,
-             numericInput(paste0(prm, "_fat"),         "Milk Fat (%):",             value = 3.50,  min = 2, max = 5)),
+             numericInput(paste0(prm, "_protein"),       "Milk Protein (%):",      value = 3.25, min = 2,  max = 5)),
       column(3,
-             numericInput(paste0(prm, "_starter_cp"),  "Starter CP (%):", value = 20,   min = 15, max = 30)),
+             numericInput(paste0(prm, "_fat"),           "Milk Fat (%):",          value = 3.50, min = 2,  max = 5)),
+      column(3,
+             numericInput(paste0(prm, "_starter_cp"),    "Starter CP (%):",        value = 20,   min = 15, max = 30)),
       column(4,
-             numericInput(paste0(prm, "_starter_ndf"), "Starter P (%):",   value = 20,   min = 15, max = 30)),
+             numericInput(paste0(prm, "_starter_ndf"),   "Starter P (%):",         value = 20,   min = 15, max = 30)),
       column(4,
-             numericInput(paste0(prm, "_forage_cp"),   "Forage CP (%):",  value = 20,   min = 15, max = 30)),
+             numericInput(paste0(prm, "_forage_cp"),     "Forage CP (%):",         value = 20,   min = 15, max = 30)),
       column(4,
-             numericInput(paste0(prm, "_forage_ndf"),  "Forage P (%):",    value = 20,   min = 15, max = 30))
+             numericInput(paste0(prm, "_forage_ndf"),    "Forage P (%):",          value = 20,   min = 15, max = 30))
     )
 
   return(calf_ui_prms)
@@ -156,20 +159,20 @@ crop_ui_prms <- function(id) {
 
     wellPanel(
 
+      h4(strong("Crop types and Yield"), align = "center"),
+
       fluidRow(
 
-        h4(strong("Crop types and Yield"), align = "center"),
-
-        column(4,
-               selectInput(inputId  = paste0(id, "_crop_type"), label = paste0("Crop : ", id), choices = crop_list, selected = crop_list[[1]])),
-        column(4,
+        column(2,
+               selectInput(inputId  = paste0(id, "_crop_type"), label = paste0("Crop : "), choices = crop_list, selected = crop_list[[1]])),
+        column(2,
                numericInput(inputId = paste0(id, "_area"), label = "Area (ha):", value = 15, min = 0, max = 1000)),
-        column(4,
+        column(2,
                numericInput(inputId = paste0(id, "_yield"), label = "Yield (ton./hectare):", value = 62, min = 50, max = 80))),
 
-      fluidRow(
+      h4(strong("Fertilizers"), align = "center"),
 
-        h4(strong("fertilizers"), align = "center"),
+      fluidRow(
 
         column(2,
                numericInput(inputId = paste0(id, "_total_n_applied"), label = "Total Nitrogen Applied (kg/ha):", value  = 60, min = 0, max = 500)),
@@ -182,9 +185,9 @@ crop_ui_prms <- function(id) {
         column(2,
                numericInput(inputId = paste0(id, "_lime_applied"), label = "Lime applied (ton./hectare):", value = 2, min = 0, max = 10))),
 
-      fluidRow(
+      h4(strong("Manure"), align = "center"),
 
-        h4(strong("Manure"), align = "center"),
+      fluidRow(
 
         column(4,
                selectInput(inputId  = paste0(id, "_application_method"), label = "Application method:", choices = c("Direct injection", "Irrigation", "Broadcast spreading"), selected = "Broadcast spreading")),

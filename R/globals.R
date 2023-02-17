@@ -92,6 +92,7 @@ utils::globalVariables(
 
     "milk_intake",
     "age",
-    "dmi"
+    "dmi",
+    "Calves"
   )
 )

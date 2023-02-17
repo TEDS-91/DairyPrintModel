@@ -8,7 +8,7 @@ app_server <- function(input, output, session) {
 
   # Your application server logic
 
-  # general prmts from UI
+  # General prmts from UI
 
   facilitie <- reactive(input$facilitie)
 
@@ -32,14 +32,19 @@ app_server <- function(input, output, session) {
 
   manure_storage_area <- reactive(input$storage_area)
 
-  # calling modules
+  # Calling the modules
 
   animal_data <- mod_animal_server("animal")
 
   mod_fuel_combustion_server("fuel_combustion")
 
+  # calf milk ingestion input
+
+  calf_milk_sup <- animal_data[[2]]
+
   mod_economics_server("economics",
-                       animal_data = animal_data)
+                       animal_data      = animal_data[[1]],
+                       calf_milk_intake = calf_milk_sup )
 
 
   mod_nh3_emissions_server("nh3_emissions",
@@ -52,7 +57,7 @@ app_server <- function(input, output, session) {
                            manure_storage_area = manure_storage_area)
 
   mod_ch4_emissions_server("ch4_emissions",
-                           animal_data     = animal_data,
+                           animal_data     = animal_data[[1]],
                            county          = county,
                            facilitie       = facilitie,
                            bedding         = bedding,
@@ -68,7 +73,7 @@ app_server <- function(input, output, session) {
                                      manure_storage_area = manure_storage_area)
 
   mod_crop_server("crop",
-                  animal_data = animal_data)
+                  animal_data = animal_data[[1]])
 
   report <- reactive({
 

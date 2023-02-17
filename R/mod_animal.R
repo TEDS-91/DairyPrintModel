@@ -13,11 +13,14 @@ mod_animal_ui <- function(id){
 
 # -------------------------------------------------------------------------
 # Including in head, but I should create a CSS file -----------------------
+# -------------------------------------------------------------------------
+
     tags$head(tags$style('body {color:#696969;}')),
     tags$head(tags$style(HTML(".small-box {height: 92px}"))),
     tags$head( tags$style(HTML(".fa{font-size: 20px;}"))),
+
 # -------------------------------------------------------------------------
-      h1("Herd calibration"),
+      #h1("Herd calibration"),
 
       fluidRow(
         bs4Dash::bs4Card(
@@ -53,17 +56,17 @@ mod_animal_ui <- function(id){
               title = "Lactating Cows",
               width = 4,
               fluidRow(
-                diet_ui_prms(ns("diet_lac")))),
+                diet_ui_prms(ns("diet_lac"), cp = 17, ndf = 30, adf = 22, ee = 5, p = 0.4, k = 1.1))),
             bs4Dash::bs4Card(
               title = "Dry Cows",
               width = 4,
               fluidRow(
-                diet_ui_prms(ns("diet_dry")))),
+                diet_ui_prms(ns("diet_dry"), cp = 13, ndf = 40, adf = 33, ee = 4, p = 0.23, k = 0.6))),
             bs4Dash::bs4Card(
               title = "Heifers",
               width = 4,
               fluidRow(
-                diet_ui_prms(ns("diet_hei"))))))),
+                diet_ui_prms(ns("diet_hei"), cp = 12, ndf = 35, adf = 23, ee = 4, p = 0.23, k = 0.45)))))),
 
       # code for the report
 
@@ -107,17 +110,19 @@ mod_animal_ui <- function(id){
               title = "Herd Inventory",
               fluidRow(
                 bs4Dash::bs4Card(
-                  title = "Animals",
+                  title = "Number of Animals by Category",
+                  collapsible = FALSE,
                   elevation = 1,
                   width = 6,
                   solidHeader = TRUE,
                   fluidRow(
                     reactable::reactableOutput(ns("herd_inventory")))),
-                bs4Dash::bs4Card(
-                  title = "Herd Stab",
-                  elevation = 1,
+                bs4Dash::box(
+                  title = "Herd Stability",
+                  collapsible = FALSE,
+                  #elevation = 1,
                   width = 6,
-                  solidHeader = TRUE,
+                  #solidHeader = TRUE,
                   fluidRow(
                     textOutput(ns("herd_message"))))
                 )),
@@ -148,7 +153,7 @@ mod_animal_ui <- function(id){
                   plotly::plotlyOutput(ns("dmi_curves_plotly")))
                 )),
             tabPanel(
-              title = "Manure Excretion and GHG emissions",
+              title = "Manure Excretion and GHG Emissions",
               fluidRow(
                 bs4Dash::valueBoxOutput(ns("hei_manure")),
                 bs4Dash::valueBoxOutput(ns("dry_manure")),
@@ -158,17 +163,17 @@ mod_animal_ui <- function(id){
                 bs4Dash::valueBoxOutput(ns("lac_ch4")),
                 # Plots
                 bs4Dash::bs4Card(
-                  title = "Methane Emissions",
-                  width = 6,
-                  footer = NULL,
-                  plotly::plotlyOutput(ns("methane_curves_plotly"))),
-                bs4Dash::bs4Card(
                   title = "Manure Excretion",
                   width = 6,
                   footer = NULL,
-                  plotly::plotlyOutput(ns("manure_curves_plotly"))))),
+                  plotly::plotlyOutput(ns("manure_curves_plotly"))),
+                bs4Dash::bs4Card(
+                  title = "Methane Emissions",
+                  width = 6,
+                  footer = NULL,
+                  plotly::plotlyOutput(ns("methane_curves_plotly"))))),
             tabPanel(
-              title = "Nutrient balances",
+              title = "Nutrient Excretion",
               fluidRow(
                 bs4Dash::valueBoxOutput(ns("hei_nit")),
                 bs4Dash::valueBoxOutput(ns("dry_nit")),
@@ -305,9 +310,10 @@ mod_animal_server <- function(id){
 
       # additional inputs
 
-      birth_weight_kg <- 40
+      birth_weight_kg <- input$calf_birth_weight
       milk_sup_l <- input$calf_milk_sup
-      mature_body_weight <- 680
+      mature_body_weight <- as.numeric(input$animal_mature_weight)
+
       milk_fat <- input$calf_fat
       milk_prot <- input$calf_protein
       milk_p_g_l <- 0.996
@@ -643,14 +649,16 @@ mod_animal_server <- function(id){
               total_phosphorus_excretion_milk = dplyr::if_else(Categories == "Cow", milk_yield_kg_fpc * milk_p_g_l, 0),
 
               total_phosphorus_excretion_g = dplyr::if_else(Categories == "Hei",
-                                                            total_phosphorus_ingested_g * (1 - 0.6), #TODO
+                                                            total_phosphorus_ingested_g, #TODO
                                                             dplyr::if_else(Categories == "Dry",
-                                                                           total_phosphorus_ingested_g * (1 - 0.6), #TODO
+                                                                           total_phosphorus_ingested_g, #TODO
                                                                            dplyr::if_else(Categories == "Cal",
                                                                                           (milk_sup_l * milk_p_g_l * (1 - 0.85) + starter_intake_kg * starter_p / 100 * (1 - 0.85) + forage_intake_kg * forage_p / 100 * (1 - 0.70) * 1000),
-                                                                                          lactating_p_total_excretion(dry_matter_intake       = dry_matter_intake_kg_animal,
-                                                                                                                      phosphorous_content     = diet_p_lac,
-                                                                                                                      milk_p_excretion        = total_phosphorus_excretion_milk)))),
+                                                                                          #total_phosphorus_ingested_g - total_phosphorus_excretion_milk
+                                                                                           lactating_p_total_excretion(dry_matter_intake       = dry_matter_intake_kg_animal,
+                                                                                                                       phosphorous_content     = diet_p_lac,
+                                                                                                                       milk_p_excretion        = total_phosphorus_excretion_milk)
+                                                                                          ))),
 
 
               phosphorus_balance_g = total_phosphorus_ingested_g - total_phosphorus_excretion_g - total_phosphorus_excretion_milk)
@@ -675,7 +683,8 @@ mod_animal_server <- function(id){
                                                                            total_potassium_ingested_g,
                                                                            dplyr::if_else(Categories == "Cal",
                                                                                           (milk_sup_l * milk_k_g_l * (1 - 0.85) + starter_intake_kg * starter_k / 100 * (1 - 0.85) + forage_intake_kg * forage_k / 100 * (1 - 0.70) * 1000), #TODO
-                                                                                          total_potassium_ingested_g - total_potassium_excretion_milk))))
+                                                                                          total_potassium_ingested_g - total_potassium_excretion_milk
+                                                                                          ))))
 
           df_potassium %>%
             dplyr::ungroup()
@@ -710,7 +719,7 @@ mod_animal_server <- function(id){
         ) %>%
         dplyr::filter(MonthSimulated == 1) %>%
         dplyr::select(-MonthSimulated) %>%
-        dplyr::mutate_if(is.numeric, round, 5)
+        dplyr::mutate_if(is.numeric, round, 7)
 
       df_sum
 
@@ -720,16 +729,71 @@ mod_animal_server <- function(id){
 # Herd Inventory ----------------------------------------------------------
 # -------------------------------------------------------------------------
 
+    # Table with Herd inventory
+
     output$herd_inventory <- reactable::renderReactable({
 
       df_sum()[1:2] %>%
-        reactable::reactable()
+        dplyr::mutate(
+          total_animals = as.integer(total_animals)
+        ) %>%
+        tidyr::pivot_wider(
+          names_from = c("Categories"),
+          values_from = c("total_animals")
+        ) %>%
+        dplyr::rename(
+          "Calves" = "Cal",
+          "Milking Cows" = "Cow",
+          "Dry Cows" = "Dry",
+          "Heifers" = "Hei"
+        ) %>%
+        dplyr::relocate(Calves, .after = "Heifers") %>%
+        reactable::reactable(
+          defaultColDef = reactable::colDef(
+            header = function(value) gsub(".", " ", value, fixed = TRUE),
+            cell = function(value) format(value, nsmall = 1),
+            align = "center",
+            minWidth = 145,
+            headerStyle = list(background = "#f7f7f8")
+          ),
+          columns = list(
+            Species = reactable::colDef(minWidth = 300)  # overrides the default
+          ),
+          bordered = TRUE,
+          highlight = TRUE
+        )
 
     })
 
+    # Message about Herd stability
+
+    message <- eventReactive(input$button, {
+
+      if(round(herd_matrix()[[3]], 0) > round(herd_matrix()[[2]], 0)) {
+
+        paste0("The average number of female calves born monthly is ", round(herd_matrix()[[2]], 0), ". The average number of female calves needed to make up the replacement herd is ",
+               round(herd_matrix()[[3]], 0), " . Then, your herd is producing less replacement than necessary.")
+
+      } else if (round(herd_matrix()[[3]], 0) < round(herd_matrix()[[2]], 0)) {
+
+        paste0("The average number of female calves born monthly is ", round(herd_matrix()[[2]], 0), ". The average number of female calves needed to make up the replacement herd is ",
+               round(herd_matrix()[[3]], 0), " . Then, your herd is producing more replacement than necessary.")
+
+      } else {
+
+        paste0("The average number of female calves born monthly is ", round(herd_matrix()[[2]], 0), ". The average number of female calves needed to make up the replacement herd is ",
+               round(herd_matrix()[[3]], 0), " . Then, your herd is in equilibrium.")
+
+      }
+
+
+    })
+
+    # Outputting the message
+
     output$herd_message <- renderText({
 
-      herd_matrix()[[2]]
+      message()
 
     })
 
@@ -804,13 +868,13 @@ mod_animal_server <- function(id){
 
     })
 
-    # Milk Yield - corrected for fat and protein
+    # Milk Yield - corrected for 4% fat and 3.3% protein
 
     output$lac_my_fpc <- bs4Dash::renderValueBox({
 
       value_box_spark(
         value    = round(df_sum()$milk_yield_kg_fpc[2], 1),
-        title    = "Milk Yield Corrected for Fat and Protein (kg/d)",
+        title    = "Milk Yield Corrected for 4% Fat and 3.3% Protein (kg/d)",
         sparkobj = NULL,
         subtitle = tagList(),
         info     = " ",
@@ -1200,7 +1264,7 @@ mod_animal_server <- function(id){
           Phase = dplyr::if_else(Phase == "Lac1", "Primip", dplyr::if_else(Phase == "Lac2", "Second", "Multi"))
         ) %>%
         plotly::plot_ly(x = ~ Month,
-                        y = ~ round(total_nitrogen_excreted_g / 1000, 2),
+                        y = ~ round(total_nitrogen_excreted_g / 1000, 3),
                         color = ~ Phase,
                         type = "scatter",
                         mode = "lines+markers") %>%
@@ -1220,7 +1284,7 @@ mod_animal_server <- function(id){
           Phase = dplyr::if_else(Phase == "Lac1", "Primip", dplyr::if_else(Phase == "Lac2", "Second", "Multi"))
         ) %>%
         plotly::plot_ly(x = ~ Month,
-                        y = ~ round(total_phosphorus_excretion_g / 1000, 2),
+                        y = ~ round(total_phosphorus_excretion_g / 1000, 4),
                         color = ~ Phase,
                         type = "scatter",
                         mode = "lines+markers") %>%
@@ -1240,7 +1304,7 @@ mod_animal_server <- function(id){
           Phase = dplyr::if_else(Phase == "Lac1", "Primip", dplyr::if_else(Phase == "Lac2", "Second", "Multi"))
         ) %>%
         plotly::plot_ly(x = ~ Month,
-                        y = ~ round(total_potassium_excretion_g / 1000, 2),
+                        y = ~ round(total_potassium_excretion_g / 1000, 4),
                         color = ~ Phase,
                         type = "scatter",
                         mode = "lines+markers") %>%
@@ -1250,14 +1314,24 @@ mod_animal_server <- function(id){
 
     })
 
+# -------------------------------------------------------------------------
+# Outputs from this module to populate others -----------------------------
+# -------------------------------------------------------------------------
 
+    milk_supply <- reactive({
 
+      milk_supply <- input$calf_milk_sup
 
+      milk_supply
 
+      })
 
-    return(df_sum)
+    return(
+      list(
+        df = reactive(df_sum()),
+        milk_intake = reactive(milk_supply())
+      )
+    )
 
- })
-
-
+  })
 }

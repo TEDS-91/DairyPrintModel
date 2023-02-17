@@ -24,7 +24,7 @@ mod_ch4_emissions_ui <- function(id){
 
     fluidRow(
       bs4Dash::bs4Card(
-        title = "Manure Dashboard",
+        title = "Manure and GHG Emissions Dashboard",
         elevation = 2,
         width = 12,
         solidHeader = TRUE,
@@ -138,19 +138,13 @@ mod_ch4_emissions_server <- function(id,
         dplyr::filter(Categories == "Cow") %>%
         dplyr::pull(total_animals)
 
-      print(milking_cows)
-
       dry_cows <- animal_data %>%
         dplyr::filter(Categories == "Dry") %>%
         dplyr::pull(total_animals)
 
-      print(dry_cows)
-
       heifers <- animal_data %>%
         dplyr::filter(Categories == "Hei") %>%
         dplyr::pull(total_animals)
-
-      print(heifers)
 
       #milking_cows_manure <- 65
       #dry_cows_manure <- 25
@@ -297,7 +291,7 @@ mod_ch4_emissions_server <- function(id,
       # liquid storage
 
       vs_liq_loaded_kg_day <- dplyr::if_else(solid_liquid == "yes", manure_vs_liquids_after_sep_kg,
-                                             dplyr::if_else(type_manure == "slurry", digested_vs_kg, 0))
+                                             dplyr::if_else(type_manure == "Slurry", digested_vs_kg, 0))
 
       vs_liq_loaded_kg_day <- rep(vs_liq_loaded_kg_day, 730)
 
@@ -460,11 +454,16 @@ mod_ch4_emissions_server <- function(id,
 
     })
 
+
+# -------------------------------------------------------------------------
+# Methane Emissions -------------------------------------------------------
+# -------------------------------------------------------------------------
+
     output$herd_methane <- bs4Dash::renderValueBox({
 
       value_box_spark(
         value    = round(summarized_data()[1], 1),
-        title    = toupper("Total Herd Methane Emissions (kg)"),
+        title    = "Total Herd Methane Emissions (kg/year)",
         sparkobj = NULL,
         subtitle = tagList(),
         info     = " ",
@@ -476,38 +475,11 @@ mod_ch4_emissions_server <- function(id,
 
     })
 
-    # output$facilitie_methane <- bs4Dash::renderValueBox({
-    #
-    #   emissions <- emissions() %>%
-    #     tibble::as_tibble() %>%
-    #     dplyr::filter(yday > 365)
-    #
-    #    hc <- highcharter::hchart(emissions, "area", highcharter::hcaes(yday, barn_ch4_emissions_kg), name = "Daily Methane Emissions (kg)")  %>%
-    #      highcharter::hc_size(height = 100) %>%
-    #      highcharter::hc_credits(enabled = FALSE) %>%
-    #      highcharter::hc_add_theme(highcharter::hc_theme_sparkline_vb())
-    #
-    #   vb <- value_box_spark(
-    #     value    = round(summarized_data()[2], 2),
-    #     title    = toupper("Total Barn Methane Emissions (kg)"),
-    #     sparkobj = hc,
-    #     subtitle = tagList(),
-    #     info     = " ",
-    #     icon     = icon("fa-solid fa-fire-flame-simple", verify_fa = FALSE),
-    #     width    = 1,
-    #     color    = "danger",
-    #     href     = NULL
-    #   )
-    #
-    #   vb
-    #
-    # })
-
     output$facilitie_methane <- bs4Dash::renderValueBox({
 
       value_box_spark(
         value    = round(summarized_data()[2], 2),
-        title    = toupper("Total Barn Methane Emissions (kg)"),
+        title    = "Total Barn Methane Emissions (kg/year)",
         sparkobj = NULL,
         subtitle = tagList(),
         info     = " ",
@@ -523,7 +495,7 @@ mod_ch4_emissions_server <- function(id,
 
       value_box_spark(
         value    = round(sum(summarized_data()[4], summarized_data()[3], na.rm = TRUE), 1),
-        title    = toupper("Total Storage Methane Emissions (kg)"),
+        title    = "Total Storage Methane Emissions (kg/year)",
         sparkobj = NULL,
         subtitle = tagList(),
         info     = " ",
@@ -550,14 +522,47 @@ mod_ch4_emissions_server <- function(id,
          yday = yday - 365
        )
 
-      emissions %>%
+      fig <- emissions %>%
         plotly::plot_ly(x = ~ yday,
                         y = ~ round(barn_ch4_emissions_kg, 2),
+                        name = "CH4",
                         type = "scatter",
                         mode = "lines+markers") %>%
-        plotly::layout(yaxis = list(title = "Daily Methane Emissions from Barn (kg)"),
-                       xaxis = list(title = "Year Days")) %>%
         plotly::config(displayModeBar = FALSE)
+
+
+      ay <- list(
+        tickfont = list(color = "black"),
+        overlaying = "y",
+        side = "right",
+        title = "Temp. (C)")
+
+      fig <- fig %>%
+        plotly::add_trace(x     = ~1:365,
+                          y     = ~round(temp_c[1:365], 1),
+                          name  = "Temp.",
+                          yaxis = "y2",
+                          mode  = "lines+markers",
+                          type  = "scatter")
+
+      fig <- fig %>%
+        plotly::layout(
+        title  = " ",
+        yaxis2 = ay,
+        xaxis  = list(title = "Year Days"),
+        yaxis  = list(title = "Daily Methane Emissions From Barn (kg)")
+      ) %>%
+        plotly::layout(plot_bgcolor = 'white',
+               xaxis = list(
+                 zerolinecolor = '#ffff',
+                 zerolinewidth = 2,
+                 gridcolor     = 'ffff'),
+               yaxis = list(
+                 zerolinecolor = '#ffff',
+                 zerolinewidth = 2,
+                 gridcolor     = 'ffff')
+        ) %>%
+        plotly::layout(legend = list(itemsizing = 'constant'))
 
     })
 
@@ -573,14 +578,46 @@ mod_ch4_emissions_server <- function(id,
           total_storage_kg = ch4_emissions_solid_storage_kg + ch4_liq_emission_kg_day
         )
 
-      emissions %>%
-        plotly::plot_ly(x = ~ yday,
-                        y = ~ round(total_storage_kg, 2),
+      fig <- emissions %>%
+        plotly::plot_ly(x    = ~ yday,
+                        y    = ~ round(total_storage_kg, 2),
+                        name = "CH4",
                         type = "scatter",
                         mode = "lines+markers") %>%
-        plotly::layout(yaxis = list(title = "Daily Methane Emissions from Barn (kg)"),
-                       xaxis = list(title = "Year Days")) %>%
         plotly::config(displayModeBar = FALSE)
+
+      ay <- list(
+        tickfont   = list(color = "black"),
+        overlaying = "y",
+        side       = "right",
+        title      = "Temp. (C)")
+
+      fig <- fig %>%
+        plotly::add_trace(x     = ~1:365,
+                          y     = ~round(temp_c[1:365], 1),
+                          name  = "Temp.",
+                          yaxis = "y2",
+                          mode  = "lines+markers",
+                          type  = "scatter")
+
+      fig <- fig %>%
+        plotly::layout(
+          title  = " ",
+          yaxis2 = ay,
+          xaxis  = list(title = "Year Days"),
+          yaxis  = list(title = "Daily Methane Emissions From Storage (kg)")
+        ) %>%
+        plotly::layout(plot_bgcolor = 'white',
+                       xaxis = list(
+                         zerolinecolor = '#ffff',
+                         zerolinewidth = 2,
+                         gridcolor = 'ffff'),
+                       yaxis = list(
+                         zerolinecolor = '#ffff',
+                         zerolinewidth = 2,
+                         gridcolor = 'ffff')
+        ) %>%
+        plotly::layout(legend = list(itemsizing = 'constant'))
 
     })
 
@@ -601,10 +638,11 @@ mod_ch4_emissions_server <- function(id,
                       labels = labels,
                       values = values,
               textinfo = 'label+percent',
-              insidetextorientation = 'radial') #+
-        #plotly::config(displayModeBar = FALSE)
+              insidetextorientation = 'radial')
 
     })
+
+
 
     # output$plot <- renderPlot({
     #

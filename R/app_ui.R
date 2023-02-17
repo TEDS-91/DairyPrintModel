@@ -16,7 +16,7 @@ app_ui <- function(request) {
         ),
       bs4Dash::bs4DashSidebar(
         bs4Dash::sidebarUserPanel(
-          image = "www/dih_logo.png",
+          image = "www/DIH_logo.png",
           name = "DairyPrint"
         ),
         bs4Dash::bs4SidebarMenu(

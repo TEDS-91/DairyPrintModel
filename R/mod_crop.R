@@ -17,12 +17,11 @@ mod_crop_ui <- function(id){
                width = 12,
                fluidRow(
                column(12,
-                      selectInput(ns("number_crops"), label = "Number of Crops:", choices = seq(1, 10, 1), selected = 5)))
+                      selectInput(ns("number_crops"), label = "Number of Crops:", choices = seq(1, 10, 1), selected = 8)))
     )),
 
     fluidRow(
     bs4Dash::bs4Card(
-      "Crops2",
       width = 12,
       fluidRow(
         column(12,
@@ -48,7 +47,18 @@ mod_crop_server <- function(id, animal_data){
 
     output$crop_types <- renderUI({
 
-      purrr::map(1:input$number_crops, ~ crop_ui_prms(ns(.x)))
+      evens <- function(x) subset(x, x %% 2 == 0)
+
+      vector_crops <- seq(1, input$number_crops)
+
+      fluidRow(
+        column(6,
+               purrr::map(vector_crops[!vector_crops %in% evens(vector_crops)],
+                          ~bs4Dash::bs4Card(width = 12, crop_ui_prms(ns(.x))))),
+        column(6,
+               purrr::map(evens(vector_crops),
+                          ~bs4Dash::bs4Card(width = 12, crop_ui_prms(ns(.x)))))
+      )
 
     })
 

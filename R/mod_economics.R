@@ -13,32 +13,33 @@ mod_economics_ui <- function(id){
 
     fluidRow(
       bs4Dash::bs4Card(
-        title = h4(strong("Economics"), align = "center"),
+        title = "Diet Costs and Milk Price",
+        elevation = 1,
         width = 12,
+        solidHeader = TRUE,
+        status = "teal",
+        collapsible = TRUE,
         fluidRow(
-
           column(3,
-                 numericInput(ns("lact_diet_cost"),   label = "Lactation Cows ($/DM)", value = 0.41)),
+                 numericInput(ns("lact_diet_cost"),   label = "Milking Cows ($/kgDM):",   value = 0.3)),
           column(3,
-                 numericInput(ns("dry_diet_cost"),    label = "Dry ($/DM)", value = 0.35)),
+                 numericInput(ns("dry_diet_cost"),    label = "Dry Cows ($/kgDM):",       value = 0.12)),
           column(3,
-                 numericInput(ns("heifer_diet_cost"), label = "Heifers ($/DM)", value = 0.28)),
+                 numericInput(ns("heifer_diet_cost"), label = "Heifers ($/kgDM):",        value = 0.12)),
           column(3,
-                 numericInput(ns("milk_price"),       label = "Milk Price ($/wt)", value = 21))))),
-
-    #h4(strong("Economics"), align = "center"),
+                 numericInput(ns("milk_price"),       label = "Milk Price ($/cwt):",     value = 21))))),
 
     fluidRow(
       bs4Dash::bs4Card(
-        title = h4(strong("Economics"), align = "center"),
+        title = "Economic analysis",
+        elevation = 1,
         width = 12,
+        solidHeader = TRUE,
+        status = "teal",
+        collapsible = TRUE,
+        maximizable = TRUE,
         fluidRow(
-          #tableOutput(ns("tabela")),
-          bs4Dash::valueBoxOutput(ns("vbox")),
-          bs4Dash::valueBoxOutput(ns("vbox2"))
-
-        )
-      )
+          reactable::reactableOutput(ns("tabela"))))
     )
   )
 }
@@ -47,7 +48,8 @@ mod_economics_ui <- function(id){
 #'
 #' @noRd
 mod_economics_server <- function(id,
-                                 animal_data){
+                                 animal_data,
+                                 calf_milk_intake){
   moduleServer( id, function(input, output, session){
     ns <- session$ns
 
@@ -55,11 +57,13 @@ mod_economics_server <- function(id,
 
       animal_data <- animal_data()
 
+      calf_milk_intake <- calf_milk_intake()
+
       # animal prmts - they will come from the animal
 
-      milking_cows <- 230
-      dry_cows <- 50
-      heifers <- 134
+      milking_cows <- animal_data$total_animals[2]
+      dry_cows <- animal_data$total_animals[3]
+      heifers <- animal_data$total_animals[4]
 
       #dmi_milking_cows <- 28.5
       dmi_milking_cows <- animal_data %>%
@@ -80,11 +84,13 @@ mod_economics_server <- function(id,
       #my_lactating <- input$milk_yield
       my_lactating <- animal_data %>%
         dplyr::filter(Categories == "Cow") %>%
-        dplyr::pull("milk_yield_kg")
+        dplyr::pull("milk_yield_kg_fpc")
 
       feed_efic <- my_lactating / dmi_milking_cows
 
-      total_income <- input$milk_price / 100 / 0.46 * my_lactating
+      # total income discounting milk supplied to calves
+
+      total_income <- input$milk_price / (100 / 2.2) * (my_lactating - (animal_data$total_animals[1] * calf_milk_intake) / milking_cows)
 
       feed_cost_lac <- dmi_milking_cows * input$lact_diet_cost
 
@@ -100,50 +106,39 @@ mod_economics_server <- function(id,
 
       economics <- tibble::tibble(
 
-        "Feed Efficiency (kg/kg)"                 = feed_efic,
+        #"Feed Efficiency (kg/kg)"                 = feed_efic,
         "Total Milk Income ($/cow)"               = total_income,
         "Feed Cost ($/cow)"                       = feed_cost_lac,
         "Income Over Feed Cost Lac ($/cow)"       = iofc_lac,
         "Income Over Feed Cost Lac + Dry ($/cow)" = iofc_lac_dry,
         "Income Over feed Cost Dry ($/cow)"       = iofc_dry,
         "Feed Cost per Kg Milk ($)"               = feed_cost_kg_milk
-
-      )
-
+        ) %>%
+        dplyr::mutate_if(is.numeric, round, 2)
 
     })
 
-    output$tabela <- renderTable({
+    output$tabela <- reactable::renderReactable({
 
-      economics <- tibble::as_tibble(economics())
+      economics <- tibble::as_tibble(economics()) %>%
+        reactable::reactable(
+          defaultColDef = reactable::colDef(
+            header = function(value) gsub(".", " ", value, fixed = TRUE),
+            cell = function(value) format(value, nsmall = 1),
+            align = "center",
+            minWidth = 200,
+            headerStyle = list(background = "#f7f7f8")
+          ),
+          columns = list(
+            Species = reactable::colDef(minWidth = 300)  # overrides the default
+          ),
+          bordered = TRUE,
+          highlight = TRUE
+        )
 
       economics
 
     })
-
-    # testing value box
-
-    output$vbox <- bs4Dash::renderValueBox({
-      bs4Dash::valueBox(
-        value = tags$p(round(economics()[1], 2), style = "font-size: 200%;"),
-        subtitle = "Feed Efficiency",
-        color = "lightblue",
-        icon = icon("fa-thin fa-leaf", verify_fa = FALSE),
-        elevation = c(1)
-      )
-    })
-
-    output$vbox2 <- bs4Dash::renderValueBox({
-      bs4Dash::valueBox(
-        value = tags$p(round(economics()[4], 2), style = "font-size: 200%;"),
-        subtitle = tags$p("Income Over Feed Cost ($/Cow)", style = "font-size: 100%;"),
-        color = "lightblue",
-        icon = icon("fa-solid fa-dollar-sign", verify_fa = FALSE),
-        elevation = c(1)
-      )
-    })
-
-
 
   })
 }
