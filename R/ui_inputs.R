@@ -159,45 +159,38 @@ crop_ui_prms <- function(id) {
 
     wellPanel(
 
-      h4(strong("Crop types and Yield"), align = "center"),
+      h5(strong("Crop Type, Yield, and Manure Applied"), align = "center"),
 
       fluidRow(
 
-        column(2,
+        column(3,
                selectInput(inputId  = paste0(id, "_crop_type"), label = paste0("Crop : "), choices = crop_list, selected = crop_list[[1]])),
-        column(2,
+        column(3,
                numericInput(inputId = paste0(id, "_area"), label = "Area (ha):", value = 15, min = 0, max = 1000)),
-        column(2,
-               numericInput(inputId = paste0(id, "_yield"), label = "Yield (ton./hectare):", value = 62, min = 50, max = 80))),
+        column(3,
+               numericInput(inputId = paste0(id, "_yield"), label = "Yield (ton./hectare):", value = 62, min = 50, max = 80)),
+        column(3,
+               numericInput(inputId = paste0(id, "_manure_pct"), label = "Manure (% of Total Manure):", value = 25, min = 0, max = 100)
+        )),
 
-      h4(strong("Fertilizers"), align = "center"),
+      h5(strong("Fertilizers and Lime Applied"), align = "center"),
 
       fluidRow(
 
         column(2,
-               numericInput(inputId = paste0(id, "_total_n_applied"), label = "Total Nitrogen Applied (kg/ha):", value  = 60, min = 0, max = 500)),
-        column(2,
-               numericInput(inputId = paste0(id, "_urea_pct_n"), label = "Urea Applied (% of Total Nitrogen):", value = 50, min = 0, max  = 100)),
+               numericInput(inputId = paste0(id, "_total_n_applied"), label = "N (kg/ha):", value  = 60, min = 0, max = 500)),
         column(3,
-               numericInput(inputId = paste0(id, "_p2o5_applied"), label = "Total P2O5 Applied (kg/ha):", value = 100, min = 0, max = 500)),
+               numericInput(inputId = paste0(id, "_urea_pct_n"), label = "Urea (% of Total N):", value = 50, min = 0, max  = 100)),
         column(3,
-               numericInput(inputId = paste0(id, "_k2o_applied"), label = "Total K2O Applied (kg/ha):", value = 100, min = 0, max = 500)),
+               numericInput(inputId = paste0(id, "_p2o5_applied"), label = "P2O5 (kg/ha):", value = 100, min = 0, max = 500)),
         column(2,
-               numericInput(inputId = paste0(id, "_lime_applied"), label = "Lime applied (ton./hectare):", value = 2, min = 0, max = 10))),
-
-      h4(strong("Manure"), align = "center"),
-
-      fluidRow(
-
-        column(4,
-               selectInput(inputId  = paste0(id, "_application_method"), label = "Application method:", choices = c("Direct injection", "Irrigation", "Broadcast spreading"), selected = "Broadcast spreading")),
-        column(4,
-               numericInput(inputId = paste0(id, "_manure_pct"), label = "Manure Applied (% of Total Manure):", value = 20, min = 0, max = 100)
-        )
+               numericInput(inputId = paste0(id, "_k2o_applied"), label = "K2O (kg/ha):", value = 100, min = 0, max = 500)),
+        column(2,
+               numericInput(inputId = paste0(id, "_lime_applied"), label = "Lime (ton./ha):", value = 2, min = 0, max = 10)))
 
       )
 
-    ))
+    )
 
   return(crop_ui_prms)
 

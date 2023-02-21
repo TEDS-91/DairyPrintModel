@@ -12,17 +12,16 @@ mod_crop_ui <- function(id){
   tagList(
 
     fluidRow(
-      bs4Dash::bs4Card(
-               "Crops",
-               width = 12,
-               fluidRow(
-               column(12,
-                      selectInput(ns("number_crops"), label = "Number of Crops:", choices = seq(1, 10, 1), selected = 8)))
-    )),
-
-    fluidRow(
     bs4Dash::bs4Card(
       width = 12,
+      title = "Crops ",
+      elevation = 2,
+      solidHeader = TRUE,
+      status = "teal",
+      collapsed = FALSE,
+      fluidRow(
+        column(3,
+               selectInput(ns("number_crops"), label = "Homegrown Crops:", choices = seq(1, 10, 1), selected = 4))),
       fluidRow(
         column(12,
                uiOutput(ns("crop_types")))))),
@@ -54,10 +53,22 @@ mod_crop_server <- function(id, animal_data){
       fluidRow(
         column(6,
                purrr::map(vector_crops[!vector_crops %in% evens(vector_crops)],
-                          ~bs4Dash::bs4Card(width = 12, crop_ui_prms(ns(.x))))),
+                          ~bs4Dash::bs4Card(width = 12,
+                                            title = paste0("Crop: ", .x),
+                                            elevation = 2,
+                                            solidHeader = TRUE,
+                                            status = "teal",
+                                            collapsed = FALSE,
+                                            crop_ui_prms(ns(.x))))),
         column(6,
                purrr::map(evens(vector_crops),
-                          ~bs4Dash::bs4Card(width = 12, crop_ui_prms(ns(.x)))))
+                          ~bs4Dash::bs4Card(width = 12,
+                                            title = paste0("Crop: ", .x),
+                                            elevation = 2,
+                                            solidHeader = TRUE,
+                                            status = "teal",
+                                            collapsed = FALSE,
+                                            crop_ui_prms(ns(.x)))))
       )
 
     })
@@ -79,21 +90,20 @@ mod_crop_server <- function(id, animal_data){
                              input[[paste0(i, "_crop_type")]],
                              input[[paste0(i, "_area")]],
                              input[[paste0(i, "_yield")]],
+                             input[[paste0(i, "_manure_pct")]],
                              input[[paste0(i, "_total_n_applied")]],
                              input[[paste0(i, "_urea_pct_n")]],
                              input[[paste0(i, "_p2o5_applied")]],
                              input[[paste0(i, "_k2o_applied")]],
-                             input[[paste0(i, "_lime_applied")]],
-                             input[[paste0(i, "_application_method")]],
-                             input[[paste0(i, "_manure_pct")]])
+                             input[[paste0(i, "_lime_applied")]])
 
          valores <- rbind(valores, crop_values)
 
        }
 
-        colnames(valores) <- c("crop_id", "crop_type", "area", "yield", "total_n_applied",
+        colnames(valores) <- c("crop_id", "crop_type", "area", "yield",  "manure_pct", "total_n_applied",
                                "urea_pct_applied", "phosphate_applied", "potash_applied",
-                               "lime_applied", "application_method", "manure_pct")
+                               "lime_applied")
 
         valores
 
@@ -127,8 +137,10 @@ mod_crop_server <- function(id, animal_data){
 
       valores <- valores()
 
+      print(valores())
+
        valores <- valores %>%
-         dplyr::mutate_at(c(3:9, 11), as.numeric) %>%
+         dplyr::mutate_at(c(3:10), as.numeric) %>%
          dplyr::mutate(
            co2_lime = lime_decomposition_co2(lime_applied = lime_applied * 1000),
            co2_urea = urea_decomposition_co2(urea_applied = (urea_pct_applied / 100 * total_n_applied)),

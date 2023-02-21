@@ -75,6 +75,8 @@ app_server <- function(input, output, session) {
   mod_crop_server("crop",
                   animal_data = animal_data[[1]])
 
+  mod_info_server("info_1")
+
   report <- reactive({
 
     animal_data()

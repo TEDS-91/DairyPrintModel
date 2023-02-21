@@ -27,11 +27,6 @@ app_ui <- function(request) {
             icon = icon("fa-thin fa-cow", verify_fa = FALSE)
           ),
           bs4Dash::bs4SidebarMenuItem(
-            "Economics",
-            tabName = "economics",
-            icon = icon("fa-solid fa-dollar-sign", verify_fa = FALSE)
-          ),
-          bs4Dash::bs4SidebarMenuItem(
             "Manure Handling",
             tabName = "manure",
             icon = icon("fa-thin fa-poop", verify_fa = FALSE)
@@ -42,12 +37,17 @@ app_ui <- function(request) {
             icon = icon("fa-solid fa-wheat-awn", verify_fa = FALSE)
           ),
           bs4Dash::bs4SidebarMenuItem(
+            "Economics",
+            tabName = "economics",
+            icon = icon("fa-solid fa-dollar-sign", verify_fa = FALSE)
+          ),
+          bs4Dash::bs4SidebarMenuItem(
             "Dashboard",
             tabName = "dashboard",
             icon = icon("fa-solid fa-gauge", verify_fa = FALSE)
           ),
           bs4Dash::bs4SidebarMenuItem(
-            "About this tool",
+            "About DairyPrint Model",
             tabName = "info",
             icon = icon("fa-solid fa-circle-info", verify_fa = FALSE)
           ),
@@ -69,24 +69,24 @@ app_ui <- function(request) {
             mod_animal_ui("animal")
           ),
           bs4Dash::bs4TabItem(
-            tabName = "economics",
-            mod_economics_ui("economics")
-          ),
-          bs4Dash::bs4TabItem(
             tabName = "manure",
             #mod_nh3_emissions_ui("nh3_emissions"),
             mod_ch4_emissions_ui("ch4_emissions")
           ),
           bs4Dash::bs4TabItem(
-            "Crop",
             tabName = "crop",
             mod_crop_ui("crop")
+          ),
+          bs4Dash::bs4TabItem(
+            tabName = "economics",
+            mod_economics_ui("economics")
           ),
           bs4Dash::bs4TabItem(
             tabName = "dashboard",
           ),
           bs4Dash::bs4TabItem(
             tabName = "info",
+            mod_info_ui("info_1")
           )
         )
       )

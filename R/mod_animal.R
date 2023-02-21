@@ -26,6 +26,15 @@ mod_animal_ui <- function(id){
         bs4Dash::bs4Card(
           title = "Herd Information",
           elevation = 1,
+          width = 12,
+          solidHeader = TRUE,
+          status = "teal",
+          collapsible = TRUE,
+          fluidRow(
+
+        bs4Dash::bs4Card(
+          title = "Herd Information",
+          elevation = 1,
           width = 7,
           solidHeader = TRUE,
           status = "teal",
@@ -68,6 +77,11 @@ mod_animal_ui <- function(id){
               fluidRow(
                 diet_ui_prms(ns("diet_hei"), cp = 12, ndf = 35, adf = 23, ee = 4, p = 0.23, k = 0.45)))))),
 
+      fluidRow(
+        h5(strong(textOutput(ns("status"))))
+      )
+      ),
+
       # code for the report
 
       # fluidRow(
@@ -83,7 +97,7 @@ mod_animal_ui <- function(id){
 
     #textOutput(ns("lambda")),
 
-      fluidRow(
+      #fluidRow(
         bs4Dash::bs4Card(
           title = p("Herd Dashboard",
                     actionButton(ns("button"), "Run!", icon("fa.solid fa-person-running", verify_fa = FALSE),
@@ -206,7 +220,7 @@ mod_animal_ui <- function(id){
           )
         )
       )
-
+   #)
 }
 
 #' animal Server Functions
@@ -215,6 +229,9 @@ mod_animal_ui <- function(id){
 mod_animal_server <- function(id){
   moduleServer( id, function(input, output, session){
     ns <- session$ns
+
+    # testing fading
+    status <- reactiveVal()
 
     herd_matrix <- reactive({
 
@@ -283,6 +300,8 @@ mod_animal_server <- function(id){
 
 
     df <- eventReactive(input$button, {
+
+      status("Inputs are up to date!")
 
       withProgress(message = "Running the model...", detail = ' ', value = 0.5, {
 
@@ -796,6 +815,44 @@ mod_animal_server <- function(id){
       message()
 
     })
+
+
+    observeEvent({list(input$animal_time_first_calv,
+                       input$animal_heifer_calf_born,
+                       input$animal_calves_heifers_cul,
+                       input$animal_average_milk_yield,
+                       input$animal_cow_rep_rate,
+                       input$animal_cow_calving_int,
+                       input$animal_milk_freq,
+                       input$animal_n_cows,
+                       input$diet_lac_cp,
+                       input$diet_lac_ee,
+                       input$diet_lac_ndf,
+                       input$diet_lac_adf,
+                       input$diet_lac_p,
+                       input$diet_lac_k,
+                       input$diet_hei_cp,
+                       input$diet_hei_ee,
+                       input$diet_hei_ndf,
+                       input$diet_hei_adf,
+                       input$diet_hei_p,
+                       input$diet_hei_k,
+                       input$diet_dry_cp,
+                       input$diet_dry_ee,
+                       input$diet_dry_ndf,
+                       input$diet_dry_adf,
+                       input$diet_dry_p,
+                       input$diet_dry_k
+
+
+                       )},
+                 {status("Hit Run!")})
+
+    output$status <- renderText({
+
+      status()
+
+      })
 
 # -------------------------------------------------------------------------
 # Performance metrics -----------------------------------------------------
