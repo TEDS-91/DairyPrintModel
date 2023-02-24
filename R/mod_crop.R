@@ -27,11 +27,22 @@ mod_crop_ui <- function(id){
                uiOutput(ns("crop_types")))))),
 
     bs4Dash::bs4Card(
-      "Crops3",
+      width = 12,
+      title = "Crops ",
+      elevation = 2,
+      solidHeader = TRUE,
+      status = "teal",
+      collapsed = FALSE,
+      fluidRow(
+        bs4Dash::valueBoxOutput(ns("lime_urea_co2")),
+        bs4Dash::valueBoxOutput(ns("fert_nh3")),
+        bs4Dash::valueBoxOutput(ns("total_nitrous_oxide")),
+        tableOutput(ns("teste"))
+      )
 
-    tableOutput(ns("df")),
+    #tableOutput(ns("df")),
 
-    tableOutput(ns("teste")))
+    )
 
 
   )
@@ -109,8 +120,7 @@ mod_crop_server <- function(id, animal_data){
 
     })
 
-
-    output$teste <- renderTable({
+    crop_calculations <- reactive({
 
       crop_list <- list("Corn silage (ton)",
                         "Corn grain (bu)",
@@ -137,30 +147,113 @@ mod_crop_server <- function(id, animal_data){
 
       valores <- valores()
 
-      print(valores())
+      valores <- valores %>%
+        dplyr::mutate_at(c(3:10), as.numeric) %>%
+        dplyr::mutate(
+          co2_lime = lime_decomposition_co2(lime_applied = lime_applied * 1000) * area,
+          co2_urea = urea_decomposition_co2(urea_applied = (urea_pct_applied / 100 * total_n_applied)) * area,
+          nh3_n_fertilizer = fertilizer_nh3(nitrogen_applied = total_n_applied) * area,
+          nitrous_oxide = fert_manure_nitrous_oxide(nitrogen_applied = total_n_applied) * area # TODO! missing manure N
+        )
 
-       valores <- valores %>%
-         dplyr::mutate_at(c(3:10), as.numeric) %>%
-         dplyr::mutate(
-           co2_lime = lime_decomposition_co2(lime_applied = lime_applied * 1000),
-           co2_urea = urea_decomposition_co2(urea_applied = (urea_pct_applied / 100 * total_n_applied)),
-           nh3_n_fertilizer = fertilizer_nh3(nitrogen_applied = total_n_applied)
-          )
-
-       valores %>%
-         dplyr::inner_join(crop_nutrient_removal_n_fix, by = c("crop_type" = "crop")) %>%
-         dplyr::mutate(
-           total_n_removal = n_removal * yield,
-           total_p_removal = p_removal * yield / 2.29,
-           total_k_removal = k_removal * yield / 1.21,
-           total_n_fixed   = nitrogen_fix * yield,
-           crop_n_balance  = total_n_applied - total_n_removal + total_n_fixed
-         )
-
-
+      valores %>%
+        dplyr::inner_join(crop_nutrient_removal_n_fix, by = c("crop_type" = "crop")) %>%
+        dplyr::mutate(
+          total_n_removal = n_removal * yield,
+          total_p_removal = p_removal * yield / 2.29,
+          total_k_removal = k_removal * yield / 1.21,
+          total_n_fixed   = nitrogen_fix * yield,
+          crop_n_balance  = total_n_applied - total_n_removal + total_n_fixed
+        )
 
 
     })
+
+    output$teste <- renderTable({
+
+    crop_calculations()
+
+    })
+
+    # Total CO2 emitted from lime and urea
+
+    output$lime_urea_co2 <- bs4Dash::renderValueBox({
+
+      total_co2 <- crop_calculations() %>%
+        dplyr::mutate(
+          total_co2 = co2_urea + co2_lime
+        ) %>%
+        dplyr::summarise(
+          total_co2 = sum(total_co2)
+        ) %>%
+        dplyr::pull(total_co2)
+
+      value_box_spark(
+        value    = round(total_co2, 1),
+        title    = "Total CO2 Emissions from Lime and Urea (kg/year)",
+        sparkobj = NULL,
+        subtitle = tagList(),
+        info     = " ",
+        icon     = icon("fa-solid fa-fire-flame-simple", verify_fa = FALSE),
+        width    = 4,
+        color    = "white",
+        href     = NULL
+      )
+
+    })
+
+    # Total Ammonia emitted from N fertilzer
+
+    output$fert_nh3 <- bs4Dash::renderValueBox({
+
+      total_nh3 <- crop_calculations() %>%
+        dplyr::summarise(
+          total_nh3 = sum(nh3_n_fertilizer)
+        ) %>%
+        dplyr::pull(total_nh3)
+
+      value_box_spark(
+        value    = round(total_nh3, 1),
+        title    = "Total Ammonia emissions from N Fertizers (kg/year)",
+        sparkobj = NULL,
+        subtitle = tagList(),
+        info     = " ",
+        icon     = icon("fa-solid fa-fire-flame-simple", verify_fa = FALSE),
+        width    = 4,
+        color    = "white",
+        href     = NULL
+      )
+
+    })
+
+    # Total Nitrous oxide emitted from N fertilzer + Manure
+
+    output$total_nitrous_oxide <- bs4Dash::renderValueBox({
+
+      total_nitrous_oxide <- crop_calculations() %>%
+        dplyr::summarise(
+          total_nh3 = sum(nh3_n_fertilizer),
+          total_nitrous_oxide = sum(nitrous_oxide)
+        ) %>%
+        dplyr::mutate(
+          total_nitrous_oxide = total_nitrous_oxide + 0.01 * total_nh3
+        ) %>%
+        dplyr::pull(total_nitrous_oxide)
+
+      value_box_spark(
+        value    = round(total_nitrous_oxide, 1),
+        title    = "Total Nitrous Oxide emissions from N Fertizers (Missing Manure) (kg/year)",
+        sparkobj = NULL,
+        subtitle = tagList(),
+        info     = " ",
+        icon     = icon("fa-solid fa-fire-flame-simple", verify_fa = FALSE),
+        width    = 4,
+        color    = "white",
+        href     = NULL
+      )
+
+    })
+
 
   })
 }

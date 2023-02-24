@@ -16,6 +16,8 @@ app_server <- function(input, output, session) {
 
   bedding <- reactive(input$bedding_type)
 
+  manure_management <- reactive(input$manure_manag)
+
   biodigester <- reactive(input$biodigester)
 
   biod_ef <- reactive(input$biod_ef)
@@ -61,6 +63,7 @@ app_server <- function(input, output, session) {
                            county          = county,
                            facilitie       = facilitie,
                            bedding         = bedding,
+                           manure_management = manure_management,
                            biodigester     = biodigester,
                            biodigester_ef  = biod_ef,
                            type_manure     = type_manure,

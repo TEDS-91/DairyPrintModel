@@ -93,6 +93,17 @@ utils::globalVariables(
     "milk_intake",
     "age",
     "dmi",
-    "Calves"
+    "Calves",
+
+    # Manure
+    "co2_lime",
+    "co2_urea",
+    "nh3_n_fertilizer",
+    "nitrous_oxide",
+    "storage_ch4_emissions_kg",
+    "year_day"
+
+
+
   )
 )

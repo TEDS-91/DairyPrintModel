@@ -17,11 +17,11 @@ value_box_spark <- function(value,
                             title,
                             sparkobj = NULL,
                             subtitle,
-                            info = NULL,
-                            icon = NULL,
-                            color = "aqua",
-                            width = 4,
-                            href = NULL) {
+                            info     = NULL,
+                            icon     = NULL,
+                            color    = "aqua",
+                            width    = 4,
+                            href     = NULL) {
 
   info_icon <- tags$small(
     tags$i(
@@ -58,3 +58,8 @@ value_box_spark <- function(value,
     boxContent
   )
 }
+
+
+
+
+

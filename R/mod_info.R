@@ -13,8 +13,13 @@ mod_info_ui <- function(id){
 
     bs4Dash::bs4Jumbotron(
       title = "DairyPrint Model: Helping Dairy Farmers Towards Higher Sustainability!",
-      lead = "DairyPrint model is a whole-farm model developed ...",
-      status = "success",
+
+      lead = "DairyPrint model is a high-level, simple, minimalistic, user-friendly,
+              still powerful, and scientifically sound whole-farm decision support
+              model to assess economic and environmental tradeoffs of dairy farming
+              for strategic nutrient management decisions.",
+
+      status = "info",
       btnName = "To get more information...",
       href = "https://gitlab.com/rpodcast/shinylego"
     ),
@@ -24,10 +29,10 @@ mod_info_ui <- function(id){
           title = bs4Dash::bs4UserDescription(
             title = "Project Lead and Model Developer",
             subtitle = "Victor E. Cabrera",
-            image = "www/victor.jpeg",
+            image = "www/victor.jpg",
             type = 1
           ),
-          status = "success",
+          status = "teal",
           width = 12,
 
           bs4Dash::bs4ListGroup(
@@ -56,7 +61,7 @@ mod_info_ui <- function(id){
                  image = "www/tadeu.jpeg",
                  type = 1
                ),
-               status = "success",
+               status = "teal",
                width = 12,
 
                bs4Dash::bs4ListGroup(
@@ -76,10 +81,9 @@ mod_info_ui <- function(id){
                  )
                )
              )
-      )
-    )
-
-  )
+           )
+         )
+       )
 }
 
 #' info Server Functions

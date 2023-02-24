@@ -75,11 +75,11 @@ mod_animal_ui <- function(id){
               title = "Heifers",
               width = 4,
               fluidRow(
-                diet_ui_prms(ns("diet_hei"), cp = 12, ndf = 35, adf = 23, ee = 4, p = 0.23, k = 0.45)))))),
+                diet_ui_prms(ns("diet_hei"), cp = 12, ndf = 35, adf = 23, ee = 4, p = 0.23, k = 0.45))))))
 
-      fluidRow(
-        h5(strong(textOutput(ns("status"))))
-      )
+      # fluidRow(
+      #   h5(strong(uiOutput(ns("status2"))))
+      # )
       ),
 
       # code for the report
@@ -301,7 +301,7 @@ mod_animal_server <- function(id){
 
     df <- eventReactive(input$button, {
 
-      status("Inputs are up to date!")
+     # status("Inputs are up to date!")
 
       withProgress(message = "Running the model...", detail = ' ', value = 0.5, {
 
@@ -816,6 +816,9 @@ mod_animal_server <- function(id){
 
     })
 
+    observeEvent({input$button}, showNotification("You're ready to explore the outcomes!",
+                                                  duration = 2,
+                                                  type = "message"))
 
     observeEvent({list(input$animal_time_first_calv,
                        input$animal_heifer_calf_born,
@@ -825,6 +828,18 @@ mod_animal_server <- function(id){
                        input$animal_cow_calving_int,
                        input$animal_milk_freq,
                        input$animal_n_cows,
+                       input$animal_mature_weight,
+
+
+                       input$calf_birth_weight,
+                       input$calf_milk_sup,
+                       input$calf_fat,
+                       input$calf_protein,
+                       input$calf_starter_cp,
+                       input$calf_forage_cp,
+                       input$calf_forage_p,
+                       input$calf_starter_p,
+
                        input$diet_lac_cp,
                        input$diet_lac_ee,
                        input$diet_lac_ndf,
@@ -846,13 +861,25 @@ mod_animal_server <- function(id){
 
 
                        )},
-                 {status("Hit Run!")})
+                 {showNotification("The model hasn't yet ran or you've changed some input!
+                                   Please remember to click Run again!",
+                                   duration = 3,
+                                   type = "error")
 
-    output$status <- renderText({
+                   })
 
-      status()
+    # output$status2 <- renderUI({
+    #
+    #   textOutput(ns("status"))
+    #
+    # })
+    #
+    # output$status <- renderText({
+    #
+    #   status()
+    #
+    # })
 
-      })
 
 # -------------------------------------------------------------------------
 # Performance metrics -----------------------------------------------------

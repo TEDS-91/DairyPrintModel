@@ -34,41 +34,81 @@ diet_ui_prms <- function(category = "diet_lac", cp = 16, ndf = 25, adf = 15, ee 
 
 }
 
-#' general parameters used over the application by other modules.
+#' Manure parameters used over the application by other modules.
 #'
 #' @return UI elements.
 #' @export
 #'
-general_ui_prms <- function() {
+manure_ui_prms <- function() {
 
-  general_ui_prms <- list(
+  manure_ui_prms <- list(
 
       column(2,
-           selectInput("county",          label = "County:",                     choices = unique(wi_weather$county), selected = "Dane")),
+             selectInput("county",          label = "County:",                   choices = unique(wi_weather$county), selected = "Dane")),
       column(2,
              selectInput("facilitie",       label = "Facility:",                 choices = c("freestall", "tie-stall"), selected = "freestall")),
       column(2,
              selectInput("bedding_type",    label = "Bedding Type:",             choices = c("Sand", "Sawdust", "Chopped straw"), selected = "Chopped straw")),
       column(2,
-             selectInput("biodigester",     label = "Biodigester:",              choices = c("yes", "no"), selected = "no")),
-      column(2,
-             numericInput("biod_ef",        label = "Biodigester Efficiency:",   value = 25)),
-      column(2,
-             selectInput("solid_liquid",    label = "Solid-liquid Separation:",  choices = c("yes", "no"), selected = "no")),
-      column(2,
-             selectInput("type_manure",     label = "Manure:",                   choices = c("Semi-solid", "Solid", "Slurry"), selected = "Slurry")),
-      column(2,
-             selectInput("empty",           label = "Emptying Time:",            choices = c("Fall", "Spring", "Fall and Spring"), selected = "Fall")),
+             selectInput("type_manure",     label = "Manure:",                   choices = c("Solid", "Semi-solid", "Slurry", "Liquid"), selected = "Slurry")),
       column(3,
-             selectInput("enclosed_manure", label = "Enclosed Manure Storage:",    choices = c("yes", "no"), selected = "no"))#,
-      # column(2,
-      #        selectInput("crust",           label = "Crust Formation:",          choices = c("yes", "no"), selected = "no")),
-      # column(3,
-      #        numericInput("storage_area",   label = "Manure Storage Area (m2):", value = 200))
+             selectInput("manure_manag", "Manure Management:", c("Daily Hauling",
+                                                                 "Pond or Tank Storage",
+                                                                 "Biodigester",
+                                                                 "Biodigester + Solid-liquid Separator")))
 
   )
 
-  return(general_ui_prms)
+  return(manure_ui_prms)
+
+}
+
+#' Manure managemente parameters used over the application by other modules.
+#'
+#' @param manure_managment Type of manure management.
+#' @return UI elements.
+#' @export
+#'
+
+manure_manag_ui <- function(manure_managment) {
+
+  manure_manag_ui <- list(
+
+    if (manure_managment == "Biodigester + Solid-liquid Separator") {
+
+      fluidRow(
+        column(4,
+               selectInput("empty",           label = "Emptying Time:",           choices = c("Fall", "Spring", "Fall and Spring"), selected = "Fall")),
+        column(4,
+               numericInput("biod_ef",        label = "Biodigester Efficiency:",  value = 25)),
+        column(4,
+               selectInput("application",     label = "Manure Application:",      choices = c("Spread", "Injected", "Irrigation"))))
+
+    } else if (manure_managment == "Biodigester") {
+
+      fluidRow(
+        column(4,
+               selectInput("empty",           label = "Emptying Time:",            choices = c("Fall", "Spring", "Fall and Spring"), selected = "Fall")),
+        column(4,
+               numericInput("biod_ef",        label = "Biodigester Efficiency:",   value = 25)),
+        column(4,
+               selectInput("application",     label = "Manure Application:",       choices = c("Spread", "Injected", "Irrigation"))))
+
+    } else if (manure_managment == "Daily Hauling") {
+
+    } else if (manure_managment == "Pond or Tank Storage") {
+
+      fluidRow(
+        column(4,
+               selectInput("empty",           label = "Emptying Time:",           choices = c("Fall", "Spring", "Fall and Spring"), selected = "Fall")),
+        column(4,
+               selectInput("enclosed_manure", label = "Enclosed Manure Storage:", choices = c("yes", "no"), selected = "no")),
+        column(4,
+               selectInput("application",     label = "Manure Application:",      choices = c("Spread", "Injected", "Irrigation"))))
+
+    }
+
+  )
 
 }
 
@@ -127,11 +167,11 @@ calf_ui_prms <- function(prm) {
       column(3,
              numericInput(paste0(prm, "_starter_cp"),    "Starter CP (%):",        value = 20,   min = 15, max = 30)),
       column(4,
-             numericInput(paste0(prm, "_starter_ndf"),   "Starter P (%):",         value = 20,   min = 15, max = 30)),
+             numericInput(paste0(prm, "_starter_p"),     "Starter P (%):",         value = 1,   min = 15, max = 30)),
       column(4,
-             numericInput(paste0(prm, "_forage_cp"),     "Forage CP (%):",         value = 20,   min = 15, max = 30)),
+             numericInput(paste0(prm, "_forage_cp"),     "Forage CP (%):",         value = 15,   min = 15, max = 30)),
       column(4,
-             numericInput(paste0(prm, "_forage_ndf"),    "Forage P (%):",          value = 20,   min = 15, max = 30))
+             numericInput(paste0(prm, "_forage_p"),      "Forage P (%):",          value = 0.3,   min = 15, max = 30))
     )
 
   return(calf_ui_prms)

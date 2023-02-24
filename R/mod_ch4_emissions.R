@@ -20,7 +20,10 @@ mod_ch4_emissions_ui <- function(id){
         status = "teal",
         collapsible = TRUE,
         fluidRow(
-          general_ui_prms()))),
+          manure_ui_prms()),
+        fluidRow(
+          column(6,
+          uiOutput(ns("sls"))))) ),
 
     fluidRow(
       bs4Dash::bs4Card(
@@ -57,6 +60,16 @@ mod_ch4_emissions_ui <- function(id){
                   plotly::plotlyOutput(ns("storage_ch4_chart")))
 
               )),
+
+            # bs4Dash::bs4Card(
+            #   id = "tabcard",
+            #   status = "primary",
+            #   solidHeader = FALSE,
+            #   type = "tabs",
+            #   width = 12,
+            #   fluidRow(column(12,
+            #   tableOutput(ns("teste2"))) )),
+
             tabPanel(
               title = "Ammonia Emissions",
               fluidRow(
@@ -99,6 +112,7 @@ mod_ch4_emissions_server <- function(id,
                                      county,
                                      facilitie,
                                      bedding,
+                                     manure_management,
                                      biodigester,
                                      biodigester_ef,
                                      type_manure,
@@ -107,6 +121,25 @@ mod_ch4_emissions_server <- function(id,
                                      empty_time){
   moduleServer( id, function(input, output, session){
     ns <- session$ns
+
+     output$sls <- renderUI({
+
+       manure_manag_ui(manure_managment = manure_management())
+
+       })
+
+     manure_dm <- reactive({
+
+       type_manure <- type_manure()
+
+       manure_dm <- dplyr::if_else(type_manure == "Semi-solid", 13,
+                                   dplyr::if_else(type_manure == "Slurry", 8,
+                                                  dplyr::if_else(type_manure == "Solid", 20, 5)))
+       manure_dm
+
+     })
+
+
 
     # all logic without connect with the animal part
 
@@ -131,6 +164,8 @@ mod_ch4_emissions_server <- function(id,
       enclosed_manure <- enclosed_manure()
 
       empty_time <- empty_time()
+
+      manure_management <- manure_management()
 
       # animal prmts - they will come from the animal
 
@@ -170,8 +205,6 @@ mod_ch4_emissions_server <- function(id,
         ) %>%
         dplyr::pull(ts_manure)
 
-      print(total_ts_manure_kg)
-
       #total_vs_manure_kg <- (milking_cows * milking_cows_manure * milking_cows_ts + dry_cows * dry_cows_manure * dry_cows_ts + heifers * heifers_manure * heifers_ts) * 0.8
 
       total_vs_manure_kg <- animal_data %>%
@@ -179,8 +212,6 @@ mod_ch4_emissions_server <- function(id,
           vs_manure = sum(total_volatile_solids_kg)
         ) %>%
         dplyr::pull(vs_manure)
-
-      print(total_vs_manure_kg)
 
 
 
@@ -225,234 +256,546 @@ mod_ch4_emissions_server <- function(id,
       total_mass_managed_corSS_kg <- dplyr::if_else(bedding == "Sand", total_mass_managed_kg - 1.5 * (milking_cows + dry_cows + heifers),
                                                     total_mass_managed_kg)
 
-      biod_ch4_yield_kg <- dplyr::if_else(biodigester == "yes", biodigester_ch4_yield(volatile_solids = total_vs_managed_kg, biodigester_efficiency = biodigester_ef),
-                                          0)
+      if (manure_management == "Daily Hauling") {
 
-      biod_ch4_vol_m3 <- biod_ch4_yield_kg / 0.657
+        # regardless of the tyoe of manure, emissions are considered zero!
 
-      biod_co2_vol_m3 <- biod_ch4_vol_m3 / 60 * 40
+        empty_day <- 0
 
-      biod_co2_yield_kg <- biod_co2_vol_m3 * 1.87
+        manure_dm <- manure_dm()
 
-      total_biogas_m3 <- biod_ch4_vol_m3 + biod_co2_vol_m3
+        total_manure_manag_kg <- total_mass_managed_kg / (manure_dm / 100)
 
-      biogas_vs_ratio <- total_biogas_m3 / total_vs_managed_kg
+        vs_solid_loaded_kg_day <- total_vs_managed_kg
+
+        total_ch4_kg <- 0
+
+        tabela_outputs <- tibble::tibble(
+          temp_c                   = temp_c,
+          year_day                 = yday,
+          empty_day                = empty_day,
+          manure_dm                = manure_dm,
+          total_manure_manag_kg    = total_manure_manag_kg,
+          vs_solid_loaded_kg_day   = vs_solid_loaded_kg_day,
+          herd_ch4_emissions_kg    = herd_ch4_emissions_kg,
+          barn_ch4_emissions_kg    = barn_ch4_emissions_kg,
+          storage_ch4_emissions_kg = rep(0, 730)
+        )
+
+        tabela_outputs
+
+      } else if (manure_management == "Pond or Tank Storage") {
+
+        if (type_manure == "Semi-solid" | type_manure == "Solid") {
+
+          req(empty_time)
+
+          req(enclosed_manure)
+
+          #empty_day <- empty_days()
+
+          empty_day <- empty_day(empty_time = empty_time)
+
+          manure_dm <- manure_dm()
+
+          total_manure_manag_kg <- total_mass_managed_kg / (manure_dm / 100)
+
+          vs_solid_loaded_kg_day <- dplyr::if_else(empty_day == 1, 0, total_vs_managed_kg)
+
+          total_ch4_kg <- manure_ch4_emission_solid(volatile_solids = vs_solid_loaded_kg_day, temp_c = temp_c)
+
+          tabela_outputs <- tibble::tibble(
+            temp_c                   = temp_c,
+            year_day                 = yday,
+            empty_day                = empty_day,
+            manure_dm                = manure_dm,
+            total_manure_manag_kg    = total_manure_manag_kg,
+            vs_solid_loaded_kg_day   = vs_solid_loaded_kg_day,
+            herd_ch4_emissions_kg    = herd_ch4_emissions_kg,
+            barn_ch4_emissions_kg    = barn_ch4_emissions_kg,
+            storage_ch4_emissions_kg = total_ch4_kg
+          )
+
+          tabela_outputs
+
+        } else if (type_manure == "Liquid" | type_manure == "Slurry") {
+
+          req(empty_time)
+
+          empty_day <- empty_day(empty_time = empty_time)
+
+          manure_dm <- manure_dm()
+
+          total_manure_manag_kg <- total_mass_managed_kg / (manure_dm / 100)
+
+          vs_liq_loaded_kg_day <- dplyr::if_else(empty_day == 1, 0, total_vs_managed_kg)
+
+          print(vs_liq_loaded_kg_day)
+
+          remaining_vs_tank_pct <- 0.05
+
+          tank_capacity <- 365 * vs_liq_loaded_kg_day[1]
+
+          vs_liq_loaded_cum_kg <- vector(length = 730)
+
+          vs_liq_loaded_cum_kg[1] <- vs_liq_loaded_kg_day[1]
+
+          vs_liq_deg <- rep(NA, 730); vs_liq_ndeg <- rep(NA, 730); vs_liq_loss_kg_day <- rep(NA, 730); vs_liq_loss_cum_kg <- rep(NA, 730);
+          vs_liq_total_cum_kg <- rep(NA, 730); ch4_liq_emission_kg_day <- rep(NA, 730); co2_liq_emission_kg <- rep(NA, 730)
 
 
-      total_mass_digested_kg <- total_mass_managed_corSS_kg - biod_ch4_yield_kg - biod_co2_yield_kg
+         # temp_c <- temp_c()
 
-      digested_ts_kg <- total_ts_managed_kg - biod_ch4_yield_kg - biod_co2_yield_kg
+          enclosed_manure <- enclosed_manure
 
-      digested_vs_kg <- total_vs_managed_kg - biod_ch4_yield_kg - biod_co2_yield_kg
-
-
-      manure_solids_after_sep_pct <- dplyr::if_else(solid_liquid == "no", 0, 10.5)
-
-      manure_solids_after_sep_kg <- manure_solids_after_sep_pct / 100 * total_mass_digested_kg
-
-      manure_liquids_after_sep_pct <- dplyr::if_else(solid_liquid == "no", 0, 89.5)
-
-      manure_liquids_after_sep_kg <- manure_liquids_after_sep_pct / 100 * total_mass_digested_kg
-
-      manure_ts_solids_after_sep_pct <- dplyr::if_else(solid_liquid == "no", 0, 42)
-
-      manure_ts_solids_after_sep_kg <- manure_ts_solids_after_sep_pct / 100 * digested_ts_kg
-
-      manure_ts_liquids_after_sep_pct <- dplyr::if_else(solid_liquid == "no", 0, 58)
-
-      manure_ts_liquids_after_sep_kg <- manure_ts_liquids_after_sep_pct / 100 * digested_ts_kg
-
-      manure_vs_solids_after_sep_pct <- dplyr::if_else(solid_liquid == "no", 0, 47)
-
-      manure_vs_solids_after_sep_kg <- manure_vs_solids_after_sep_pct / 100 * digested_vs_kg
-
-      manure_vs_liquids_after_sep_pct <- dplyr::if_else(solid_liquid == "no", 0, 53)
-
-      manure_vs_liquids_after_sep_kg <- manure_vs_liquids_after_sep_pct / 100 * digested_vs_kg
+          empty_days <- empty_day(empty_time = empty_time)
 
 
-      ts_solids_final_after_sep_pct <- dplyr::if_else(solid_liquid == "no", 0, manure_ts_solids_after_sep_kg / manure_solids_after_sep_kg * 100)
+          for (i in 2:730) {
 
-      ts_liquids_final_after_sep_pct <- dplyr::if_else(solid_liquid == "no", 0, manure_ts_liquids_after_sep_kg / manure_liquids_after_sep_kg * 100)
+            # required parameters
 
-      vs_solids_final_after_sep_pct <- dplyr::if_else(solid_liquid == "no", 0, manure_vs_solids_after_sep_kg / manure_solids_after_sep_kg * 100)
+            B_o <- 0.2
 
-      vs_liquids_final_after_sep_pct <- dplyr::if_else(solid_liquid == "no", 0, manure_vs_liquids_after_sep_kg / manure_liquids_after_sep_kg * 100)
+            ch4_pot <- 0.48
 
-      # solid storage
-      #
-      empty_days <- empty_day(empty_time = empty_time)
+            # first row calculations to initialize all calculations
 
-      vs_solid_loaded_kg <- dplyr::if_else(solid_liquid == "yes" & empty_days == 0, manure_vs_solids_after_sep_kg,
-                                           dplyr::if_else(type_manure == "solid" & empty_days == 0, digested_vs_kg, 0))
+            vs_liq_loaded_cum_kg[1] <- vs_liq_loaded_kg_day[1]
 
-      ch4_emissions_solid_storage_kg <- manure_ch4_emission_solid(volatile_solids = vs_solid_loaded_kg, temp_c = temp_c)
+            vs_liq_total_cum_kg[1] <- vs_liq_loaded_kg_day[1]
 
-      # liquid storage
+            vs_liq_loss_kg_day[1] <- 0
 
-      vs_liq_loaded_kg_day <- dplyr::if_else(solid_liquid == "yes", manure_vs_liquids_after_sep_kg,
-                                             dplyr::if_else(type_manure == "Slurry", digested_vs_kg, 0))
+            vs_liq_loss_cum_kg[1] <- 0
 
-      vs_liq_loaded_kg_day <- rep(vs_liq_loaded_kg_day, 730)
+            vs_liq_deg[1] <- (vs_liq_loaded_cum_kg[1] * (B_o / ch4_pot) - vs_liq_loss_cum_kg[1]) / vs_liq_total_cum_kg[1]
 
-      remaining_vs_tank_pct <- 0.05
+            vs_liq_ndeg[1] <- 1 - vs_liq_deg[1]
 
-      tank_capacity <- 365 * vs_liq_loaded_kg_day[1]
+            ch4_liq_emission_kg_day[1] <- manure_ch4_emission_slurry(volatile_solids_total = vs_liq_total_cum_kg[1],
+                                                                     volatile_solids_d     = vs_liq_deg[1],
+                                                                     volatile_solids_nd    = vs_liq_ndeg[1],
+                                                                     temp_c                = temp_c[1],
+                                                                     enclosed              = enclosed_manure)
 
-      vs_liq_loaded_cum_kg <- vector(length = 730)
+            co2_liq_emission_kg[1] <- dplyr::if_else(enclosed_manure == "no", 0, ch4_liq_emission_kg_day[1] * 2.75)
 
-      vs_liq_loaded_cum_kg[1] <- vs_liq_loaded_kg_day[1]
+            # calculations for the rest of the vectors
 
-      vs_liq_deg <- rep(NA, 730); vs_liq_ndeg <- rep(NA, 730); vs_liq_loss_kg_day <- rep(NA, 730); vs_liq_loss_cum_kg <- rep(NA, 730);
-      vs_liq_total_cum_kg <- rep(NA, 730); ch4_liq_emission_kg_day <- rep(NA, 730); co2_liq_emission_kg <- rep(NA, 730)
+            vs_liq_loaded_cum_kg[i] <- dplyr::if_else(empty_days[i] == 0, vs_liq_loaded_kg_day[i] + vs_liq_loaded_cum_kg[i - 1],
+                                                      (remaining_vs_tank_pct / 100 * tank_capacity))
+
+            vs_liq_loss_kg_day[i] <- ch4_liq_emission_kg_day[i - 1] * 3
+
+            vs_liq_loss_cum_kg[i] <- dplyr::if_else(vs_liq_loaded_cum_kg[i] <= (remaining_vs_tank_pct / 100 * tank_capacity), 0, vs_liq_loss_kg_day[i] + vs_liq_loss_cum_kg[i - 1])
+
+            vs_liq_total_cum_kg[i] <- dplyr::if_else(vs_liq_loaded_cum_kg[i] <= (remaining_vs_tank_pct / 100 * tank_capacity), vs_liq_loaded_cum_kg[i], vs_liq_loaded_cum_kg[i] - vs_liq_loss_cum_kg[i - 1])
+
+            vs_liq_deg[i] <- dplyr::if_else(vs_liq_loaded_cum_kg[i] <= (remaining_vs_tank_pct / 100 * tank_capacity), (vs_liq_loaded_cum_kg[i] * (B_o / ch4_pot) - 0) / vs_liq_total_cum_kg[i],
+                                            (vs_liq_loaded_cum_kg[i] * (B_o / ch4_pot) - vs_liq_loss_cum_kg[i]) / vs_liq_total_cum_kg[i])
+
+            vs_liq_ndeg[i] <- 1 - vs_liq_deg[i]
+
+            ch4_liq_emission_kg_day[i] <- manure_ch4_emission_slurry(volatile_solids_total = vs_liq_total_cum_kg[i],
+                                                                     volatile_solids_d     = vs_liq_deg[i],
+                                                                     volatile_solids_nd    = vs_liq_ndeg[i],
+                                                                     temp_c                = temp_c[i],
+                                                                     enclosed              = enclosed_manure)
+
+            co2_liq_emission_kg[i] <- dplyr::if_else(enclosed_manure == "no", 0, ch4_liq_emission_kg_day[i] * 2.75)
+
+          }
+
+          tabela_outputs <- tibble::tibble(
+            temp_c                   = temp_c,
+            year_day                 = yday,
+            empty_day                = empty_days,#empty_day,
+            manure_dm                = manure_dm,
+            total_manure_manag_kg    = total_manure_manag_kg,
+            vs_liq_loaded_kg_day     = vs_liq_loaded_kg_day,
+            herd_ch4_emissions_kg    = herd_ch4_emissions_kg,
+            barn_ch4_emissions_kg    = barn_ch4_emissions_kg,
+            storage_ch4_emissions_kg = ch4_liq_emission_kg_day
+          )
+
+          tabela_outputs
+
+        }
+
+      } else if (manure_management == "Biodigester") {
+
+        req(biodigester_ef)
+
+        req(empty_time)
+
+        empty_day <- empty_day(empty_time = empty_time)
+
+        manure_dm <- manure_dm()
+
+        total_manure_manag_kg <- total_mass_managed_kg / (manure_dm / 100)
+
+        vs_solid_loaded_kg_day <- ifelse(empty_day == 1, 0, total_vs_managed_kg)
 
 
-      for (i in 2:730) {
+        # missing the bedding
 
-        # required parameters
+        total_mass_managed_kg <- total_manure_manag_kg
 
-        B_o <- 0.2
+        total_ts_managed_kg <- total_ts_managed_kg
 
-        ch4_pot <- 0.48
+        total_vs_managed_kg <- vs_solid_loaded_kg_day
 
-        # first row calculations to initialize all calculations
+
+
+        total_mass_managed_corSS_kg <- total_mass_managed_kg #dplyr::if_else( bedding == "Sand", total_mass_managed_kg - 1.5 * (milking_cows + dry_cows + heifers),
+        #total_mass_managed_kg)
+
+        biod_ch4_yield_kg <- biodigester_ch4_yield(volatile_solids = total_vs_managed_kg, biodigester_efficiency = biodigester_ef)
+
+
+        biod_ch4_vol_m3 <- biod_ch4_yield_kg / 0.657
+
+        biod_co2_vol_m3 <- biod_ch4_vol_m3 / 60 * 40
+
+        biod_co2_yield_kg <- biod_co2_vol_m3 * 1.87
+
+        total_biogas_m3 <- biod_ch4_vol_m3 + biod_co2_vol_m3
+
+        biogas_vs_ratio <- total_biogas_m3 / total_vs_managed_kg
+
+
+        total_mass_digested_kg <- total_mass_managed_corSS_kg - biod_ch4_yield_kg - biod_co2_yield_kg
+
+        digested_ts_kg <- total_ts_managed_kg - biod_ch4_yield_kg - biod_co2_yield_kg
+
+        digested_vs_kg <- total_vs_managed_kg - biod_ch4_yield_kg - biod_co2_yield_kg
+
+        # it's already no
+
+        # solid storage
+
+        #empty_days <- empty_day(empty_time = empty_time)
+
+
+
+
+        empty_day <- empty_day(empty_time = empty_time)
+
+        #temp_c <- temp_c
+
+        enclosed_manure <- "no"
+
+
+        # no solids
+
+        #vs_solid_loaded_kg <- digested_vs_kg#dplyr::if_else(empty_day == 0, manure_vs_solids_after_sep_kg,
+        #dplyr::if_else(type_manure == "solid" & empty_days == 0, digested_vs_kg, 0))
+
+        #ch4_emissions_solid_storage_kg <- manure_ch4_emission_solid(volatile_solids = vs_solid_loaded_kg, temp_c = temp_c)
+
+        # liquid storage
+
+        vs_liq_loaded_kg_day <- digested_vs_kg #dplyr::if_else(solid_liquid == "yes", manure_vs_liquids_after_sep_kg,
+        #dplyr::if_else(type_manure == "Slurry", digested_vs_kg, 0))
+
+        #vs_liq_loaded_kg_day <- rep(vs_liq_loaded_kg_day, 730)
+
+        remaining_vs_tank_pct <- 0.05
+
+        tank_capacity <- 365 * vs_liq_loaded_kg_day[1]
+
+        vs_liq_loaded_cum_kg <- vector(length = 730)
 
         vs_liq_loaded_cum_kg[1] <- vs_liq_loaded_kg_day[1]
 
-        vs_liq_total_cum_kg[1] <- vs_liq_loaded_kg_day[1]
+        vs_liq_deg <- rep(NA, 730); vs_liq_ndeg <- rep(NA, 730); vs_liq_loss_kg_day <- rep(NA, 730); vs_liq_loss_cum_kg <- rep(NA, 730);
+        vs_liq_total_cum_kg <- rep(NA, 730); ch4_liq_emission_kg_day <- rep(NA, 730); co2_liq_emission_kg <- rep(NA, 730)
 
-        vs_liq_loss_kg_day[1] <- 0
 
-        vs_liq_loss_cum_kg[1] <- 0
+        for (i in 2:730) {
 
-        vs_liq_deg[1] <- (vs_liq_loaded_cum_kg[1] * (B_o / ch4_pot) - vs_liq_loss_cum_kg[1]) / vs_liq_total_cum_kg[1]
+          # required parameters
 
-        vs_liq_ndeg[1] <- 1 - vs_liq_deg[1]
+          B_o <- 0.2
 
-        ch4_liq_emission_kg_day[1] <- manure_ch4_emission_slurry(volatile_solids_total = vs_liq_total_cum_kg[1],
-                                                                 volatile_solids_d     = vs_liq_deg[1],
-                                                                 volatile_solids_nd    = vs_liq_ndeg[1],
-                                                                 temp_c                = temp_c[1],
-                                                                 enclosed              = enclosed_manure)
+          ch4_pot <- 0.48
 
-        co2_liq_emission_kg[1] <- dplyr::if_else(enclosed_manure == "no", 0, ch4_liq_emission_kg_day[1] * 2.75)
+          # first row calculations to initialize all calculations
 
-        # calculations for the rest of the vectors
+          vs_liq_loaded_cum_kg[1] <- vs_liq_loaded_kg_day[1]
 
-        vs_liq_loaded_cum_kg[i] <- dplyr::if_else(empty_days[i] == 0, vs_liq_loaded_kg_day[i] + vs_liq_loaded_cum_kg[i - 1],
-                                                  (remaining_vs_tank_pct / 100 * tank_capacity))
+          vs_liq_total_cum_kg[1] <- vs_liq_loaded_kg_day[1]
 
-        vs_liq_loss_kg_day[i] <- ch4_liq_emission_kg_day[i - 1] * 3
+          vs_liq_loss_kg_day[1] <- 0
 
-        vs_liq_loss_cum_kg[i] <- dplyr::if_else(vs_liq_loaded_cum_kg[i] <= (remaining_vs_tank_pct / 100 * tank_capacity), 0, vs_liq_loss_kg_day[i] + vs_liq_loss_cum_kg[i - 1])
+          vs_liq_loss_cum_kg[1] <- 0
 
-        vs_liq_total_cum_kg[i] <- dplyr::if_else(vs_liq_loaded_cum_kg[i] <= (remaining_vs_tank_pct / 100 * tank_capacity), vs_liq_loaded_cum_kg[i], vs_liq_loaded_cum_kg[i] - vs_liq_loss_cum_kg[i - 1])
+          vs_liq_deg[1] <- (vs_liq_loaded_cum_kg[1] * (B_o / ch4_pot) - vs_liq_loss_cum_kg[1]) / vs_liq_total_cum_kg[1]
 
-        vs_liq_deg[i] <- dplyr::if_else(vs_liq_loaded_cum_kg[i] <= (remaining_vs_tank_pct / 100 * tank_capacity), (vs_liq_loaded_cum_kg[i] * (B_o / ch4_pot) - 0) / vs_liq_total_cum_kg[i],
-                                        (vs_liq_loaded_cum_kg[i] * (B_o / ch4_pot) - vs_liq_loss_cum_kg[i]) / vs_liq_total_cum_kg[i])
+          vs_liq_ndeg[1] <- 1 - vs_liq_deg[1]
 
-        vs_liq_ndeg[i] <- 1 - vs_liq_deg[i]
+          ch4_liq_emission_kg_day[1] <- manure_ch4_emission_slurry(volatile_solids_total = vs_liq_total_cum_kg[1],
+                                                                   volatile_solids_d     = vs_liq_deg[1],
+                                                                   volatile_solids_nd    = vs_liq_ndeg[1],
+                                                                   temp_c                = temp_c[1],
+                                                                   enclosed              = enclosed_manure)
 
-        ch4_liq_emission_kg_day[i] <- manure_ch4_emission_slurry(volatile_solids_total = vs_liq_total_cum_kg[i],
-                                                                 volatile_solids_d     = vs_liq_deg[i],
-                                                                 volatile_solids_nd    = vs_liq_ndeg[i],
-                                                                 temp_c                = temp_c[i],
-                                                                 enclosed              = enclosed_manure)
+          co2_liq_emission_kg[1] <- dplyr::if_else(enclosed_manure == "no", 0, ch4_liq_emission_kg_day[1] * 2.75)
 
-        co2_liq_emission_kg[i] <- dplyr::if_else(enclosed_manure == "no", 0, ch4_liq_emission_kg_day[i] * 2.75)
+          # calculations for the rest of the vectors
+
+          # cuidado empty days --> empty_day
+          vs_liq_loaded_cum_kg[i] <- dplyr::if_else(empty_day[i] == 0, vs_liq_loaded_kg_day[i] + vs_liq_loaded_cum_kg[i - 1],
+                                                    (remaining_vs_tank_pct / 100 * tank_capacity))
+
+          vs_liq_loss_kg_day[i] <- ch4_liq_emission_kg_day[i - 1] * 3
+
+          vs_liq_loss_cum_kg[i] <- dplyr::if_else(vs_liq_loaded_cum_kg[i] <= (remaining_vs_tank_pct / 100 * tank_capacity), 0, vs_liq_loss_kg_day[i] + vs_liq_loss_cum_kg[i - 1])
+
+          vs_liq_total_cum_kg[i] <- dplyr::if_else(vs_liq_loaded_cum_kg[i] <= (remaining_vs_tank_pct / 100 * tank_capacity), vs_liq_loaded_cum_kg[i], vs_liq_loaded_cum_kg[i] - vs_liq_loss_cum_kg[i - 1])
+
+          vs_liq_deg[i] <- dplyr::if_else(vs_liq_loaded_cum_kg[i] <= (remaining_vs_tank_pct / 100 * tank_capacity), (vs_liq_loaded_cum_kg[i] * (B_o / ch4_pot) - 0) / vs_liq_total_cum_kg[i],
+                                          (vs_liq_loaded_cum_kg[i] * (B_o / ch4_pot) - vs_liq_loss_cum_kg[i]) / vs_liq_total_cum_kg[i])
+
+          vs_liq_ndeg[i] <- 1 - vs_liq_deg[i]
+
+          ch4_liq_emission_kg_day[i] <- manure_ch4_emission_slurry(volatile_solids_total = vs_liq_total_cum_kg[i],
+                                                                   volatile_solids_d     = vs_liq_deg[i],
+                                                                   volatile_solids_nd    = vs_liq_ndeg[i],
+                                                                   temp_c                = temp_c[i],
+                                                                   enclosed              = enclosed_manure)
+
+          co2_liq_emission_kg[i] <- dplyr::if_else(enclosed_manure == "no", 0, ch4_liq_emission_kg_day[i] * 2.75)
+
+        }
+
+        tabela_outputs <- tibble::tibble(
+          temp_c                   = temp_c,
+          year_day                 = yday,
+          empty_day                = empty_day,#empty_days,
+          manure_dm                = manure_dm,
+          total_manure_manag_kg    = total_manure_manag_kg,
+          vs_liq_loaded_kg_day     = vs_liq_loaded_kg_day,
+          herd_ch4_emissions_kg    = herd_ch4_emissions_kg,
+          barn_ch4_emissions_kg    = barn_ch4_emissions_kg,
+          storage_ch4_emissions_kg = ch4_liq_emission_kg_day
+
+        )
+
+        tabela_outputs
+
+      } else if (manure_management == "Biodigester + Solid-liquid Separator") {
+
+        req(biodigester_ef)
+
+        req(empty_time)
+
+        empty_day <- empty_day(empty_time = empty_time)
+
+        manure_dm <- manure_dm()
+
+        total_manure_manag_kg <- total_mass_managed_kg / (manure_dm / 100)
+
+        vs_solid_loaded_kg_day <- ifelse(empty_day == 1, 0, total_vs_managed_kg)
+
+
+        # missing the bedding
+
+        total_mass_managed_kg <- total_manure_manag_kg
+
+        total_ts_managed_kg <- total_ts_managed_kg
+
+        total_vs_managed_kg <- vs_solid_loaded_kg_day
+
+
+        total_mass_managed_corSS_kg <- total_mass_managed_kg #dplyr::if_else( bedding == "Sand", total_mass_managed_kg - 1.5 * (milking_cows + dry_cows + heifers),
+        #total_mass_managed_kg)
+
+        biod_ch4_yield_kg <- biodigester_ch4_yield(volatile_solids = total_vs_managed_kg, biodigester_efficiency = biodigester_ef)
+
+
+        biod_ch4_vol_m3 <- biod_ch4_yield_kg / 0.657
+
+        biod_co2_vol_m3 <- biod_ch4_vol_m3 / 60 * 40
+
+        biod_co2_yield_kg <- biod_co2_vol_m3 * 1.87
+
+        total_biogas_m3 <- biod_ch4_vol_m3 + biod_co2_vol_m3
+
+        biogas_vs_ratio <- total_biogas_m3 / total_vs_managed_kg
+
+
+        total_mass_digested_kg <- total_mass_managed_corSS_kg - biod_ch4_yield_kg - biod_co2_yield_kg
+
+        digested_ts_kg <- total_ts_managed_kg - biod_ch4_yield_kg - biod_co2_yield_kg
+
+        digested_vs_kg <- total_vs_managed_kg - biod_ch4_yield_kg - biod_co2_yield_kg
+
+        # it's already yes
+        manure_solids_after_sep_pct <- 10.5 #dplyr::if_else(solid_liquid == "no", 0, 10.5)
+
+        manure_solids_after_sep_kg <- manure_solids_after_sep_pct / 100 * total_mass_digested_kg
+
+        manure_liquids_after_sep_pct <- 89.5#dplyr::if_else(solid_liquid == "no", 0, 89.5)
+
+        manure_liquids_after_sep_kg <- manure_liquids_after_sep_pct / 100 * total_mass_digested_kg
+
+        manure_ts_solids_after_sep_pct <- 42#dplyr::if_else(solid_liquid == "no", 0, 42)
+
+        manure_ts_solids_after_sep_kg <- manure_ts_solids_after_sep_pct / 100 * digested_ts_kg
+
+        manure_ts_liquids_after_sep_pct <- 58#dplyr::if_else(solid_liquid == "no", 0, 58)
+
+        manure_ts_liquids_after_sep_kg <- manure_ts_liquids_after_sep_pct / 100 * digested_ts_kg
+
+        manure_vs_solids_after_sep_pct <- 47#dplyr::if_else(solid_liquid == "no", 0, 47)
+
+        manure_vs_solids_after_sep_kg <- manure_vs_solids_after_sep_pct / 100 * digested_vs_kg
+
+        manure_vs_liquids_after_sep_pct <- 53#dplyr::if_else(solid_liquid == "no", 0, 53)
+
+        manure_vs_liquids_after_sep_kg <- manure_vs_liquids_after_sep_pct / 100 * digested_vs_kg
+
+
+        ts_solids_final_after_sep_pct <- manure_ts_solids_after_sep_kg / manure_solids_after_sep_kg * 100#dplyr::if_else(solid_liquid == "no", 0, manure_ts_solids_after_sep_kg / manure_solids_after_sep_kg * 100)
+
+        ts_liquids_final_after_sep_pct <- manure_ts_liquids_after_sep_kg / manure_liquids_after_sep_kg * 100#dplyr::if_else(solid_liquid == "no", 0, manure_ts_liquids_after_sep_kg / manure_liquids_after_sep_kg * 100)
+
+        vs_solids_final_after_sep_pct <- manure_vs_solids_after_sep_kg / manure_solids_after_sep_kg * 100#dplyr::if_else(solid_liquid == "no", 0, manure_vs_solids_after_sep_kg / manure_solids_after_sep_kg * 100)
+
+        vs_liquids_final_after_sep_pct <- manure_vs_liquids_after_sep_kg / manure_liquids_after_sep_kg * 100#dplyr::if_else(solid_liquid == "no", 0, manure_vs_liquids_after_sep_kg / manure_liquids_after_sep_kg * 100)
+
+        # solid storage
+
+        #empty_days <- empty_day(empty_time = empty_time)
+
+
+        #empty_day <- empty_days()
+
+        #temp_c <- temp_c()
+
+        enclosed_manure <- "no"
+
+        vs_solid_loaded_kg <- manure_vs_solids_after_sep_kg#dplyr::if_else(empty_day == 0, manure_vs_solids_after_sep_kg,
+        #dplyr::if_else(type_manure == "solid" & empty_days == 0, digested_vs_kg, 0))
+
+        ch4_emissions_solid_storage_kg <- manure_ch4_emission_solid(volatile_solids = vs_solid_loaded_kg, temp_c = temp_c)
+
+        # liquid storage
+
+        vs_liq_loaded_kg_day <- manure_vs_liquids_after_sep_kg #dplyr::if_else(solid_liquid == "yes", manure_vs_liquids_after_sep_kg,
+        #dplyr::if_else(type_manure == "Slurry", digested_vs_kg, 0))
+
+        #vs_liq_loaded_kg_day <- rep(vs_liq_loaded_kg_day, 730)
+
+        remaining_vs_tank_pct <- 0.05
+
+        tank_capacity <- 365 * vs_liq_loaded_kg_day[1]
+
+        vs_liq_loaded_cum_kg <- vector(length = 730)
+
+        vs_liq_loaded_cum_kg[1] <- vs_liq_loaded_kg_day[1]
+
+        vs_liq_deg <- rep(NA, 730); vs_liq_ndeg <- rep(NA, 730); vs_liq_loss_kg_day <- rep(NA, 730); vs_liq_loss_cum_kg <- rep(NA, 730);
+        vs_liq_total_cum_kg <- rep(NA, 730); ch4_liq_emission_kg_day <- rep(NA, 730); co2_liq_emission_kg <- rep(NA, 730)
+
+
+        for (i in 2:730) {
+
+          # required parameters
+
+          B_o <- 0.2
+
+          ch4_pot <- 0.48
+
+          # first row calculations to initialize all calculations
+
+          vs_liq_loaded_cum_kg[1] <- vs_liq_loaded_kg_day[1]
+
+          vs_liq_total_cum_kg[1] <- vs_liq_loaded_kg_day[1]
+
+          vs_liq_loss_kg_day[1] <- 0
+
+          vs_liq_loss_cum_kg[1] <- 0
+
+          vs_liq_deg[1] <- (vs_liq_loaded_cum_kg[1] * (B_o / ch4_pot) - vs_liq_loss_cum_kg[1]) / vs_liq_total_cum_kg[1]
+
+          vs_liq_ndeg[1] <- 1 - vs_liq_deg[1]
+
+          ch4_liq_emission_kg_day[1] <- manure_ch4_emission_slurry(volatile_solids_total = vs_liq_total_cum_kg[1],
+                                                                   volatile_solids_d     = vs_liq_deg[1],
+                                                                   volatile_solids_nd    = vs_liq_ndeg[1],
+                                                                   temp_c                = temp_c[1],
+                                                                   enclosed              = enclosed_manure)
+
+          co2_liq_emission_kg[1] <- dplyr::if_else(enclosed_manure == "no", 0, ch4_liq_emission_kg_day[1] * 2.75)
+
+          # calculations for the rest of the vectors
+
+          # cuidado empty days --> empty_day
+          vs_liq_loaded_cum_kg[i] <- dplyr::if_else(empty_day[i] == 0, vs_liq_loaded_kg_day[i] + vs_liq_loaded_cum_kg[i - 1],
+                                                    (remaining_vs_tank_pct / 100 * tank_capacity))
+
+          vs_liq_loss_kg_day[i] <- ch4_liq_emission_kg_day[i - 1] * 3
+
+          vs_liq_loss_cum_kg[i] <- dplyr::if_else(vs_liq_loaded_cum_kg[i] <= (remaining_vs_tank_pct / 100 * tank_capacity), 0, vs_liq_loss_kg_day[i] + vs_liq_loss_cum_kg[i - 1])
+
+          vs_liq_total_cum_kg[i] <- dplyr::if_else(vs_liq_loaded_cum_kg[i] <= (remaining_vs_tank_pct / 100 * tank_capacity), vs_liq_loaded_cum_kg[i], vs_liq_loaded_cum_kg[i] - vs_liq_loss_cum_kg[i - 1])
+
+          vs_liq_deg[i] <- dplyr::if_else(vs_liq_loaded_cum_kg[i] <= (remaining_vs_tank_pct / 100 * tank_capacity), (vs_liq_loaded_cum_kg[i] * (B_o / ch4_pot) - 0) / vs_liq_total_cum_kg[i],
+                                          (vs_liq_loaded_cum_kg[i] * (B_o / ch4_pot) - vs_liq_loss_cum_kg[i]) / vs_liq_total_cum_kg[i])
+
+          vs_liq_ndeg[i] <- 1 - vs_liq_deg[i]
+
+          ch4_liq_emission_kg_day[i] <- manure_ch4_emission_slurry(volatile_solids_total = vs_liq_total_cum_kg[i],
+                                                                   volatile_solids_d     = vs_liq_deg[i],
+                                                                   volatile_solids_nd    = vs_liq_ndeg[i],
+                                                                   temp_c                = temp_c[i],
+                                                                   enclosed              = enclosed_manure)
+
+          co2_liq_emission_kg[i] <- dplyr::if_else(enclosed_manure == "no", 0, ch4_liq_emission_kg_day[i] * 2.75)
+
+        }
+
+
+        tabela_outputs <- tibble::tibble(
+          temp_c                   = temp_c,
+          year_day                 = yday,
+          empty_day                = empty_day,#empty_days,
+          manure_dm                = manure_dm,
+          total_manure_manag_kg    = total_manure_manag_kg,
+          vs_liq_loaded_kg_day     = vs_liq_loaded_kg_day,
+          herd_ch4_emissions_kg    = herd_ch4_emissions_kg,
+          barn_ch4_emissions_kg    = barn_ch4_emissions_kg,
+          storage_ch4_emissions_kg = ch4_liq_emission_kg_day + ch4_emissions_solid_storage_kg
+        )
+
+        tabela_outputs
+
 
       }
 
-      total_ts_remaing_kg <- total_ts_managed_kg - ch4_liq_emission_kg_day - ch4_emissions_solid_storage_kg
-
-
-
-      emissions <- tibble::tibble(
-        yday,
-        temp_c,
-        total_ts_remaing_kg,
-        # herd_ch4_emissions_kg,
-        # area_exposed_m2,
-        # total_manure_kg,
-        # total_ts_manure_kg,
-        # bedding_quantity_kg,
-        # bedding_ts_kg,
-        # bedding_vs_kg,
-        # total_vs_manure_kg,
-        # total_mass_managed_kg,
-        # total_ts_managed_kg,
-        # total_vs_managed_kg,
-        # total_mass_managed_corSS_kg,
-        # biodigester,
-        # biodigester_ef,
-        # biod_ch4_yield_kg,
-        # biod_ch4_vol_m3,
-        # biod_co2_yield_kg,
-        # biod_co2_vol_m3,
-        # total_biogas_m3,
-        # biogas_vs_ratio,
-        # total_mass_digested_kg,
-        # digested_ts_kg,
-        # digested_vs_kg,
-        #
-        # manure_solids_after_sep_pct,
-        # manure_solids_after_sep_kg,
-        # manure_liquids_after_sep_pct,
-        # manure_liquids_after_sep_kg,
-        # manure_ts_solids_after_sep_pct,
-        # manure_ts_solids_after_sep_kg,
-        # manure_ts_liquids_after_sep_pct,
-        # manure_ts_liquids_after_sep_kg,
-        # manure_vs_solids_after_sep_pct,
-        # manure_vs_solids_after_sep_kg,
-        # manure_vs_liquids_after_sep_pct,
-        # manure_vs_liquids_after_sep_kg,
-        #
-        # ts_solids_final_after_sep_pct,
-        # ts_liquids_final_after_sep_pct,
-        # vs_solids_final_after_sep_pct,
-        # vs_liquids_final_after_sep_pct,
-        #
-        empty_days,
-        # vs_solid_loaded_kg,
-        #
-        # vs_liq_loaded_kg_day,
-        # vs_liq_total_cum_kg,
-        # vs_liq_loss_kg_day,
-        # vs_liq_loss_cum_kg,
-        # vs_liq_deg,
-        # vs_liq_ndeg,
-        #
-        herd_ch4_emissions_kg,
-        barn_ch4_emissions_kg,
-        ch4_emissions_solid_storage_kg,
-        ch4_liq_emission_kg_day
-
-
-
-
-      )
     })
 
     summarized_data <- reactive({
 
       emissions() %>%
-        dplyr::filter(yday > 365) %>%
+        dplyr::filter(year_day > 365) %>%
         dplyr::summarise(
           total_ch4_herd = sum(herd_ch4_emissions_kg),
           total_ch4_fac  = sum(barn_ch4_emissions_kg),
-          total_ch4_liq  = sum(ch4_liq_emission_kg_day),
-          total_ch4_soli = sum(ch4_emissions_solid_storage_kg)
+          total_ch4_storage  = sum(storage_ch4_emissions_kg)
 
         )
     })
 
 
-    output$tabela <- renderTable({
-
-      #summarized_data()
-
-    })
+    # output$teste2 <- renderTable({
+    #
+    #   #emissions()
+    #
+    # })
 
 
 # -------------------------------------------------------------------------
@@ -494,7 +837,7 @@ mod_ch4_emissions_server <- function(id,
     output$manure_storage_methane <- bs4Dash::renderValueBox({
 
       value_box_spark(
-        value    = round(sum(summarized_data()[4], summarized_data()[3], na.rm = TRUE), 1),
+        value    = round(sum(summarized_data()[["total_ch4_storage"]], na.rm = TRUE), 1),
         title    = "Total Storage Methane Emissions (kg/year)",
         sparkobj = NULL,
         subtitle = tagList(),
@@ -517,9 +860,9 @@ mod_ch4_emissions_server <- function(id,
 
      emissions <- emissions() %>%
        tibble::as_tibble() %>%
-       dplyr::filter(yday > 365) %>%
+       dplyr::filter(year_day > 365) %>%
        dplyr::mutate(
-         yday = yday - 365
+         yday = year_day - 365
        )
 
       fig <- emissions %>%
@@ -572,10 +915,10 @@ mod_ch4_emissions_server <- function(id,
 
       emissions <- emissions() %>%
         tibble::as_tibble() %>%
-        dplyr::filter(yday > 365) %>%
+        dplyr::filter(year_day > 365) %>%
         dplyr::mutate(
-          yday = yday - 365,
-          total_storage_kg = ch4_emissions_solid_storage_kg + ch4_liq_emission_kg_day
+          yday = year_day - 365,
+          total_storage_kg = storage_ch4_emissions_kg
         )
 
       fig <- emissions %>%
@@ -621,6 +964,7 @@ mod_ch4_emissions_server <- function(id,
 
     })
 
+    # Manure sources
 
     output$pie_chart <- plotly::renderPlotly({
 
@@ -628,7 +972,7 @@ mod_ch4_emissions_server <- function(id,
 
       fac <- summarized_data()[2]$total_ch4_fac
 
-      storage <- summarized_data()[4]$total_ch4_soli + summarized_data()[3]$total_ch4_liq
+      storage <- summarized_data()[3]$total_ch4_storage
 
       values = c(herd, fac, storage)
 
@@ -641,89 +985,6 @@ mod_ch4_emissions_server <- function(id,
               insidetextorientation = 'radial')
 
     })
-
-
-
-    # output$plot <- renderPlot({
-    #
-    # emissoes <- tibble::tibble(emissions())
-    #
-    # if(solid_liquid() == "no" & type_manure() == "slurry") {
-    #
-    #   graphics::par(mar = c(5, 4, 4, 4) + 0.3)
-    #
-    #   emissoes$ch4_liq_emission_kg_day %>%
-    #     plot(xlab = "Year days",
-    #          ylab = "Methane Emission (kg)",
-    #          type = "b",
-    #          col = "red",
-    #          lwd = 5,
-    #          pch = 17,
-    #          main = "Daily and Cumulative CH4 Emissions from Manure Storage")
-    #
-    #   graphics::par(new = TRUE) # Add new plot
-    #
-    #   plot(emissoes$yday,
-    #        cumsum(emissoes$ch4_liq_emission_kg_day),
-    #        type = "b",
-    #        col = "blue",
-    #        lwd = 5,
-    #        pch = 15,
-    #        axes = FALSE, xlab = "", ylab = "") # Create second plot without axes
-    #
-    #   graphics::axis(side = 4, at = pretty(range(cumsum(emissoes$ch4_liq_emission_kg_day))))      # Add second axis
-    #   graphics::mtext("Cumulative Methane Emission (kg)", side = 4, line = 3)
-    #   graphics::legend("topleft", legend = c("Cum. CH4 (kg)", "Daily CH4 (kg)"),
-    #             col = c("blue", "red"), pch = 17, cex = 0.9)
-    #
-    #
-    #
-    # } else if (solid_liquid() == "no" & type_manure() == "solid") {
-    #
-    #   print(
-    #   ggplot2::ggplot(emissions(), ggplot2::aes(x = yday, y = ch4_emissions_solid_storage_kg)) +
-    #     ggplot2::geom_point())
-    #
-    # } else {
-    #
-    #   liq_plot <- function() {
-    #
-    #   graphics::par(mar = c(5, 4, 4, 4) + 0.3)
-    #
-    #   emissoes$ch4_liq_emission_kg_day %>%
-    #     plot(xlab = "Year days",
-    #          ylab = "Methane Emission (kg)",
-    #          type = "b",
-    #          col = "red",
-    #          lwd = 5,
-    #          pch = 17,
-    #          main = "Daily and Cumulative CH4 Emissions from Manure Storage")
-    #
-    #   graphics::par(new = TRUE) # Add new plot
-    #
-    #   plot(emissoes$yday,
-    #        cumsum(emissoes$ch4_liq_emission_kg_day),
-    #        type = "b",
-    #        col = "blue",
-    #        lwd = 5,
-    #        pch = 15,
-    #        axes = FALSE, xlab = "", ylab = "") # Create second plot without axes
-    #
-    #   graphics::axis(side = 4, at = pretty(range(cumsum(emissoes$ch4_liq_emission_kg_day))))      # Add second axis
-    #   graphics::mtext("Cumulative Methane Emission (kg)", side = 4, line = 3)
-    #   graphics::legend("topleft", legend = c("Cum. CH4 (kg)", "Daily CH4 (kg)"),
-    #                    col = c("blue", "red"), pch = 17, cex = 0.9)
-    #   }
-    #
-    #
-    #
-    #   graphics::par(mfrow = c(1, 2))
-    #
-    #   liq_plot()
-    #   plot(emissoes$ch4_emissions_solid_storage_kg, ylab = "Methane emissios (kg/day)", xlab = "Year day")
-    #
-    # }
-    # })
 
   })
 }
