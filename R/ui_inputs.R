@@ -45,12 +45,19 @@ manure_ui_prms <- function() {
 
       column(2,
              selectInput("county",          label = "County:",                   choices = unique(wi_weather$county), selected = "Dane")),
+
       column(2,
-             selectInput("facilitie",       label = "Facility:",                 choices = c("freestall", "tie-stall"), selected = "freestall")),
+             selectInput("facilitie",       label = "Facility:",                 choices = c("freestall",
+                                                                                             "tie-stall"), selected = "freestall")),
       column(2,
-             selectInput("bedding_type",    label = "Bedding Type:",             choices = c("Sand", "Sawdust", "Chopped straw"), selected = "Chopped straw")),
+             selectInput("bedding_type",    label = "Bedding Type:",             choices = c("Sand",
+                                                                                             "Sawdust",
+                                                                                             "Chopped straw"), selected = "Chopped straw")),
       column(2,
-             selectInput("type_manure",     label = "Manure:",                   choices = c("Solid", "Semi-solid", "Slurry", "Liquid"), selected = "Slurry")),
+             selectInput("type_manure",     label = "Manure:",                   choices = c("Solid",
+                                                                                             "Semi-solid",
+                                                                                             "Slurry",
+                                                                                             "Liquid"), selected = "Slurry")),
       column(3,
              selectInput("manure_manag",    label = "Manure Management:",        choices = c("Daily Hauling",
                                                                                              "Pond or Tank Storage",
@@ -83,9 +90,11 @@ manure_manag_ui <- function(manure_managment, type_manure) {
         column(3,
                numericInput("storage_area",   label = "Manure Storage Area:",     value = 1360)),
         column(3,
-               selectInput("empty",           label = "Emptying Time:",           choices = c("Fall", "Spring", "Fall"), selected = "Fall and Spring")),
+               selectInput("empty",           label = "Emptying Time:",           choices = c("Fall", "Spring", "Fall and Spring"), selected = "Fall and Spring")),
         column(3,
-               selectInput("application",     label = "Manure Application:",      choices = c("Spread", "Injected", "Irrigation"))))
+               selectInput("application",     label = "Manure Application:",      choices = c("Spread",
+                                                                                              "Injected",
+                                                                                              "Irrigation"), selected = "Spread")))
 
     } else if (manure_managment == "Biodigester") {
 
@@ -95,9 +104,13 @@ manure_manag_ui <- function(manure_managment, type_manure) {
         column(3,
                numericInput("storage_area",   label = "Manure Storage Area:",     value = 1360)),
         column(3,
-               selectInput("empty",           label = "Emptying Time:",           choices = c("Fall", "Spring", "Fall and Spring"), selected = "Fall and Spring")),
+               selectInput("empty",           label = "Emptying Time:",           choices = c("Fall",
+                                                                                              "Spring",
+                                                                                              "Fall and Spring"), selected = "Fall and Spring")),
         column(3,
-               selectInput("application",     label = "Manure Application:",      choices = c("Spread", "Injected", "Irrigation"))))
+               selectInput("application",     label = "Manure Application:",      choices = c("Spread",
+                                                                                              "Injected",
+                                                                                              "Irrigation"), selected = "Spread")))
 
     } else if (manure_managment == "Daily Hauling") {
 
@@ -107,7 +120,9 @@ manure_manag_ui <- function(manure_managment, type_manure) {
 
         fluidRow(
           column(3,
-                 selectInput("empty",           label = "Emptying Time:",           choices = c("Fall", "Spring", "Fall and Spring"), selected = "Fall and Spring")),
+                 selectInput("empty",           label = "Emptying Time:",           choices = c("Fall",
+                                                                                                "Spring",
+                                                                                                "Fall and Spring"), selected = "Fall and Spring")),
           column(3,
                  numericInput("storage_area",   label = "Manure Storage Area:",     value = 1360)),
           column(3,
@@ -115,15 +130,22 @@ manure_manag_ui <- function(manure_managment, type_manure) {
           column(3,
                  selectInput("enclosed_manure", label = "Enclosed Manure:",         choices = c("yes", "no"), selected = "no")),
           column(3,
-                 selectInput("application",     label = "Manure Application:",      choices = c("Spread", "Injected", "Irrigation"))))
+                 selectInput("application",     label = "Manure Application:",      choices = c("Spread",
+                                                                                                "Injected",
+                                                                                                "Irrigation"), selected = "Spread")))
 
       } else {
 
         fluidRow(
-          column(4,
-                 selectInput("empty",           label = "Emptying Time:",           choices = c("Fall", "Spring", "Fall and Spring"), selected = "Fall and Spring")),
-          column(4,
-                 selectInput("application",     label = "Manure Application:",      choices = c("Spread", "Injected", "Irrigation"))))
+          column(6,
+                 selectInput("empty",           label = "Emptying Time:",           choices = c("Fall",
+                                                                                                "Spring",
+                                                                                                "Fall and Spring"), selected = "Fall and Spring")),
+
+          column(6,
+                 selectInput("application",     label = "Manure Application:",      choices = c("Spread",
+                                                                                                "Injected",
+                                                                                                "Irrigation"), selected = "Spread")))
 
       }
 

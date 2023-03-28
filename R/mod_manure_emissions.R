@@ -859,7 +859,6 @@ mod_manure_ghg_emissions_server <- function(id,
 
         tabela_outputs
 
-        total_manure_manag_kg
       }
 
     })
