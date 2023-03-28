@@ -15,6 +15,7 @@ app_ui <- function(request) {
       bs4Dash::bs4DashNavbar(
         ),
       bs4Dash::bs4DashSidebar(
+
         bs4Dash::sidebarUserPanel(
           image = "www/DIH_logo.png",
           name = "DairyPrint"
@@ -71,10 +72,11 @@ app_ui <- function(request) {
           bs4Dash::bs4TabItem(
             tabName = "manure",
             #mod_nh3_emissions_ui("nh3_emissions"),
-            mod_ch4_emissions_ui("ch4_emissions")
+            mod_manure_ghg_emissions_ui("ch4_emissions")
           ),
           bs4Dash::bs4TabItem(
             tabName = "crop",
+            mod_purchased_feeds_ui("purchased_feeds_1"),
             mod_crop_ui("crop")
           ),
           bs4Dash::bs4TabItem(
@@ -83,6 +85,7 @@ app_ui <- function(request) {
           ),
           bs4Dash::bs4TabItem(
             tabName = "dashboard",
+            mod_dashboard_ui("dashboard")
           ),
           bs4Dash::bs4TabItem(
             tabName = "info",

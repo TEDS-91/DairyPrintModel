@@ -75,7 +75,23 @@ mod_animal_ui <- function(id){
               title = "Heifers",
               width = 4,
               fluidRow(
-                diet_ui_prms(ns("diet_hei"), cp = 12, ndf = 35, adf = 23, ee = 4, p = 0.23, k = 0.45))))))
+                diet_ui_prms(ns("diet_hei"), cp = 12, ndf = 35, adf = 23, ee = 4, p = 0.23, k = 0.45))))),
+
+        bs4Dash::bs4Card(
+          title = "Nutritional Strategy for Enteric Methane Mitigation",
+          elevation = 1,
+          width = 12,
+          solidHeader = TRUE,
+          status = "teal",
+          collapsible = TRUE,
+          fluidRow(
+            column(6,
+                   radioButtons(ns("radio"), label = "Nutritional strategy for reducing enteric methane?",
+                                choices = list("yes" = "yes",
+                                               "no" = "no"),
+                                selected = "no")),
+            column(3,
+                   uiOutput(ns("nut_aditive"))))))
 
       # fluidRow(
       #   h5(strong(uiOutput(ns("status2"))))
@@ -230,6 +246,21 @@ mod_animal_server <- function(id){
   moduleServer( id, function(input, output, session){
     ns <- session$ns
 
+    # Methane nutritional aditive to reduce emissions
+
+    output$nut_aditive <- renderUI({
+
+      if(input$radio == "yes") {
+
+        numericInput(ns("methane_red"), label = "Expected reduction (%): ", value = 0, min = 0, max = 100)
+
+      } else {
+        NULL
+      }
+
+    })
+
+
     # testing fading
     status <- reactiveVal()
 
@@ -346,6 +377,7 @@ mod_animal_server <- function(id){
       forage_intake_2 <- 0.25
       forage_p <- 0.5
       forage_k <- 1
+      methane_aditive <- ifelse(input$radio == "no", 0, input$methane_red)
 
       dmi_dry <- 0.02
 
@@ -526,7 +558,7 @@ mod_animal_server <- function(id){
                                                                                     neutral_detergent_fiber = diet_ndf_lac,
                                                                                     ether_extract           = diet_ee_lac,
                                                                                     body_weight             = mean_body_weight_kg,
-                                                                                    milk_fat                = milk_fat),
+                                                                                    milk_fat                = milk_fat) * (1 - methane_aditive / 100),
                                                           dplyr::if_else(Categories == "Hei",
                                                                          heifer_enteric_methane(gross_energy_intake     = gei_mj_day,
                                                                                                 neutral_detergent_fiber = diet_ndf_hei,
@@ -624,6 +656,17 @@ mod_animal_server <- function(id){
 
           df_nitrogen <- df_volatile_solids %>%
             dplyr::mutate(
+
+              # urine calculations
+
+              total_urine_excretion_kg = dplyr::if_else(Categories == "Hei",
+                                                        7,#0.025*mean_body_weight_kg,#lactating_urine_excretion(dry_matter_intake_kg_animal, diet_cp_hei, 0),
+                                                         dplyr::if_else(Categories == "Dry",
+                                                                        17,#0.025*mean_body_weight_kg,#lactating_urine_excretion(dry_matter_intake_kg_animal, diet_cp_dry, 0),
+                                                                        dplyr::if_else(Categories == "Cow",
+                                                                                       lactating_urine_excretion(dry_matter_intake_kg_animal, diet_cp_lac, milk_protein),
+                                                                                       0))), #TODO
+
               total_nitrogen_ingested_g = dplyr::if_else(Categories == "Hei",
                                                   (dry_matter_intake_kg_animal * 1000) * (diet_cp_hei / 100) / 6.25,
                                                   dplyr::if_else(Categories == "Dry",
@@ -641,7 +684,7 @@ mod_animal_server <- function(id){
               fecal_nitrogen_excreted_d = dplyr::if_else(Categories == "Cow",
                                                          lactating_n_fecal_excretion(nitrogen_intake = total_nitrogen_ingested_g),
                                                          dplyr::if_else(Categories == "Dry",
-                                                                        dry_n_total_excretion(nitrogen_intake = total_nitrogen_ingested_g),
+                                                                        dry_n_fecal_excretion(nitrogen_intake = total_nitrogen_ingested_g),
                                                                         dplyr::if_else(Categories == "Cal",
                                                                                        total_nitrogen_excreted_g * 0.2,
                                                                                        heifer_n_fecal_excretion(nitrogen_intake = total_nitrogen_ingested_g)))),
@@ -720,20 +763,25 @@ mod_animal_server <- function(id){
       df_sum <- df() %>%
         dplyr::group_by(MonthSimulated, Categories) %>%
         dplyr::summarise(
-          total_animals = round(sum(NumberAnimals)),
-          milk_yield_kg = stats::weighted.mean(milk_yield_kg_cow2, NumberAnimals),
-          milk_cp_pct = stats::weighted.mean(milk_protein, NumberAnimals),
-          milk_fat_pct = input$calf_fat,
-          milk_yield_kg_fpc = stats::weighted.mean(milk_yield_kg_fpc, NumberAnimals),
-          dmi_kg = stats::weighted.mean(dry_matter_intake_kg_animal, NumberAnimals),
-          total_ch4_kg = sum(NumberAnimals * enteric_methane_g_animal_day / 1000),
-          total_n2o_kg = sum(NumberAnimals * n2o_emissions_g / 1000),
-          total_manure_kg = sum(NumberAnimals * fresh_manure_output_kg_day),
-          total_solids_kg = sum(NumberAnimals * dm_manure_output_kg_day),
+          total_animals            = round(sum(NumberAnimals)),
+          milk_yield_kg            = stats::weighted.mean(milk_yield_kg_cow2, NumberAnimals),
+          milk_cp_pct              = stats::weighted.mean(milk_protein, NumberAnimals),
+          milk_fat_pct             = input$calf_fat,
+          milk_yield_kg_fpc        = stats::weighted.mean(milk_yield_kg_fpc, NumberAnimals),
+          dmi_kg                   = stats::weighted.mean(dry_matter_intake_kg_animal, NumberAnimals),
+          total_ch4_kg             = sum(NumberAnimals * enteric_methane_g_animal_day / 1000),
+          total_n2o_kg             = sum(NumberAnimals * n2o_emissions_g / 1000),
+          total_manure_kg          = sum(NumberAnimals * fresh_manure_output_kg_day),
+          total_urine_kg           = sum(NumberAnimals * total_urine_excretion_kg),
+          total_solids_kg          = sum(NumberAnimals * dm_manure_output_kg_day),
           total_volatile_solids_kg = sum(NumberAnimals * volatile_solids_kg_d),
-          total_n_excreted_g = stats::weighted.mean(total_nitrogen_excreted_g, NumberAnimals),
-          total_p_excreted_g = stats::weighted.mean(total_phosphorus_excretion_g, NumberAnimals),
-          total_k_excreted_g = stats::weighted.mean(total_potassium_excretion_g, NumberAnimals),
+          total_tan_excreted_g     = sum(NumberAnimals * urine_nitrogen_excreted_g),
+          total_fecal_n_escreted_g = sum(NumberAnimals * fecal_nitrogen_excreted_d),
+          # correct the names below
+          # TODO
+          total_n_excreted_g       = stats::weighted.mean(total_nitrogen_excreted_g, NumberAnimals),
+          total_p_excreted_g       = stats::weighted.mean(total_phosphorus_excretion_g, NumberAnimals),
+          total_k_excreted_g       = stats::weighted.mean(total_potassium_excretion_g, NumberAnimals),
           .groups = "drop",
         ) %>%
         dplyr::filter(MonthSimulated == 1) %>%
@@ -791,12 +839,12 @@ mod_animal_server <- function(id){
       if(round(herd_matrix()[[3]], 0) > round(herd_matrix()[[2]], 0)) {
 
         paste0("The average number of female calves born monthly is ", round(herd_matrix()[[2]], 0), ". The average number of female calves needed to make up the replacement herd is ",
-               round(herd_matrix()[[3]], 0), " . Then, your herd is producing less replacement than necessary.")
+               round(herd_matrix()[[3]], 0), " .")
 
       } else if (round(herd_matrix()[[3]], 0) < round(herd_matrix()[[2]], 0)) {
 
         paste0("The average number of female calves born monthly is ", round(herd_matrix()[[2]], 0), ". The average number of female calves needed to make up the replacement herd is ",
-               round(herd_matrix()[[3]], 0), " . Then, your herd is producing more replacement than necessary.")
+               round(herd_matrix()[[3]], 0), " .")
 
       } else {
 
@@ -830,7 +878,6 @@ mod_animal_server <- function(id){
                        input$animal_n_cows,
                        input$animal_mature_weight,
 
-
                        input$calf_birth_weight,
                        input$calf_milk_sup,
                        input$calf_fat,
@@ -857,29 +904,18 @@ mod_animal_server <- function(id){
                        input$diet_dry_ndf,
                        input$diet_dry_adf,
                        input$diet_dry_p,
-                       input$diet_dry_k
+                       input$diet_dry_k,
+                       input$radio,
+                       input$methane_red
 
 
                        )},
                  {showNotification("The model hasn't yet ran or you've changed some input!
                                    Please remember to click Run again!",
-                                   duration = 3,
+                                   duration = 10,
                                    type = "error")
 
                    })
-
-    # output$status2 <- renderUI({
-    #
-    #   textOutput(ns("status"))
-    #
-    # })
-    #
-    # output$status <- renderText({
-    #
-    #   status()
-    #
-    # })
-
 
 # -------------------------------------------------------------------------
 # Performance metrics -----------------------------------------------------

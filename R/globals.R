@@ -58,6 +58,17 @@ utils::globalVariables(
     "tan_kg_m2",
     "wi_weather",
     "yday",
+    "area_exposed_m2",
+    "const",
+    "gamma_densi",
+    "manure_solution_mass",
+    "manure_solution_pH",
+    "temp_c",
+    "total_tan_excreted_g",
+    "total_tan_kg",
+    "total_urine_excretion_kg",
+    "total_urine_kg",
+    "urine_nitrogen_excreted_g",
 
     "NumberAnimals",
     "area",
@@ -101,8 +112,23 @@ utils::globalVariables(
     "nh3_n_fertilizer",
     "nitrous_oxide",
     "storage_ch4_emissions_kg",
-    "year_day"
+    "year_day",
 
+    "Methane",
+    "fecal_n_kg n_mineralized_feces",
+    "remaining_tan_kg",
+    "total_fecal_n_escreted_g",
+    "total_methane total_milk_kg",
+    "total_storage_N_loss",
+    "fecal_n_kg",
+    "n_mineralized_feces",
+    "total_methane",
+    "total_milk_kg",
+    "CO2eq",
+    "Qntdds",
+    "carbon_foot",
+    "head",
+    "total"
 
 
   )

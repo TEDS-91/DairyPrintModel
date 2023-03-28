@@ -12,7 +12,7 @@
 #
 fert_manure_nitrous_oxide <- function(nitrogen_applied) {
 
-  fert_manure_nitrous_oxide <- 1.6 * nitrogen_applied
+  fert_manure_nitrous_oxide <- 0.01 * nitrogen_applied
 
   return(fert_manure_nitrous_oxide)
 

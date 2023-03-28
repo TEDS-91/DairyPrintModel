@@ -18,6 +18,6 @@ concentration of volatile fatty acids in the slurry (mmol/kg slurry).
 Estimates the initial concentration of volatile fatty acids in the slurry.
 }
 \examples{
-Fvfa_init_conc(Ftan = 91.3, ph = 7)
+Fvfa_init_conc(Ftan = 2500, ph = 7)
 
 }

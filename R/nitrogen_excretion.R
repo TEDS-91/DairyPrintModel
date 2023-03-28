@@ -83,13 +83,13 @@ milk_urea_nitrogen <- function(nitrogen_intake) {
 #' @export
 #'
 #' @examples
-#' dry_fecal_n_excretion(nitrogen_intake = 230)
+#' dry_n_fecal_excretion(nitrogen_intake = 230)
 #'
-dry_fecal_n_excretion <- function(nitrogen_intake) {
+dry_n_fecal_excretion <- function(nitrogen_intake) {
 
-  dry_fecal_n_excretion <- 0.345 + 0.317 * nitrogen_intake
+  dry_n_fecal_excretion <- 0.345 + 0.317 * nitrogen_intake
 
-  return(dry_fecal_n_excretion)
+  return(dry_n_fecal_excretion)
 
 }
 

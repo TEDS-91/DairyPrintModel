@@ -7,7 +7,7 @@
 #' @noRd
 #'
 #' @importFrom shiny NS tagList
-mod_ch4_emissions_ui <- function(id){
+mod_manure_ghg_emissions_ui <- function(id){
   ns <- NS(id)
   tagList(
 
@@ -20,10 +20,8 @@ mod_ch4_emissions_ui <- function(id){
         status = "teal",
         collapsible = TRUE,
         fluidRow(
-          manure_ui_prms()),
-        fluidRow(
-          column(6,
-          uiOutput(ns("sls"))))) ),
+          manure_ui_prms(),
+          uiOutput(ns("sls"))) ) ),
 
     fluidRow(
       bs4Dash::bs4Card(
@@ -33,10 +31,15 @@ mod_ch4_emissions_ui <- function(id){
         solidHeader = TRUE,
         status = "teal",
         collapsible = TRUE,
+        maximizable = TRUE,
         fluidRow(
+          bs4Dash::valueBoxOutput(ns("total_manure_managed")),
           bs4Dash::valueBoxOutput(ns("herd_methane")),
           bs4Dash::valueBoxOutput(ns("facilitie_methane")),
           bs4Dash::valueBoxOutput(ns("manure_storage_methane")),
+          bs4Dash::valueBoxOutput(ns("barn_nh3")),
+          bs4Dash::valueBoxOutput(ns("storage_nh3")),
+          bs4Dash::valueBoxOutput(ns("total_n2o")),
           br(),
 
           bs4Dash::tabBox(
@@ -57,6 +60,7 @@ mod_ch4_emissions_ui <- function(id){
                   title = "Manure Storage",
                   width = 6,
                   footer = NULL,
+                  #tableOutput(ns("teste2")),
                   plotly::plotlyOutput(ns("storage_ch4_chart")))
 
               )),
@@ -73,9 +77,21 @@ mod_ch4_emissions_ui <- function(id){
             tabPanel(
               title = "Ammonia Emissions",
               fluidRow(
-                "Add the content"
-                #plotly::plotlyOutput(ns("storage_ch4_chart"))
-              )),
+                bs4Dash::bs4Card(
+                  title = "Barn",
+                  width = 6,
+                  footer = NULL,
+                  plotly::plotlyOutput(ns("barn_nh3_chart")),
+                  tableOutput(ns("ammonia_teste"))
+
+                  ),
+                bs4Dash::bs4Card(
+                  title = "Sorage",
+                  width = 6,
+                  footer = NULL,
+                  plotly::plotlyOutput(ns("storage_nh3_chart")))
+
+                )),
             tabPanel(
               title = "Distribution of Emissions",
               fluidRow(
@@ -107,24 +123,26 @@ mod_ch4_emissions_ui <- function(id){
 #' ch4_emissions Server Functions
 #'
 #' @noRd
-mod_ch4_emissions_server <- function(id,
-                                     animal_data,
-                                     county,
-                                     facilitie,
-                                     bedding,
-                                     manure_management,
-                                     biodigester,
-                                     biodigester_ef,
-                                     type_manure,
-                                     solid_liquid,
-                                     enclosed_manure,
-                                     empty_time){
+mod_manure_ghg_emissions_server <- function(id,
+                                            animal_data,
+                                            county,
+                                            facilitie,
+                                            bedding,
+                                            manure_management,
+                                            biodigester,
+                                            biodigester_ef,
+                                            type_manure,
+                                            solid_liquid,
+                                            enclosed_manure,
+                                            empty_time,
+                                            crust,
+                                            manure_storage_area){
   moduleServer( id, function(input, output, session){
     ns <- session$ns
 
      output$sls <- renderUI({
 
-       manure_manag_ui(manure_managment = manure_management())
+       manure_manag_ui(manure_managment = manure_management(), type_manure = type_manure())
 
        })
 
@@ -148,6 +166,8 @@ mod_ch4_emissions_server <- function(id,
       animal_data <- animal_data()
 
       county <- county()
+
+      crust <- crust()
 
       facilitie <- facilitie()
 
@@ -181,16 +201,8 @@ mod_ch4_emissions_server <- function(id,
         dplyr::filter(Categories == "Hei") %>%
         dplyr::pull(total_animals)
 
-      #milking_cows_manure <- 65
-      #dry_cows_manure <- 25
-      #heifers_manure <- 21
-
-      #milking_cows_ts <- 0.0875
-      #dry_cows_ts <- 0.0443
-      #heifers_ts <- 0.0459
-
-      #total_manure_kg <- milking_cows * milking_cows_manure + dry_cows * dry_cows_manure + heifers * heifers_manure
       total_manure_kg <- animal_data %>%
+        dplyr::filter(Categories!= "Cal") %>%
         dplyr::summarise(
           total_manure = sum(total_manure_kg)
         ) %>%
@@ -213,7 +225,31 @@ mod_ch4_emissions_server <- function(id,
         ) %>%
         dplyr::pull(vs_manure)
 
+      # Total Urine
 
+      total_urine_kg <- animal_data %>%
+        dplyr::summarise(
+          total_urine_kg = sum(total_urine_kg)
+        ) %>%
+        dplyr::pull(total_urine_kg)
+
+      # Total TAN
+
+      #browser()
+
+      total_tan_kg <- animal_data %>%
+        dplyr::summarise(
+          total_tan_kg = sum(total_tan_excreted_g) / 1000
+        ) %>%
+        dplyr::pull(total_tan_kg)
+
+      # N in feces
+
+      total_fecal_n_kg <- animal_data %>%
+        dplyr::summarise(
+          total_fecal_n_kg = sum(total_fecal_n_escreted_g) / 1000
+        ) %>%
+        dplyr::pull(total_fecal_n_kg)
 
       yday <- seq(1, 730, 1)
 
@@ -228,10 +264,8 @@ mod_ch4_emissions_server <- function(id,
         ) %>%
         dplyr::pull(total_ch4_kg)
 
-      print(herd_ch4_emissions_kg)
-
-      area_exposed_m2 <- dplyr::if_else(facilitie == "freestall", milking_cows * 3.5 + dry_cows * 3.5 + heifers * 2.5,
-                                        milking_cows * 1.5 + dry_cows * 1.5 + heifers * 2.5)
+      area_exposed_m2 <- dplyr::if_else(facilitie == "freestall", milking_cows * 3.5 + dry_cows * 3.5 + heifers * 2,
+                                        milking_cows * 1.2 + dry_cows * 1.2 + heifers * 1)
 
       barn_ch4_emissions_kg <- barn_ch4_emission_floor(temp_c = temp_c, manure_area = area_exposed_m2)
 
@@ -258,23 +292,34 @@ mod_ch4_emissions_server <- function(id,
 
       if (manure_management == "Daily Hauling") {
 
-        # regardless of the tyoe of manure, emissions are considered zero!
+        # regardless of the type of manure, emissions are considered zero!
 
         empty_day <- 0
 
         manure_dm <- manure_dm()
 
-        total_manure_manag_kg <- total_mass_managed_kg / (manure_dm / 100)
+        h2o_to_add <- (total_ts_managed_kg / (manure_dm / 100)) - total_mass_managed_corSS_kg
+
+        total_manure_manag_kg <- total_mass_managed_kg + h2o_to_add
 
         vs_solid_loaded_kg_day <- total_vs_managed_kg
 
         total_ch4_kg <- 0
 
         tabela_outputs <- tibble::tibble(
-          temp_c                   = temp_c,
           year_day                 = yday,
+          temp_c                   = temp_c,
+          teste = total_ts_managed_kg/total_manure_manag_kg,
+          facilitie                = facilitie,
+          area_exposed_m2          = area_exposed_m2,
+          type_manure              = type_manure,
+          manure_management        = manure_management,
           empty_day                = empty_day,
           manure_dm                = manure_dm,
+          crust                    = crust,
+          total_urine_kg           = total_urine_kg,
+          total_tan_kg             = total_tan_kg,
+          fecal_n_kg               = total_fecal_n_kg,
           total_manure_manag_kg    = total_manure_manag_kg,
           vs_solid_loaded_kg_day   = vs_solid_loaded_kg_day,
           herd_ch4_emissions_kg    = herd_ch4_emissions_kg,
@@ -298,17 +343,27 @@ mod_ch4_emissions_server <- function(id,
 
           manure_dm <- manure_dm()
 
-          total_manure_manag_kg <- total_mass_managed_kg / (manure_dm / 100)
+          h2o_to_add <- (total_ts_managed_kg / (manure_dm / 100)) - total_mass_managed_corSS_kg
+
+          total_manure_manag_kg <- total_mass_managed_kg + h2o_to_add
 
           vs_solid_loaded_kg_day <- dplyr::if_else(empty_day == 1, 0, total_vs_managed_kg)
 
           total_ch4_kg <- manure_ch4_emission_solid(volatile_solids = vs_solid_loaded_kg_day, temp_c = temp_c)
 
           tabela_outputs <- tibble::tibble(
-            temp_c                   = temp_c,
             year_day                 = yday,
+            temp_c                   = temp_c,
+            facilitie                = facilitie,
+            area_exposed_m2          = area_exposed_m2,
+            type_manure              = type_manure,
+            manure_management        = manure_management,
             empty_day                = empty_day,
             manure_dm                = manure_dm,
+            crust                    = crust,
+            total_urine_kg           = total_urine_kg,
+            total_tan_kg             = total_tan_kg,
+            fecal_n_kg               = total_fecal_n_kg,
             total_manure_manag_kg    = total_manure_manag_kg,
             vs_solid_loaded_kg_day   = vs_solid_loaded_kg_day,
             herd_ch4_emissions_kg    = herd_ch4_emissions_kg,
@@ -326,7 +381,9 @@ mod_ch4_emissions_server <- function(id,
 
           manure_dm <- manure_dm()
 
-          total_manure_manag_kg <- total_mass_managed_kg / (manure_dm / 100)
+          h2o_to_add <- (total_ts_managed_kg / (manure_dm / 100)) - total_mass_managed_corSS_kg
+
+          total_manure_manag_kg <- total_mass_managed_kg + h2o_to_add
 
           vs_liq_loaded_kg_day <- dplyr::if_else(empty_day == 1, 0, total_vs_managed_kg)
 
@@ -408,12 +465,21 @@ mod_ch4_emissions_server <- function(id,
           }
 
           tabela_outputs <- tibble::tibble(
-            temp_c                   = temp_c,
             year_day                 = yday,
+            temp_c                   = temp_c,
+            facilitie                = facilitie,
+            area_exposed_m2          = area_exposed_m2,
+            type_manure              = type_manure,
+            manure_management        = manure_management,
             empty_day                = empty_days,#empty_day,
             manure_dm                = manure_dm,
+            crust                    = crust,
+            total_urine_kg           = total_urine_kg,
+            total_tan_kg             = total_tan_kg,
+            fecal_n_kg               = total_fecal_n_kg,
             total_manure_manag_kg    = total_manure_manag_kg,
             vs_liq_loaded_kg_day     = vs_liq_loaded_kg_day,
+            total_cum = vs_liq_total_cum_kg,
             herd_ch4_emissions_kg    = herd_ch4_emissions_kg,
             barn_ch4_emissions_kg    = barn_ch4_emissions_kg,
             storage_ch4_emissions_kg = ch4_liq_emission_kg_day
@@ -433,7 +499,9 @@ mod_ch4_emissions_server <- function(id,
 
         manure_dm <- manure_dm()
 
-        total_manure_manag_kg <- total_mass_managed_kg / (manure_dm / 100)
+        h2o_to_add <- (total_ts_managed_kg / (manure_dm / 100)) - total_mass_managed_corSS_kg
+
+        total_manure_manag_kg <- total_mass_managed_kg + h2o_to_add
 
         vs_solid_loaded_kg_day <- ifelse(empty_day == 1, 0, total_vs_managed_kg)
 
@@ -571,10 +639,18 @@ mod_ch4_emissions_server <- function(id,
         }
 
         tabela_outputs <- tibble::tibble(
-          temp_c                   = temp_c,
           year_day                 = yday,
+          temp_c                   = temp_c,
+          facilitie                = facilitie,
+          area_exposed_m2          = area_exposed_m2,
+          type_manure              = type_manure,
+          manure_management        = manure_management,
           empty_day                = empty_day,#empty_days,
           manure_dm                = manure_dm,
+          crust                    = crust,
+          total_urine_kg           = total_urine_kg,
+          total_tan_kg             = total_tan_kg,
+          fecal_n_kg               = total_fecal_n_kg,
           total_manure_manag_kg    = total_manure_manag_kg,
           vs_liq_loaded_kg_day     = vs_liq_loaded_kg_day,
           herd_ch4_emissions_kg    = herd_ch4_emissions_kg,
@@ -595,7 +671,9 @@ mod_ch4_emissions_server <- function(id,
 
         manure_dm <- manure_dm()
 
-        total_manure_manag_kg <- total_mass_managed_kg / (manure_dm / 100)
+        h2o_to_add <- (total_ts_managed_kg / (manure_dm / 100)) - total_mass_managed_corSS_kg
+
+        total_manure_manag_kg <- total_mass_managed_kg + h2o_to_add
 
         vs_solid_loaded_kg_day <- ifelse(empty_day == 1, 0, total_vs_managed_kg)
 
@@ -760,10 +838,18 @@ mod_ch4_emissions_server <- function(id,
 
 
         tabela_outputs <- tibble::tibble(
-          temp_c                   = temp_c,
           year_day                 = yday,
+          temp_c                   = temp_c,
+          facilitie                = facilitie,
+          area_exposed_m2          = area_exposed_m2,
+          type_manure              = type_manure,
+          manure_management        = manure_management,
           empty_day                = empty_day,#empty_days,
           manure_dm                = manure_dm,
+          crust                    = crust,
+          total_urine_kg           = total_urine_kg,
+          total_tan_kg             = total_tan_kg,
+          fecal_n_kg               = total_fecal_n_kg,
           total_manure_manag_kg    = total_manure_manag_kg,
           vs_liq_loaded_kg_day     = vs_liq_loaded_kg_day,
           herd_ch4_emissions_kg    = herd_ch4_emissions_kg,
@@ -773,30 +859,50 @@ mod_ch4_emissions_server <- function(id,
 
         tabela_outputs
 
-
+        total_manure_manag_kg
       }
 
     })
+
 
     summarized_data <- reactive({
 
       emissions() %>%
         dplyr::filter(year_day > 365) %>%
         dplyr::summarise(
-          total_ch4_herd = sum(herd_ch4_emissions_kg),
-          total_ch4_fac  = sum(barn_ch4_emissions_kg),
+          total_ch4_herd     = sum(herd_ch4_emissions_kg),
+          total_ch4_fac      = sum(barn_ch4_emissions_kg),
           total_ch4_storage  = sum(storage_ch4_emissions_kg)
 
         )
     })
 
+    output$teste2 <- renderTable({
 
-    # output$teste2 <- renderTable({
-    #
-    #   #emissions()
-    #
-    # })
+      emissions()[1:10, ]
 
+    })
+
+
+# -------------------------------------------------------------------------
+# Total Manure Managed ----------------------------------------------------
+# -------------------------------------------------------------------------
+
+    output$total_manure_managed <- bs4Dash::renderValueBox({
+
+      value_box_spark(
+        value    = round(emissions()$total_manure_manag_kg[1], 1),
+        title    = "Total Manure Produced Daily (kg)",
+        sparkobj = NULL,
+        subtitle = tagList(),
+        info     = " ",
+        icon     = icon("fa-solid fa-poop", verify_fa = FALSE),
+        width    = 4,
+        color    = "white",
+        href     = NULL
+      )
+
+    })
 
 # -------------------------------------------------------------------------
 # Methane Emissions -------------------------------------------------------
@@ -805,7 +911,7 @@ mod_ch4_emissions_server <- function(id,
     output$herd_methane <- bs4Dash::renderValueBox({
 
       value_box_spark(
-        value    = round(summarized_data()[1], 1),
+        value    = round(summarized_data()[["total_ch4_herd"]], 1),
         title    = "Total Herd Methane Emissions (kg/year)",
         sparkobj = NULL,
         subtitle = tagList(),
@@ -821,7 +927,7 @@ mod_ch4_emissions_server <- function(id,
     output$facilitie_methane <- bs4Dash::renderValueBox({
 
       value_box_spark(
-        value    = round(summarized_data()[2], 2),
+        value    = round(summarized_data()[["total_ch4_fac"]], 2),
         title    = "Total Barn Methane Emissions (kg/year)",
         sparkobj = NULL,
         subtitle = tagList(),
@@ -985,6 +1091,440 @@ mod_ch4_emissions_server <- function(id,
               insidetextorientation = 'radial')
 
     })
+
+
+# -------------------------------------------------------------------------
+# Ammonia emissions -------------------------------------------------------
+# -------------------------------------------------------------------------
+
+    nh3_emissions <- reactive({
+
+      # Barn NH3 emissions
+
+      #total_area <-
+
+      emissions() %>%
+        dplyr::mutate(
+
+          manure_solution_mass = total_urine_kg / area_exposed_m2,
+          manure_solution_pH   = 7.7,
+          gamma_densi          = 1000,
+          const                = 86400,
+          Q                    = eq_coeff(temp_c = temp_c, pH = manure_solution_pH),
+          r                    = resistence_nh3(hsc = 260, temp_c = temp_c),
+          tan_kg_m2            = total_tan_kg / area_exposed_m2,
+          loss_kg_m2           = tan_kg_m2 * const * gamma_densi / (r * manure_solution_mass * Q),
+          loss_animal_kg       = loss_kg_m2 * area_exposed_m2,
+          cum_loss             = cumsum(loss_animal_kg)
+        )
+
+    })
+
+
+    # Ammonia emissions
+
+    storage <- reactive({
+
+      mineralization_pct <- dplyr::if_else(empty_time() == "Fall" | empty_time() == "Spring", 0.25, 0.12)
+
+      teste <- nh3_emissions() %>%
+        dplyr::mutate(
+          mineralization_pct = mineralization_pct,
+          n_mineralized_feces = dplyr::if_else(manure_management == "Biodigester" | manure_management == "Biodigester + Solid-liquid Separator",
+                                               mineralization_pct * fecal_n_kg + 0.16 * fecal_n_kg, mineralization_pct * fecal_n_kg),
+          remaining_tan_kg = total_tan_kg - loss_animal_kg + n_mineralized_feces,
+          manure_sol_loaded = (100 - manure_dm) * total_manure_manag_kg / 100,#TODO check manure mass
+
+          total_nitrogen_storage_kg = fecal_n_kg + total_tan_kg - loss_animal_kg
+        )
+
+      tank_capacity <- 365 * teste$manure_sol_loaded[1]
+
+      volume_diario <- teste$remaining_tan_kg[1]
+
+      acumulado <- vector(length =  730)
+
+      acumulado[1] <- volume_diario
+
+      tank_cap <- 365 * volume_diario
+
+      empty_days <- empty_day(empty_time = empty_time())
+
+      for (i in 2:length(empty_days)) {
+
+        if(empty_days[i] == 0) {
+          acumulado[i] <- acumulado[i - 1] + volume_diario
+        } else {
+          acumulado[i] <- tank_cap * 0 + volume_diario
+        }
+
+
+      }
+
+      acumulado
+
+
+      # logic for cumul manure
+
+      volume_diario_man <- teste$manure_sol_loaded[1]
+
+      acumulado_manure <- vector(length =  730)
+
+      acumulado_manure[1] <- volume_diario_man
+
+      tank_cap2 <- 365 * volume_diario_man
+
+      for (i in 2:length(empty_days)) {
+
+        if(empty_days[i] == 0) {
+          acumulado_manure[i] <- acumulado_manure[i - 1] + volume_diario_man
+        } else {
+          acumulado_manure[i] <- tank_cap2 * 0.01 + volume_diario_man
+        }
+
+      }
+
+      acumulado_manure
+
+       temp_c <- rep(wi_weather %>%
+                       dplyr::filter(county == county()) %>%
+                       dplyr::pull(aver_tempC), 2)
+
+      # r for storage
+
+       if (crust() == "no" & type_manure() == "Slurry") { #TODO
+
+         r_storage <- resistence_nh3(hsc = 19, temp_c = temp_c)
+
+       } else if (crust() == "yes" & type_manure() == "Slurry") {
+
+         r_storage <- resistence_nh3(hsc = 75, temp_c = temp_c)
+
+       } else if (crust() == "yes" & type_manure() == "Liquid") {
+
+         r_storage <- resistence_nh3(hsc = 75, temp_c = temp_c)
+
+       } else if (crust() == "no" & type_manure() == "Liquid") {
+
+         r_storage <- resistence_nh3(hsc = 19, temp_c = temp_c)
+
+       } else {
+
+         r_storage <- resistence_nh3(hsc = 10, temp_c = temp_c)
+
+       }
+
+       r_storage
+
+      ph_storage <- 7.5
+
+      Q_storage <- eq_coeff(temp_c = temp_c, pH = ph_storage)
+
+      storage_area <- manure_storage_area()
+
+      gamma_densi <- 1000
+
+      const <- 86400
+
+      storage_N_loss_m2 <- acumulado * const * gamma_densi / (r_storage * acumulado_manure * Q_storage)
+
+      cum_N_loss_m2 <- cumsum(storage_N_loss_m2)
+
+      manure_storage_area()
+
+      teste %>%
+        dplyr::mutate(
+          temp_c = temp_c,
+          storage_N_loss_m2 = storage_N_loss_m2,
+          cum_tan_kg = cumsum(remaining_tan_kg),
+          total_storage_N_loss = storage_N_loss_m2 * manure_storage_area()
+        )
+
+
+      # # storage emissions
+      #
+      # remaining_tan <- TAN - loss_animal_kg
+      #
+      # empty_days <- empty_day(empty_time = empty_time)
+      #
+      # mineralization_pct <- dplyr::if_else(empty_time == "Fall" | empty_time == "Spring", 0.25, 0.12)
+      #
+      # n_mineralized_feces <- dplyr::if_else(biodigester == "no", mineralization_pct * Nfeces, mineralization_pct * Nfeces + 0.16 * Nfeces)
+      #
+      # total_tan <- cumsum(remaining_tan + n_mineralized_feces)
+      #
+      # manure_sol_loaded <- rep(fresh_manure_kg * ( 1 - ts_manure_kg / fresh_manure_kg), 730)
+      #
+      # cum_manure_sol_loaded <- cumsum(manure_sol_loaded)
+      #
+      # tank_capacity <- 365 * manure_sol_loaded[1]
+      #
+      # # logic for emptying - TAN
+      #
+      # volume_diario <- (remaining_tan + n_mineralized_feces)[1]
+      #
+      # acumulado <- vector(length =  730)
+      #
+      # acumulado[1] <- volume_diario
+      #
+      # tank_cap <- 365 * volume_diario
+      #
+      # for (i in 2:length(empty_days)) {
+      #
+      #   if(empty_days[i] == 0) {
+      #     acumulado[i] <- acumulado[i - 1] + volume_diario
+      #   } else {
+      #     acumulado[i] <- tank_cap * 0 + volume_diario
+      #   }
+      #
+      #
+      # }
+      #
+      # # logic for cumul manure
+      #
+      # volume_diario_man <- manure_sol_loaded[1]
+      #
+      # acumulado_manure <- vector(length =  730)
+      #
+      # acumulado_manure[1] <- volume_diario_man
+      #
+      # tank_cap2 <- 365 * volume_diario_man
+      #
+      # for (i in 2:length(empty_days)) {
+      #
+      #   if(empty_days[i] == 0) {
+      #     acumulado_manure[i] <- acumulado_manure[i - 1] + volume_diario_man
+      #   } else {
+      #     acumulado_manure[i] <- tank_cap2 * 0.01 + volume_diario_man
+      #   }
+      #
+      # }
+      #
+      #
+      # ph_storage <- 7.5
+      #
+      # Q_storage <- eq_coeff(temp_c = temp_c, pH = ph_storage)
+      #
+      # storage_area <- 200
+      #
+      # storage_N_loss_m2 <- acumulado * const * gamma_densi / (r_storage * acumulado_manure * Q_storage)
+      #
+      # cum_N_loss_m2 <- cumsum(storage_N_loss_m2)
+
+    })
+
+
+  output$ammonia_teste <- renderTable({
+
+    #storage()
+
+    print(n2o_from_storage() * 0.005 / 0.64)
+
+  })
+
+  n2o_from_storage <- reactive({
+
+    sum(storage()$total_nitrogen_storage_kg[366:730]) * 0.005 / 0.64
+
+  })
+
+  barn_nh3 <- reactive({
+
+    total_nh3 <- nh3_emissions() %>%
+      dplyr::filter(year_day <=365) %>%
+      dplyr::summarise(
+        total_nh3 = round(sum(loss_animal_kg), 1)
+      ) %>%
+      dplyr::pull(total_nh3)
+
+    total_nh3
+
+  })
+
+  storage_nh3 <- reactive({
+
+    total_nh3 <- storage() %>%
+      dplyr::filter(year_day > 365) %>%
+      dplyr::summarise(
+        total_nh3 = round(sum(total_storage_N_loss), 1)
+      ) %>%
+      dplyr::pull(total_nh3)
+
+    total_nh3
+
+  })
+
+    output$barn_nh3 <- bs4Dash::renderValueBox({
+
+      value_box_spark(
+        value    = round(barn_nh3() / 0.82, 1),
+        title    = "Barn Ammonia Emissions (kg/year)",
+        sparkobj = NULL,
+        subtitle = tagList(),
+        info     = " ",
+        icon     = icon("fa-solid fa-poop", verify_fa = FALSE),
+        width    = 4,
+        color    = "white",
+        href     = NULL
+      )
+
+    })
+
+    output$storage_nh3 <- bs4Dash::renderValueBox({
+
+      value_box_spark(
+        value    = round(storage_nh3() / 0.82, 1),
+        title    = "Storage Ammonia Emissions (kg/year)",
+        sparkobj = NULL,
+        subtitle = tagList(),
+        info     = " ",
+        icon     = icon("fa-solid fa-poop", verify_fa = FALSE),
+        width    = 4,
+        color    = "white",
+        href     = NULL
+      )
+
+    })
+
+    output$total_n2o <- bs4Dash::renderValueBox({
+
+      value_box_spark(
+        value    = round((storage_nh3() + barn_nh3()) / 100 / 0.64 + n2o_from_storage(), 1),
+        title    = "Nitrous Oxide Emissions (kg/year)",
+        sparkobj = NULL,
+        subtitle = tagList(),
+        info     = " ",
+        icon     = icon("fa-solid fa-poop", verify_fa = FALSE),
+        width    = 4,
+        color    = "white",
+        href     = NULL
+      )
+
+    })
+
+    # nitrogen curves
+
+    output$barn_nh3_chart <- plotly::renderPlotly({
+
+      emissions <- nh3_emissions() %>%
+        tibble::as_tibble() %>%
+        dplyr::filter(year_day <= 365)
+
+      fig <- emissions %>%
+        plotly::plot_ly(x = ~ year_day,
+                        y = ~ round(loss_animal_kg, 5),
+                        name = "NH3",
+                        type = "scatter",
+                        mode = "lines+markers") %>%
+        plotly::config(displayModeBar = FALSE)
+
+
+      ay <- list(
+        tickfont = list(color = "black"),
+        overlaying = "y",
+        side = "right",
+        title = "Temp. (C)")
+
+      fig <- fig %>%
+        plotly::add_trace(x     = ~1:365,
+                          y     = ~round(temp_c[1:365], 1),
+                          name  = "Temp.",
+                          yaxis = "y2",
+                          mode  = "lines+markers",
+                          type  = "scatter")
+
+      fig <- fig %>%
+        plotly::layout(
+          title  = " ",
+          yaxis2 = ay,
+          xaxis  = list(title = "Year Days"),
+          yaxis  = list(title = "Daily Ammonia Emissions From Barn (kg)")
+        ) %>%
+        plotly::layout(plot_bgcolor = 'white',
+                       xaxis = list(
+                         zerolinecolor = '#ffff',
+                         zerolinewidth = 2,
+                         gridcolor     = 'ffff'),
+                       yaxis = list(
+                         zerolinecolor = '#ffff',
+                         zerolinewidth = 2,
+                         gridcolor     = 'ffff')
+        ) %>%
+        plotly::layout(legend = list(itemsizing = 'constant'))
+
+
+      })
+
+    output$storage_nh3_chart <- plotly::renderPlotly({
+
+      emissions <- storage() %>%
+        tibble::as_tibble() %>%
+        dplyr::filter(year_day > 365) %>%
+        dplyr::mutate(
+          year_day = year_day - 365
+        )
+
+      fig <- emissions %>%
+        plotly::plot_ly(x = ~ year_day,
+                        y = ~ round(total_storage_N_loss, 5),
+                        name = "NH3",
+                        type = "scatter",
+                        mode = "lines+markers") %>%
+        plotly::config(displayModeBar = FALSE)
+
+
+      ay <- list(
+        tickfont = list(color = "black"),
+        overlaying = "y",
+        side = "right",
+        title = "Temp. (C)")
+
+      fig <- fig %>%
+        plotly::add_trace(x     = ~1:365,
+                          y     = ~round(temp_c[1:365], 1),
+                          name  = "Temp.",
+                          yaxis = "y2",
+                          mode  = "lines+markers",
+                          type  = "scatter")
+
+      fig <- fig %>%
+        plotly::layout(
+          title  = " ",
+          yaxis2 = ay,
+          xaxis  = list(title = "Year Days"),
+          yaxis  = list(title = "Daily Ammonia Emissions From Storage (kg)")
+        ) %>%
+        plotly::layout(plot_bgcolor = 'white',
+                       xaxis = list(
+                         zerolinecolor = '#ffff',
+                         zerolinewidth = 2,
+                         gridcolor     = 'ffff'),
+                       yaxis = list(
+                         zerolinecolor = '#ffff',
+                         zerolinewidth = 2,
+                         gridcolor     = 'ffff')
+        ) %>%
+        plotly::layout(legend = list(itemsizing = 'constant'))
+
+
+    })
+
+
+# -------------------------------------------------------------------------
+# Outputs from this module to populate others -----------------------------
+# -------------------------------------------------------------------------
+
+    return(
+      list(
+        nh3_emissions   = reactive(storage()),
+        herd_methane    = reactive(summarized_data()[["total_ch4_herd"]]),
+        fac_methane     = reactive(summarized_data()[["total_ch4_fac"]]),
+        storage_methane = reactive(summarized_data()[["total_ch4_storage"]]),
+        fac_ammonia     = reactive(barn_nh3()),
+        storage_ammonia = reactive(storage_nh3()),
+        direct_storage_n2o = reactive(n2o_from_storage())
+      )
+    )
 
   })
 }

@@ -12,7 +12,7 @@
 #'
 barn_ch4_emission_floor <- function(temp_c, manure_area) {
 
-  barn_ch4_emission_floor <- dplyr::if_else(temp_c < 0, 0, (0.13 * temp_c) * manure_area / 1000)
+  barn_ch4_emission_floor <- dplyr::if_else(temp_c < 0, 0, (0.14 * temp_c) * manure_area / 1000)
 
   return(barn_ch4_emission_floor)
 

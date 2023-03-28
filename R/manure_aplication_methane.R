@@ -23,15 +23,16 @@ manure_application_ch4_emission <- function(Fvfa, area_crop) {
 #' Estimates the daily concentration of VFA in the field-applied slurry.
 #'
 #' @param Fvfa_ini Initial VFA concentration in the slurry at application (mmol /kg slurry).
-#' @param time_day Time since application with t = 0 representing the day of application (day).
 #'
-#' @return Daily concentration of VFA in the field-applied slurry ().
+#' @return Daily concentration of VFA in the field-applied slurry (mmmol/kg).
 #' @export
 #'
 #' @examples
-#'Fvfa_conc(Fvfa_ini = 0.91, time_day = 2)
+#'Fvfa_conc(Fvfa_ini = 0.91)
 #'
-Fvfa_conc <- function(Fvfa_ini, time_day) {
+Fvfa_conc <- function(Fvfa_ini) {
+
+  time_day <- seq(1, 11)
 
   Fvfa <- Fvfa_ini * exp(-0.6939 * time_day)
 
@@ -48,7 +49,7 @@ Fvfa_conc <- function(Fvfa_ini, time_day) {
 #' @export
 #'
 #' @examples
-#' Fvfa_init_conc(Ftan = 91.3, ph = 7)
+#' Fvfa_init_conc(Ftan = 2500, ph = 7)
 #'
 Fvfa_init_conc <- function(Ftan, ph) {
 

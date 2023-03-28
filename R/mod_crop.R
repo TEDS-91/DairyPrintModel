@@ -14,7 +14,7 @@ mod_crop_ui <- function(id){
     fluidRow(
     bs4Dash::bs4Card(
       width = 12,
-      title = "Crops ",
+      title = "Homegrown crops ",
       elevation = 2,
       solidHeader = TRUE,
       status = "teal",
@@ -28,7 +28,7 @@ mod_crop_ui <- function(id){
 
     bs4Dash::bs4Card(
       width = 12,
-      title = "Crops ",
+      title = "Crop emissions ",
       elevation = 2,
       solidHeader = TRUE,
       status = "teal",
@@ -37,10 +37,11 @@ mod_crop_ui <- function(id){
         bs4Dash::valueBoxOutput(ns("lime_urea_co2")),
         bs4Dash::valueBoxOutput(ns("fert_nh3")),
         bs4Dash::valueBoxOutput(ns("total_nitrous_oxide")),
+        bs4Dash::valueBoxOutput(ns("ch4_field")),
         tableOutput(ns("teste"))
-      )
+      ),
 
-    #tableOutput(ns("df")),
+    textOutput(ns("df"))
 
     )
 
@@ -51,7 +52,13 @@ mod_crop_ui <- function(id){
 #' crop Server Functions
 #'
 #' @noRd
-mod_crop_server <- function(id, animal_data){
+mod_crop_server <- function(id,
+                            animal_data,
+                            type_manure,
+                            manure_management,
+                            manure_application_method,
+                            manure_data,
+                            co2eq_purchased){
   moduleServer( id, function(input, output, session){
     ns <- session$ns
 
@@ -84,39 +91,39 @@ mod_crop_server <- function(id, animal_data){
 
     })
 
-    output$df <- renderTable({
-      animal_data()
+    output$df <- renderPrint({
+
+     print( co2eq_purchased() )
+
     })
 
 
     valores <- reactive({
 
-      req(input[["1_crop_type"]])
+      req(input[[paste0(input$number_crops,"_crop_type")]])
 
-      valores <- data.frame()
+      crop_values <- function(input_id) {
 
-      for ( i in 1:input$number_crops) {
+        unlist(purrr::map(1:input$number_crops, function(i) { input[[paste0(i, input_id)]] } ))
 
-        crop_values <- cbind(i,
-                             input[[paste0(i, "_crop_type")]],
-                             input[[paste0(i, "_area")]],
-                             input[[paste0(i, "_yield")]],
-                             input[[paste0(i, "_manure_pct")]],
-                             input[[paste0(i, "_total_n_applied")]],
-                             input[[paste0(i, "_urea_pct_n")]],
-                             input[[paste0(i, "_p2o5_applied")]],
-                             input[[paste0(i, "_k2o_applied")]],
-                             input[[paste0(i, "_lime_applied")]])
+      }
 
-         valores <- rbind(valores, crop_values)
 
-       }
+      crop_prms <- tibble::tibble(
+        "crop_id"           = seq(1:input$number_crops),
+        "crop_type"         = crop_values("_crop_type"),
+        "area"              = crop_values("_area"),
+        "yield"             = crop_values("_yield"),
+        "manure_pct"        = crop_values("_manure_pct"),
+        "total_n_applied"   = crop_values("_total_n_applied"),
+        "urea_pct_applied"  = crop_values("_urea_pct_n"),
+        "phosphate_applied" = crop_values("_p2o5_applied"),
+        "potash_applied"    = crop_values("_k2o_applied"),
+        "lime_applied"      = crop_values("_lime_applied")
 
-        colnames(valores) <- c("crop_id", "crop_type", "area", "yield",  "manure_pct", "total_n_applied",
-                               "urea_pct_applied", "phosphate_applied", "potash_applied",
-                               "lime_applied")
+      )
 
-        valores
+     crop_prms
 
     })
 
@@ -150,10 +157,10 @@ mod_crop_server <- function(id, animal_data){
       valores <- valores %>%
         dplyr::mutate_at(c(3:10), as.numeric) %>%
         dplyr::mutate(
-          co2_lime = lime_decomposition_co2(lime_applied = lime_applied * 1000) * area,
-          co2_urea = urea_decomposition_co2(urea_applied = (urea_pct_applied / 100 * total_n_applied)) * area,
+          co2_lime         = lime_decomposition_co2(lime_applied = lime_applied * 1000) * area,
+          co2_urea         = urea_decomposition_co2(urea_applied = (urea_pct_applied / 100 * total_n_applied)) * area,
           nh3_n_fertilizer = fertilizer_nh3(nitrogen_applied = total_n_applied) * area,
-          nitrous_oxide = fert_manure_nitrous_oxide(nitrogen_applied = total_n_applied) * area # TODO! missing manure N
+          nitrous_oxide    = fert_manure_nitrous_oxide(nitrogen_applied = total_n_applied) * area # TODO! missing manure N
         )
 
       valores %>%
@@ -171,13 +178,62 @@ mod_crop_server <- function(id, animal_data){
 
     output$teste <- renderTable({
 
-    crop_calculations()
+      manure_data() %>% head()
+
+    #crop_calculations()
+    #paste("The emissions ", ch4_field_kg())
+    })
+
+
+# -------------------------------------------------------------------------
+# Methane calculations from field application -----------------------------
+# -------------------------------------------------------------------------
+
+    ch4_field_kg <- reactive({
+
+      # total area in hectares
+
+      total_area <- sum(valores()$area)
+
+      # initial volatile fatty acids in manure
+
+      Fvfa_ini <- Fvfa_init_conc(Ftan = 43, ph = 7) # TODO
+
+      # Total annual emissions
+
+      if(manure_application_method() != "Injected") {
+
+        # the models to predict ch4 from field application were developed for slurry and liquid manure
+        # solid and semi-solid manure will be considered 0
+        # For injected manure, the emissions will be considered 0
+
+        if (type_manure() == "Slurry" | type_manure() == "Liquid") {
+
+          Fvfa_conc(Fvfa_ini = Fvfa_ini) %>%
+            purrr::map_dbl(manure_application_ch4_emission, area_crop = total_area) %>%
+            sum()
+
+        } else {
+
+          0
+
+        }
+
+      } else {
+
+        0
+
+      }
 
     })
 
-    # Total CO2 emitted from lime and urea
+# -------------------------------------------------------------------------
+# End of calculations -----------------------------------------------------
+# -------------------------------------------------------------------------
 
-    output$lime_urea_co2 <- bs4Dash::renderValueBox({
+
+
+    total_co2 <- reactive({
 
       total_co2 <- crop_calculations() %>%
         dplyr::mutate(
@@ -188,8 +244,65 @@ mod_crop_server <- function(id, animal_data){
         ) %>%
         dplyr::pull(total_co2)
 
+      total_co2 + co2eq_purchased()
+
+    })
+
+    total_nh3 <- reactive({
+
+      total_nh3 <- crop_calculations() %>%
+        dplyr::summarise(
+          total_nh3 = sum(nh3_n_fertilizer)
+        ) %>%
+        dplyr::pull(total_nh3)
+
+      total_nh3
+
+
+    })
+
+    total_n2o <- reactive({
+
+      total_nitrous_oxide <- crop_calculations() %>%
+        dplyr::summarise(
+          total_nh3 = sum(nh3_n_fertilizer),
+          total_nitrous_oxide = sum(nitrous_oxide)
+        ) %>%
+        dplyr::mutate(
+          total_nitrous_oxide = total_nitrous_oxide / 0.64 + 0.01 * total_nh3 / 0.64
+        ) %>%
+        dplyr::pull(total_nitrous_oxide)
+
+      total_nitrous_oxide
+
+
+    })
+
+    # Total CH4 emmited from field
+
+    output$ch4_field <- bs4Dash::renderValueBox({
+
       value_box_spark(
-        value    = round(total_co2, 1),
+        value    = round(ch4_field_kg(), 1),
+        title    = "Total CH4 emitted from Field (kg/year)",
+        sparkobj = NULL,
+        subtitle = tagList(),
+        info     = " ",
+        icon     = icon("fa-solid fa-fire-flame-simple", verify_fa = FALSE),
+        width    = 4,
+        color    = "white",
+        href     = NULL
+      )
+
+    })
+
+
+    # Total CO2 emitted from lime and urea
+
+    output$lime_urea_co2 <- bs4Dash::renderValueBox({
+
+      value_box_spark(
+        value    = round(total_co2(), 1),
         title    = "Total CO2 Emissions from Lime and Urea (kg/year)",
         sparkobj = NULL,
         subtitle = tagList(),
@@ -206,14 +319,8 @@ mod_crop_server <- function(id, animal_data){
 
     output$fert_nh3 <- bs4Dash::renderValueBox({
 
-      total_nh3 <- crop_calculations() %>%
-        dplyr::summarise(
-          total_nh3 = sum(nh3_n_fertilizer)
-        ) %>%
-        dplyr::pull(total_nh3)
-
       value_box_spark(
-        value    = round(total_nh3, 1),
+        value    = round(total_nh3() / 0.82, 1),
         title    = "Total Ammonia emissions from N Fertizers (kg/year)",
         sparkobj = NULL,
         subtitle = tagList(),
@@ -230,18 +337,8 @@ mod_crop_server <- function(id, animal_data){
 
     output$total_nitrous_oxide <- bs4Dash::renderValueBox({
 
-      total_nitrous_oxide <- crop_calculations() %>%
-        dplyr::summarise(
-          total_nh3 = sum(nh3_n_fertilizer),
-          total_nitrous_oxide = sum(nitrous_oxide)
-        ) %>%
-        dplyr::mutate(
-          total_nitrous_oxide = total_nitrous_oxide + 0.01 * total_nh3
-        ) %>%
-        dplyr::pull(total_nitrous_oxide)
-
       value_box_spark(
-        value    = round(total_nitrous_oxide, 1),
+        value    = round(total_n2o(), 1),
         title    = "Total Nitrous Oxide emissions from N Fertizers (Missing Manure) (kg/year)",
         sparkobj = NULL,
         subtitle = tagList(),
@@ -253,6 +350,19 @@ mod_crop_server <- function(id, animal_data){
       )
 
     })
+
+# -------------------------------------------------------------------------
+# Outputs from this module to populate others -----------------------------
+# -------------------------------------------------------------------------
+
+    return(
+      list(
+        total_co2 = reactive(total_co2()),
+        total_nh3 = reactive(total_nh3()),
+        total_n2o = reactive(total_n2o()),
+        total_ch4 = reactive(ch4_field_kg())
+      )
+    )
 
 
   })

@@ -34,6 +34,8 @@ app_server <- function(input, output, session) {
 
   manure_storage_area <- reactive(input$storage_area)
 
+  manure_application_method <- reactive(input$application)
+
   # Calling the modules
 
   animal_data <- mod_animal_server("animal")
@@ -48,6 +50,21 @@ app_server <- function(input, output, session) {
                        animal_data      = animal_data[[1]],
                        calf_milk_intake = calf_milk_sup )
 
+  ghg_emissions <- mod_manure_ghg_emissions_server("ch4_emissions",
+                                                   animal_data         = animal_data[[1]],
+                                                   county              = county,
+                                                   facilitie           = facilitie,
+                                                   bedding             = bedding,
+                                                   manure_management   = manure_management,
+                                                   biodigester         = biodigester,
+                                                   biodigester_ef      = biod_ef,
+                                                   type_manure         = type_manure,
+                                                   solid_liquid        = solid_liquid_separation,
+                                                   enclosed_manure     = enclosed_manure,
+                                                   empty_time          = empty_time,
+                                                   crust               = crust,
+                                                   manure_storage_area = manure_storage_area)
+
 
   mod_nh3_emissions_server("nh3_emissions",
                            county              = county,
@@ -56,27 +73,39 @@ app_server <- function(input, output, session) {
                            type_manure         = type_manure,
                            crust               = crust,
                            empty_time          = empty_time,
-                           manure_storage_area = manure_storage_area)
-
-  mod_ch4_emissions_server("ch4_emissions",
-                           animal_data     = animal_data[[1]],
-                           county          = county,
-                           facilitie       = facilitie,
-                           bedding         = bedding,
-                           manure_management = manure_management,
-                           biodigester     = biodigester,
-                           biodigester_ef  = biod_ef,
-                           type_manure     = type_manure,
-                           solid_liquid    = solid_liquid_separation,
-                           enclosed_manure = enclosed_manure,
-                           empty_time      = empty_time)
+                           manure_storage_area = manure_storage_area,
+                           dataset             = ghg_emissions[[1]])
 
   mod_nitrous_oxide_emissions_server("nitrous_oxide",
-                                     enclosed_manure = enclosed_manure,
+                                     enclosed_manure     = enclosed_manure,
                                      manure_storage_area = manure_storage_area)
 
-  mod_crop_server("crop",
-                  animal_data = animal_data[[1]])
+  co2eq_purchased <- mod_purchased_feeds_server("purchased_feeds_1")
+
+  # crops
+
+  ghg_crop <- mod_crop_server("crop",
+                              animal_data               = animal_data[[1]],
+                              manure_management         = manure_management,
+                              type_manure               = type_manure,
+                              manure_application_method = manure_application_method,
+                              co2eq_purchased           = co2eq_purchased[[1]],
+                              manure_data               = ghg_emissions[["nh3_emissions"]])
+
+
+  mod_dashboard_server("dashboard",
+                       animal_data     = animal_data[[1]],
+                       nh3_emissions   = ghg_emissions[["nh3_emissions"]],
+                       herd_methane    = ghg_emissions[["herd_methane"]],
+                       fac_methane     = ghg_emissions[["fac_methane"]],
+                       storage_methane = ghg_emissions[["storage_methane"]],
+                       fac_ammonia     = ghg_emissions[["fac_ammonia"]],
+                       storage_ammonia = ghg_emissions[["storage_ammonia"]],
+                       total_co2 = ghg_crop[["total_co2"]],
+                       total_nh3 = ghg_crop[["total_nh3"]],
+                       total_n2o = ghg_crop[["total_n2o"]],
+                       total_ch4 = ghg_crop[["total_ch4"]],
+                       direct_n2o_storage = ghg_emissions[["direct_storage_n2o"]])
 
   mod_info_server("info_1")
 
@@ -116,3 +145,4 @@ app_server <- function(input, output, session) {
     )
 
 }
+

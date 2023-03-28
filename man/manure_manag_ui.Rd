@@ -2,16 +2,18 @@
 % Please edit documentation in R/ui_inputs.R
 \name{manure_manag_ui}
 \alias{manure_manag_ui}
-\title{Manure managemente parameters used over the application by other modules.}
+\title{Manure management parameters used over the application by other modules.}
 \usage{
-manure_manag_ui(manure_managment)
+manure_manag_ui(manure_managment, type_manure)
 }
 \arguments{
 \item{manure_managment}{Type of manure management.}
+
+\item{type_manure}{Type of manure (solid, semi-solid, slurry or liquid).}
 }
 \value{
 UI elements.
 }
 \description{
-Manure managemente parameters used over the application by other modules.
+Manure management parameters used over the application by other modules.
 }

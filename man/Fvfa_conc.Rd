@@ -4,20 +4,18 @@
 \alias{Fvfa_conc}
 \title{Estimates the daily concentration of VFA in the field-applied slurry.}
 \usage{
-Fvfa_conc(Fvfa_ini, time_day)
+Fvfa_conc(Fvfa_ini)
 }
 \arguments{
 \item{Fvfa_ini}{Initial VFA concentration in the slurry at application (mmol /kg slurry).}
-
-\item{time_day}{Time since application with t = 0 representing the day of application (day).}
 }
 \value{
-Daily concentration of VFA in the field-applied slurry ().
+Daily concentration of VFA in the field-applied slurry (mmmol/kg).
 }
 \description{
 Estimates the daily concentration of VFA in the field-applied slurry.
 }
 \examples{
-Fvfa_conc(Fvfa_ini = 0.91, time_day = 2)
+Fvfa_conc(Fvfa_ini = 0.91)
 
 }
