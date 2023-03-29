@@ -176,12 +176,55 @@ mod_crop_server <- function(id,
 
     })
 
+    nitrogen_from_manure <- reactive({
+
+      if( manure_management() == "Daily Hauling") {
+
+        # total nitrogen applied in to the field - daily hauling
+
+        manure_data() %>%
+          dplyr::slice(366:730) %>%
+          dplyr::mutate(
+            total_nitrogen_field = total_tan_kg + fecal_n_kg - loss_animal_kg,
+            total_tan_field = total_tan_kg - loss_animal_kg
+          ) %>%
+          dplyr::summarise(
+            totalN = sum(total_nitrogen_field),
+            totalTAN = sum(total_tan_field)
+          )
+
+      } else {
+
+        # total nitrogen applied in to the field - daily hauling
+
+        manure_data() %>%
+          dplyr::slice(366:730) %>%
+          dplyr::mutate(
+            total_nitrogen_field = total_tan_kg + fecal_n_kg - loss_animal_kg - total_storage_N_loss,
+            total_tan_field = total_tan_kg - loss_animal_kg - total_storage_N_loss
+          ) %>%
+          dplyr::summarise(
+            totalN = sum(total_nitrogen_field),
+            totalTAN = sum(total_tan_field)
+          )
+
+      }
+
+    })
+
+    nh3_from_manure_application <- reactive({
+
+      (nitrogen_from_manure()$totalTAN * ((20 + 5 * manure_data()$manure_dm[1]) * (7/7.3)) * 17/14) / 100
+
+    })
+
+
     output$teste <- renderTable({
 
-      manure_data() %>% head()
+      nitrogen_from_manure()
 
-    #crop_calculations()
-    #paste("The emissions ", ch4_field_kg())
+      #paste("The nh3 emission from manure field app is ", nh3_from_manure_application())
+
     })
 
 
@@ -256,12 +299,14 @@ mod_crop_server <- function(id,
         ) %>%
         dplyr::pull(total_nh3)
 
-      total_nh3
+      total_nh3 + nh3_from_manure_application()
 
 
     })
 
     total_n2o <- reactive({
+
+      n2o_from_field <- (nitrogen_from_manure()$totalN - nh3_from_manure_application() * 0.82 ) * 0.7 * 0.01
 
       total_nitrous_oxide <- crop_calculations() %>%
         dplyr::summarise(
@@ -273,7 +318,9 @@ mod_crop_server <- function(id,
         ) %>%
         dplyr::pull(total_nitrous_oxide)
 
-      total_nitrous_oxide
+      print(paste(" n2o fert", total_nitrous_oxide, "n2o manure", n2o_from_field))
+
+      total_nitrous_oxide + n2o_from_field
 
 
     })
@@ -321,7 +368,7 @@ mod_crop_server <- function(id,
 
       value_box_spark(
         value    = round(total_nh3() / 0.82, 1),
-        title    = "Total Ammonia emissions from N Fertizers (kg/year)",
+        title    = "Total Ammonia emissions from N Fertizers and Manure (kg/year)",
         sparkobj = NULL,
         subtitle = tagList(),
         info     = " ",
@@ -339,7 +386,7 @@ mod_crop_server <- function(id,
 
       value_box_spark(
         value    = round(total_n2o(), 1),
-        title    = "Total Nitrous Oxide emissions from N Fertizers (Missing Manure) (kg/year)",
+        title    = "Total Nitrous Oxide emissions from N Fertizers and Manure (kg/year)",
         sparkobj = NULL,
         subtitle = tagList(),
         info     = " ",

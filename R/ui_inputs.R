@@ -126,7 +126,7 @@ manure_manag_ui <- function(manure_managment, type_manure) {
           column(3,
                  numericInput("storage_area",   label = "Manure Storage Area:",     value = 1360)),
           column(3,
-                 selectInput("crust",           label = "Crust Formation:",         choices = c("yes", "no"), selected = "no")),
+                 selectInput("crust",           label = "Crust Formation:",         choices = c("yes", "no"), selected = "yes")),
           column(3,
                  selectInput("enclosed_manure", label = "Enclosed Manure:",         choices = c("yes", "no"), selected = "no")),
           column(3,

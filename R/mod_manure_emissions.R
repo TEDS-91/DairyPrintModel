@@ -1128,11 +1128,15 @@ mod_manure_ghg_emissions_server <- function(id,
 
       teste <- nh3_emissions() %>%
         dplyr::mutate(
+
           mineralization_pct = mineralization_pct,
+
           n_mineralized_feces = dplyr::if_else(manure_management == "Biodigester" | manure_management == "Biodigester + Solid-liquid Separator",
                                                mineralization_pct * fecal_n_kg + 0.16 * fecal_n_kg, mineralization_pct * fecal_n_kg),
+
           remaining_tan_kg = total_tan_kg - loss_animal_kg + n_mineralized_feces,
-          manure_sol_loaded = (100 - manure_dm) * total_manure_manag_kg / 100,#TODO check manure mass
+
+          manure_sol_loaded = (100 - manure_dm) * total_manure_manag_kg / 100, #TODO check manure mass
 
           total_nitrogen_storage_kg = fecal_n_kg + total_tan_kg - loss_animal_kg
         )
@@ -1152,9 +1156,13 @@ mod_manure_ghg_emissions_server <- function(id,
       for (i in 2:length(empty_days)) {
 
         if(empty_days[i] == 0) {
+
           acumulado[i] <- acumulado[i - 1] + volume_diario
+
         } else {
+
           acumulado[i] <- tank_cap * 0 + volume_diario
+
         }
 
 
@@ -1176,9 +1184,13 @@ mod_manure_ghg_emissions_server <- function(id,
       for (i in 2:length(empty_days)) {
 
         if(empty_days[i] == 0) {
+
           acumulado_manure[i] <- acumulado_manure[i - 1] + volume_diario_man
+
         } else {
+
           acumulado_manure[i] <- tank_cap2 * 0.01 + volume_diario_man
+
         }
 
       }
@@ -1236,79 +1248,8 @@ mod_manure_ghg_emissions_server <- function(id,
           temp_c = temp_c,
           storage_N_loss_m2 = storage_N_loss_m2,
           cum_tan_kg = cumsum(remaining_tan_kg),
-          total_storage_N_loss = storage_N_loss_m2 * manure_storage_area()
+          total_storage_N_loss = ifelse(manure_management() == "Daily Hauling", 0, storage_N_loss_m2 * manure_storage_area())
         )
-
-
-      # # storage emissions
-      #
-      # remaining_tan <- TAN - loss_animal_kg
-      #
-      # empty_days <- empty_day(empty_time = empty_time)
-      #
-      # mineralization_pct <- dplyr::if_else(empty_time == "Fall" | empty_time == "Spring", 0.25, 0.12)
-      #
-      # n_mineralized_feces <- dplyr::if_else(biodigester == "no", mineralization_pct * Nfeces, mineralization_pct * Nfeces + 0.16 * Nfeces)
-      #
-      # total_tan <- cumsum(remaining_tan + n_mineralized_feces)
-      #
-      # manure_sol_loaded <- rep(fresh_manure_kg * ( 1 - ts_manure_kg / fresh_manure_kg), 730)
-      #
-      # cum_manure_sol_loaded <- cumsum(manure_sol_loaded)
-      #
-      # tank_capacity <- 365 * manure_sol_loaded[1]
-      #
-      # # logic for emptying - TAN
-      #
-      # volume_diario <- (remaining_tan + n_mineralized_feces)[1]
-      #
-      # acumulado <- vector(length =  730)
-      #
-      # acumulado[1] <- volume_diario
-      #
-      # tank_cap <- 365 * volume_diario
-      #
-      # for (i in 2:length(empty_days)) {
-      #
-      #   if(empty_days[i] == 0) {
-      #     acumulado[i] <- acumulado[i - 1] + volume_diario
-      #   } else {
-      #     acumulado[i] <- tank_cap * 0 + volume_diario
-      #   }
-      #
-      #
-      # }
-      #
-      # # logic for cumul manure
-      #
-      # volume_diario_man <- manure_sol_loaded[1]
-      #
-      # acumulado_manure <- vector(length =  730)
-      #
-      # acumulado_manure[1] <- volume_diario_man
-      #
-      # tank_cap2 <- 365 * volume_diario_man
-      #
-      # for (i in 2:length(empty_days)) {
-      #
-      #   if(empty_days[i] == 0) {
-      #     acumulado_manure[i] <- acumulado_manure[i - 1] + volume_diario_man
-      #   } else {
-      #     acumulado_manure[i] <- tank_cap2 * 0.01 + volume_diario_man
-      #   }
-      #
-      # }
-      #
-      #
-      # ph_storage <- 7.5
-      #
-      # Q_storage <- eq_coeff(temp_c = temp_c, pH = ph_storage)
-      #
-      # storage_area <- 200
-      #
-      # storage_N_loss_m2 <- acumulado * const * gamma_densi / (r_storage * acumulado_manure * Q_storage)
-      #
-      # cum_N_loss_m2 <- cumsum(storage_N_loss_m2)
 
     })
 
@@ -1323,7 +1264,15 @@ mod_manure_ghg_emissions_server <- function(id,
 
   n2o_from_storage <- reactive({
 
-    sum(storage()$total_nitrogen_storage_kg[366:730]) * 0.005 / 0.64
+    if (manure_management() == "Daily Hauling") {
+
+      0
+
+    } else {
+
+      sum(storage()$total_nitrogen_storage_kg[366:730]) * 0.005 / 0.64
+
+    }
 
   })
 
@@ -1507,7 +1456,6 @@ mod_manure_ghg_emissions_server <- function(id,
 
 
     })
-
 
 # -------------------------------------------------------------------------
 # Outputs from this module to populate others -----------------------------
