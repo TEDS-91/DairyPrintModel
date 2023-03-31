@@ -14,6 +14,63 @@ mod_dashboard_ui <- function(id){
     tableOutput(ns("tabela_teste")),
 
     fluidRow(
+
+      bs4Dash::bs4Card(
+        title = "Herd Outcomes",
+        elevation = 1,
+        width = 12,
+        solidHeader = TRUE,
+        status = "teal",
+        collapsible = TRUE,
+        maximizable = TRUE,
+        fluidRow(
+          bs4Dash::bs4Card(
+            title = "Methane",
+            width = 6,
+            footer = NULL,
+            fluidRow(
+              bs4Dash::valueBoxOutput(ns("methane_yield")),
+              bs4Dash::valueBoxOutput(ns("methane_intensity")) )),
+
+          bs4Dash::bs4Card(
+            title = "Methane",
+            width = 6,
+            footer = NULL,
+            fluidRow(
+              DT::dataTableOutput(ns("methane_table"))
+              #plotly::plotlyOutput(ns("pie_co2_eq2"))
+            ))
+        )),
+
+        bs4Dash::bs4Card(
+          title = "Diet Costs and Milk Price",
+          elevation = 1,
+          width = 12,
+          solidHeader = TRUE,
+          status = "teal",
+          collapsible = TRUE,
+          fluidRow(
+            column(3,
+                   numericInput(ns("lact_diet_cost"),   label = "Milking Cows ($/kgDM):",   value = 0.3)),
+            column(3,
+                   numericInput(ns("dry_diet_cost"),    label = "Dry Cows ($/kgDM):",       value = 0.12)),
+            column(3,
+                   numericInput(ns("heifer_diet_cost"), label = "Heifers ($/kgDM):",        value = 0.12)),
+            column(3,
+                   numericInput(ns("milk_price"),       label = "Milk Price ($/cwt):",     value = 21)))),
+
+      bs4Dash::bs4Card(
+        title = "Economic analysis",
+        elevation = 1,
+        width = 12,
+        solidHeader = TRUE,
+        status = "teal",
+        collapsible = TRUE,
+        maximizable = TRUE,
+        fluidRow(
+          reactable::reactableOutput(ns("tabela")))),
+
+
       bs4Dash::bs4Card(
         title = "Carbon Footprint",
         elevation = 1,
@@ -48,14 +105,6 @@ mod_dashboard_ui <- function(id){
             fluidRow(
               echarts4r::echarts4rOutput(ns("pie_co2_eq2"))
               #plotly::plotlyOutput(ns("pie_co2_eq2"))
-            )),
-          bs4Dash::bs4Card(
-            title = "Methane",
-            width = 4,
-            footer = NULL,
-            fluidRow(
-              DT::dataTableOutput(ns("methane_table"))
-              #plotly::plotlyOutput(ns("pie_co2_eq2"))
             ))
 
 
@@ -77,12 +126,14 @@ mod_dashboard_ui <- function(id){
 #' @noRd
 mod_dashboard_server <- function(id,
                                  animal_data,
+                                 calf_milk_intake,
                                  nh3_emissions,
                                  herd_methane,
                                  fac_methane,
                                  storage_methane,
                                  fac_ammonia,
                                  storage_ammonia,
+                                 co2_eq_fuel_col_spread,
                                  total_co2,
                                  total_nh3,
                                  total_n2o,
@@ -93,8 +144,8 @@ mod_dashboard_server <- function(id,
 
     output$tabela_teste <- renderTable({
       #nh3_emissions()
-      animal_data()
-      print(total_co2())
+      #animal_data()
+      print(co2_eq_fuel_col_spread())
      #c(herd_methane(), fac_methane(), storage_methane(), fac_ammonia()/0.82, storage_ammonia() / 0.82, total_co2(), total_nh3() / 0.82, total_n2o())
 
 
@@ -125,6 +176,153 @@ mod_dashboard_server <- function(id,
 
 
     })
+
+
+# -------------------------------------------------------------------------
+# Herd Outcomes -----------------------------------------------------------
+# -------------------------------------------------------------------------
+
+    methane_yield_and_intens <- reactive({
+
+      animal_data() %>%
+        dplyr::filter(Categories == "Cow") %>%
+        dplyr::mutate(
+          methane_yield  = total_ch4_kg / dmi_kg / total_animals * 1000,
+          methane_intens = total_ch4_kg / milk_yield_kg_fpc / total_animals * 1000,
+        )
+
+    })
+
+
+    output$methane_yield <- bs4Dash::renderValueBox({
+
+      value_box_spark(
+        value    = round(methane_yield_and_intens()$methane_yield, 1),
+        title    = "Methane Yield (g/kg Dry Matter)",
+        sparkobj = NULL,
+        subtitle = tagList(),
+        info     = " ",
+        icon     = icon("fa-solid fa-poop", verify_fa = FALSE),
+        width    = 4,
+        color    = "white",
+        href     = NULL
+      )
+
+    })
+
+    output$methane_intensity <- bs4Dash::renderValueBox({
+
+      value_box_spark(
+        value    = round(methane_yield_and_intens()$methane_intens, 1),
+        title    = "Methane Intensity (g/kg Milk)",
+        sparkobj = NULL,
+        subtitle = tagList(),
+        info     = " ",
+        icon     = icon("fa-solid fa-poop", verify_fa = FALSE),
+        width    = 4,
+        color    = "white",
+        href     = NULL
+      )
+
+    })
+
+
+
+# -------------------------------------------------------------------------
+# Economics ---------------------------------------------------------------
+# -------------------------------------------------------------------------
+
+    economics <- reactive({
+
+      animal_data <- animal_data()
+
+      calf_milk_intake <- calf_milk_intake()
+
+      # animal prmts - they will come from the animal
+
+      milking_cows <- animal_data$total_animals[2]
+      dry_cows <- animal_data$total_animals[3]
+      heifers <- animal_data$total_animals[4]
+
+      #dmi_milking_cows <- 28.5
+      dmi_milking_cows <- animal_data %>%
+        dplyr::filter(Categories == "Cow") %>%
+        dplyr::pull("dmi_kg")
+
+      #dmi_dry_cows <- 12
+      dmi_dry_cows <- animal_data %>%
+        dplyr::filter(Categories == "Dry") %>%
+        dplyr::pull("dmi_kg")
+
+      #dmi_heifers <- 7.7
+      dmi_heifers <- animal_data %>%
+        dplyr::filter(Categories == "Hei") %>%
+        dplyr::pull("dmi_kg")
+
+
+      #my_lactating <- input$milk_yield
+      my_lactating <- animal_data %>%
+        dplyr::filter(Categories == "Cow") %>%
+        dplyr::pull("milk_yield_kg_fpc")
+
+      feed_efic <- my_lactating / dmi_milking_cows
+
+      # total income discounting milk supplied to calves
+
+      total_income <- input$milk_price / (100 / 2.2) * (my_lactating - (animal_data$total_animals[1] * calf_milk_intake) / milking_cows)
+
+      feed_cost_lac <- dmi_milking_cows * input$lact_diet_cost
+
+      iofc_dry <- 0 - input$dry_diet_cost * dmi_dry_cows
+
+      feed_cost_dry <- (dry_cows * input$dry_diet_cost * dmi_dry_cows) / milking_cows
+
+      feed_cost_kg_milk <- feed_cost_lac / my_lactating
+
+      iofc_lac <- total_income - feed_cost_lac
+
+      iofc_lac_dry <- total_income - feed_cost_lac - feed_cost_dry
+
+      economics <- tibble::tibble(
+
+        #"Feed Efficiency (kg/kg)"                 = feed_efic,
+        "Total Milk Income ($/cow)"               = total_income,
+        "Feed Cost ($/cow)"                       = feed_cost_lac,
+        "Income Over Feed Cost Lac ($/cow)"       = iofc_lac,
+        "Income Over Feed Cost Lac + Dry ($/cow)" = iofc_lac_dry,
+        "Income Over feed Cost Dry ($/cow)"       = iofc_dry,
+        "Feed Cost per Kg Milk ($)"               = feed_cost_kg_milk
+      ) %>%
+        dplyr::mutate_if(is.numeric, round, 2)
+
+    })
+
+    output$tabela <- reactable::renderReactable({
+
+      economics <- tibble::as_tibble(economics()) %>%
+        reactable::reactable(
+          defaultColDef = reactable::colDef(
+            header = function(value) gsub(".", " ", value, fixed = TRUE),
+            cell = function(value) format(value, nsmall = 1),
+            align = "center",
+            minWidth = 200,
+            headerStyle = list(background = "#f7f7f8")
+          ),
+          columns = list(
+            Species = reactable::colDef(minWidth = 300)  # overrides the default
+          ),
+          bordered = TRUE,
+          highlight = TRUE
+        )
+
+      economics
+
+    })
+
+
+# -------------------------------------------------------------------------
+# Environmental outcomes --------------------------------------------------
+# -------------------------------------------------------------------------
 
     output$co2eq <- bs4Dash::renderValueBox({
 
@@ -264,6 +462,8 @@ mod_dashboard_server <- function(id,
     })
 
     output$methane_table <- DT::renderDataTable({
+
+      animal_data()
 
       data <- animal_data() %>%
         dplyr::group_by(Categories) %>%

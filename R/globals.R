@@ -128,7 +128,11 @@ utils::globalVariables(
     "Qntdds",
     "carbon_foot",
     "head",
-    "total"
+    "total",
+    "dmi_kg",
+    "total_nitrogen_field",
+    "total_tan_field",
+    "water_intake_l_animal"
 
 
   )

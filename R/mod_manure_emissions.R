@@ -11,7 +11,7 @@ mod_manure_ghg_emissions_ui <- function(id){
   ns <- NS(id)
   tagList(
 
-    fluidRow(
+
       bs4Dash::bs4Card(
         title = "Manure Handling and Management",
         elevation = 2,
@@ -21,7 +21,27 @@ mod_manure_ghg_emissions_ui <- function(id){
         collapsible = TRUE,
         fluidRow(
           manure_ui_prms(),
-          uiOutput(ns("sls"))) ) ),
+          uiOutput(ns("sls")))
+        ),
+
+      bs4Dash::bs4Card(
+        title = "Manure Colelction and Spreading",
+        elevation = 2,
+        width = 12,
+        solidHeader = TRUE,
+        status = "teal",
+        collapsible = TRUE,
+        fluidRow(
+          column(6,
+                 selectInput(ns("energy_manure_collection_and_spread"), label = "Fuel for collect and spread manure: ", choices = c("Oil",
+                                                                                                                                    "Gasoline",
+                                                                                                                                    "Electricity",
+                                                                                                                                    "Natural Gas"))),
+          column(6,
+                 numericInput(ns("amount_fuel"), label = "Amount:", value = 100, min = 0, 15000))
+        )
+      ),
+
 
     fluidRow(
       bs4Dash::bs4Card(
@@ -65,15 +85,6 @@ mod_manure_ghg_emissions_ui <- function(id){
 
               )),
 
-            # bs4Dash::bs4Card(
-            #   id = "tabcard",
-            #   status = "primary",
-            #   solidHeader = FALSE,
-            #   type = "tabs",
-            #   width = 12,
-            #   fluidRow(column(12,
-            #   tableOutput(ns("teste2"))) )),
-
             tabPanel(
               title = "Ammonia Emissions",
               fluidRow(
@@ -105,18 +116,6 @@ mod_manure_ghg_emissions_ui <- function(id){
           #tableOutput(ns("tabela"))
           ))),
 
-    # fluidRow(
-    #   bs4Dash::bs4Card(
-    #     title = "Plots",
-    #     elevation = 4,
-    #     width = 12,
-    #     solidHeader = TRUE,
-    #     status = "navy",
-    #     collapsible = TRUE,
-    #     fluidRow(
-    #       plotOutput(ns("plot")))))
-
-
   )
 }
 
@@ -142,11 +141,48 @@ mod_manure_ghg_emissions_server <- function(id,
 
      output$sls <- renderUI({
 
-       manure_manag_ui(manure_managment = manure_management(), type_manure = type_manure())
+       fluidRow(column(12,
+                       manure_manag_ui(manure_managment = manure_management(), type_manure = type_manure())))
 
        })
 
+
+# -------------------------------------------------------------------------
+# CO2 emissions from collection and manure spreading ----------------------
+# -------------------------------------------------------------------------
+
+     co2_manure_collection_and_spreading <- reactive({
+
+       if (input$energy_manure_collection_and_spread == "Oil") {
+
+         co2_emitted <- diesel_co2eq(input$amount_fuel)
+
+       } else if (input$energy_manure_collection_and_spread == "Gasoline") {
+
+         co2_emitted <- gasoline_co2eq(input$amount_fuel)
+
+       } else if (input$energy_manure_collection_and_spread == "Natural Gas") {
+
+         co2_emitted <- natural_gas_co2eq(input$amount_fuel)
+
+       }
+
+       else {
+
+         co2_emitted <- 0.84 * input$amount_fuel
+
+       }
+
+     })
+
+# -------------------------------------------------------------------------
+# Methane emissions from manure storage -----------------------------------
+# -------------------------------------------------------------------------
+
+
      manure_dm <- reactive({
+
+       print(paste("The co2eq for fuel is:", co2_manure_collection_and_spreading() ))
 
        type_manure <- type_manure()
 
@@ -207,8 +243,6 @@ mod_manure_ghg_emissions_server <- function(id,
           total_manure = sum(total_manure_kg)
         ) %>%
         dplyr::pull(total_manure)
-
-      print(total_manure_kg)
 
       #total_ts_manure_kg <- milking_cows * milking_cows_manure * milking_cows_ts + dry_cows * dry_cows_manure * dry_cows_ts + heifers * heifers_manure * heifers_ts
       total_ts_manure_kg <- animal_data %>%
@@ -387,7 +421,7 @@ mod_manure_ghg_emissions_server <- function(id,
 
           vs_liq_loaded_kg_day <- dplyr::if_else(empty_day == 1, 0, total_vs_managed_kg)
 
-          print(vs_liq_loaded_kg_day)
+          #print(vs_liq_loaded_kg_day)
 
           remaining_vs_tank_pct <- 0.05
 
@@ -1463,13 +1497,14 @@ mod_manure_ghg_emissions_server <- function(id,
 
     return(
       list(
-        nh3_emissions   = reactive(storage()),
-        herd_methane    = reactive(summarized_data()[["total_ch4_herd"]]),
-        fac_methane     = reactive(summarized_data()[["total_ch4_fac"]]),
-        storage_methane = reactive(summarized_data()[["total_ch4_storage"]]),
-        fac_ammonia     = reactive(barn_nh3()),
-        storage_ammonia = reactive(storage_nh3()),
-        direct_storage_n2o = reactive(n2o_from_storage())
+        nh3_emissions      = reactive(storage()),
+        herd_methane       = reactive(summarized_data()[["total_ch4_herd"]]),
+        fac_methane        = reactive(summarized_data()[["total_ch4_fac"]]),
+        storage_methane    = reactive(summarized_data()[["total_ch4_storage"]]),
+        fac_ammonia        = reactive(barn_nh3()),
+        storage_ammonia    = reactive(storage_nh3()),
+        direct_storage_n2o = reactive(n2o_from_storage()),
+        co2_eq_fuel        = reactive(co2_manure_collection_and_spreading())
       )
     )
 

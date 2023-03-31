@@ -82,6 +82,8 @@ manure_manag_ui <- function(manure_managment, type_manure) {
 
   manure_manag_ui <- list(
 
+    fluidRow(
+
     if (manure_managment == "Biodigester + Solid-liquid Separator") {
 
       fluidRow(
@@ -99,7 +101,7 @@ manure_manag_ui <- function(manure_managment, type_manure) {
     } else if (manure_managment == "Biodigester") {
 
       fluidRow(
-        column(4,
+        column(3,
                numericInput("biod_ef",        label = "Biodigester Efficiency:",  value = 25)),
         column(3,
                numericInput("storage_area",   label = "Manure Storage Area:",     value = 1360)),
@@ -152,6 +154,7 @@ manure_manag_ui <- function(manure_managment, type_manure) {
     }
 
   )
+)
 
 }
 

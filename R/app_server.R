@@ -48,7 +48,7 @@ app_server <- function(input, output, session) {
 
   mod_economics_server("economics",
                        animal_data      = animal_data[[1]],
-                       calf_milk_intake = calf_milk_sup )
+                       calf_milk_intake = calf_milk_sup)
 
   ghg_emissions <- mod_manure_ghg_emissions_server("ch4_emissions",
                                                    animal_data         = animal_data[[1]],
@@ -94,17 +94,19 @@ app_server <- function(input, output, session) {
 
 
   mod_dashboard_server("dashboard",
-                       animal_data     = animal_data[[1]],
-                       nh3_emissions   = ghg_emissions[["nh3_emissions"]],
-                       herd_methane    = ghg_emissions[["herd_methane"]],
-                       fac_methane     = ghg_emissions[["fac_methane"]],
-                       storage_methane = ghg_emissions[["storage_methane"]],
-                       fac_ammonia     = ghg_emissions[["fac_ammonia"]],
-                       storage_ammonia = ghg_emissions[["storage_ammonia"]],
-                       total_co2 = ghg_crop[["total_co2"]],
-                       total_nh3 = ghg_crop[["total_nh3"]],
-                       total_n2o = ghg_crop[["total_n2o"]],
-                       total_ch4 = ghg_crop[["total_ch4"]],
+                       animal_data        = animal_data[[1]],
+                       calf_milk_intake   = calf_milk_sup,
+                       nh3_emissions      = ghg_emissions[["nh3_emissions"]],
+                       herd_methane       = ghg_emissions[["herd_methane"]],
+                       fac_methane        = ghg_emissions[["fac_methane"]],
+                       storage_methane    = ghg_emissions[["storage_methane"]],
+                       fac_ammonia        = ghg_emissions[["fac_ammonia"]],
+                       storage_ammonia    = ghg_emissions[["storage_ammonia"]],
+                       co2_eq_fuel_col_spread = ghg_emissions[["co2_eq_fuel"]],
+                       total_co2          = ghg_crop[["total_co2"]],
+                       total_nh3          = ghg_crop[["total_nh3"]],
+                       total_n2o          = ghg_crop[["total_n2o"]],
+                       total_ch4          = ghg_crop[["total_ch4"]],
                        direct_n2o_storage = ghg_emissions[["direct_storage_n2o"]])
 
   mod_info_server("info_1")

@@ -166,6 +166,10 @@ mod_animal_ui <- function(id){
                 bs4Dash::valueBoxOutput(ns("hei_dmi")),
                 bs4Dash::valueBoxOutput(ns("dry_dmi")),
                 bs4Dash::valueBoxOutput(ns("lac_dmi")),
+                # Water
+                bs4Dash::valueBoxOutput(ns("hei_water")),
+                bs4Dash::valueBoxOutput(ns("dry_water")),
+                bs4Dash::valueBoxOutput(ns("lac_water")),
                 # Milk Yield
                 bs4Dash::valueBoxOutput(ns("lac_my")),
                 bs4Dash::valueBoxOutput(ns("lac_my_fpc")),
@@ -535,9 +539,21 @@ mod_animal_server <- function(id){
             dplyr::ungroup() %>%
             dplyr::group_by(Phase)
 
+        # Water intake calculations
+
+          df_water <- df_dmi %>%
+            dplyr::mutate(
+              water_intake_l_animal = dplyr::if_else(Categories == "Cow",
+                                                     lactating_water_intake(temp_c = 7.67, milk_yield_kg = milk_yield_kg_fpc, bw_kg = mean_body_weight_kg),
+                                                           dplyr::if_else(Categories == "Hei",
+                                                                          heifer_dry_cows_water_intake(bw_kg = mean_body_weight_kg),
+                                                                          dplyr::if_else(Categories == "Cal",
+                                                                                         0,
+                                                                                         heifer_dry_cows_water_intake(bw_kg = mean_body_weight_kg)))))
+
         # GHG emissions
 
-        df_ghg <- df_dmi %>%
+        df_ghg <- df_water %>%
           dplyr::mutate(
             gei_mj_day = dplyr::if_else(Categories == "Cow",
                                         gross_energy_intake(dry_matter_intake       = dry_matter_intake_kg_animal,
@@ -769,6 +785,7 @@ mod_animal_server <- function(id){
           milk_fat_pct             = input$calf_fat,
           milk_yield_kg_fpc        = stats::weighted.mean(milk_yield_kg_fpc, NumberAnimals),
           dmi_kg                   = stats::weighted.mean(dry_matter_intake_kg_animal, NumberAnimals),
+          water_l                  = stats::weighted.mean(water_intake_l_animal, NumberAnimals),
           total_ch4_kg             = sum(NumberAnimals * enteric_methane_g_animal_day / 1000),
           total_n2o_kg             = sum(NumberAnimals * n2o_emissions_g / 1000),
           total_manure_kg          = sum(NumberAnimals * fresh_manure_output_kg_day),
@@ -963,6 +980,55 @@ mod_animal_server <- function(id){
         subtitle = tagList(),
         info     = " ",
         icon     = icon("fa-thin fa-leaf", verify_fa = FALSE),
+        width    = 4,
+        color    = "white",
+        href     = NULL
+      )
+
+    })
+
+    # Water intake
+
+    output$hei_water <- bs4Dash::renderValueBox({
+
+      value_box_spark(
+        value    = round(df_sum()$water_l[4], 2),
+        title    = "Heifer Water Intake (l/d)",
+        sparkobj = NULL,
+        subtitle = tagList(),
+        info     = " ",
+        icon     = icon("fa-duotone fa-glass-water", verify_fa = FALSE),
+        width    = 1,
+        color    = "white",
+        href     = NULL
+      )
+    })
+
+    output$dry_water <- bs4Dash::renderValueBox({
+
+      value_box_spark(
+        value    = round(df_sum()$water_l[3], 2),
+        title    = "Dry Cows Water Intake (l/d)",
+        sparkobj = NULL,
+        subtitle = tagList(),
+        info     = " ",
+        icon     = icon("fa-duotone fa-glass-water", verify_fa = FALSE),
+        width    = 1,
+        color    = "white",
+        href     = NULL
+      )
+
+    })
+
+    output$lac_water <- bs4Dash::renderValueBox({
+
+      value_box_spark(
+        value    = round(df_sum()$water_l[2], 2),
+        title    = "Milking Cows Water Intake (l/d)",
+        sparkobj = NULL,
+        subtitle = tagList(),
+        info     = " ",
+        icon     = icon("fa-duotone fa-glass-water", verify_fa = FALSE),
         width    = 4,
         color    = "white",
         href     = NULL
