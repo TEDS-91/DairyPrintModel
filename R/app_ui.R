@@ -25,32 +25,32 @@ app_ui <- function(request) {
           bs4Dash::bs4SidebarMenuItem(
             "Herd Calibration",
             tabName = "herd_calibration",
-            icon = icon("fa-thin fa-cow", verify_fa = FALSE)
+            icon = icon("fa-solid fa-cow", verify_fa = FALSE, lib = "font-awesome")
           ),
           bs4Dash::bs4SidebarMenuItem(
             "Manure Handling",
             tabName = "manure",
-            icon = icon("fa-thin fa-poop", verify_fa = FALSE)
+            icon = icon("fa-thin fa-poop", verify_fa = FALSE, lib = "font-awesome")
           ),
           bs4Dash::bs4SidebarMenuItem(
             "Crops",
             tabName = "crop",
-            icon = icon("fa-solid fa-wheat-awn", verify_fa = FALSE)
+            icon = icon("fa-solid fa-wheat", verify_fa = FALSE, lib = "font-awesome")
           ),
           bs4Dash::bs4SidebarMenuItem(
             "Economics",
             tabName = "economics",
-            icon = icon("fa-solid fa-dollar-sign", verify_fa = FALSE)
+            icon = icon("fa-solid fa-dollar-sign", verify_fa = FALSE, lib = "font-awesome")
           ),
           bs4Dash::bs4SidebarMenuItem(
             "Dashboard",
             tabName = "dashboard",
-            icon = icon("fa-solid fa-gauge", verify_fa = FALSE)
+            icon = icon("fa-solid fa-gauge", verify_fa = FALSE, lib = "font-awesome")
           ),
           bs4Dash::bs4SidebarMenuItem(
             "About DairyPrint Model",
             tabName = "info",
-            icon = icon("fa-solid fa-circle-info", verify_fa = FALSE)
+            icon = icon("fa-solid fa-circle-info", verify_fa = FALSE, lib = "font-awesome")
           ),
           fluidRow(
             column(offset = 1,
@@ -144,7 +144,7 @@ golem_add_external_resources <- function() {
     favicon(),
     bundle_resources(
       path = app_sys("app/www"),
-      app_title = "EZMoneyTool"
+      app_title = "DairyPrintModel"
     )
     # Add here other external resources
     # for example, you can add shinyalert::useShinyalert()

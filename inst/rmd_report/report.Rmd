@@ -83,12 +83,7 @@ This report represents ... Disclaimer?
 
 ```{r, warning = FALSE, echo = FALSE}
 
-fluidRow(
-summaryBox::summaryBox("Total Carbon Eq. (ton./year)", round(params$total_co2e_q_emitted / 1000, 1), width = 4, icon = "fa-solid fa-chart-line", style = "info"),
-summaryBox::summaryBox("Carbon Eq. per kg Milk", round(params$co2eq_milk, 1), width = 4, icon = "fa-solid fa-chart-line", style = "info"),
-summaryBox::summaryBox("Carbon Eq. per kg Milk", round(params$co2eq_milk, 1), width = 4, icon = "fa-solid fa-chart-line", style = "info")
 
-)
 
 ```
 
@@ -123,12 +118,7 @@ fig
 
 ```{r, warning = FALSE, echo = FALSE}
 
-fluidRow(
-summaryBox::summaryBox("Methane Intensity", round(params$suma_table, 1), width = 4, icon = "fa-solid fa-chart-line", style = "info"),
-summaryBox::summaryBox("Methane Intensity", round(params$suma_table, 1), width = 4, icon = "fa-solid fa-chart-line", style = "info"),
-summaryBox::summaryBox("Methane Yield",     round(params$suma_table, 1), width = 4, icon = "fa-solid fa-chart-line", style = "info")
 
-)
 
 ```
 

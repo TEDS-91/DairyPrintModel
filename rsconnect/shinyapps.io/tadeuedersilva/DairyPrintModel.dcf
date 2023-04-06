@@ -1,13 +1,13 @@
 name: DairyPrintModel
-title: Dairy Print Model
+title: DairyPrintModel
 username:
 account: tadeuedersilva
 server: shinyapps.io
 hostUrl: https://api.shinyapps.io/v1
-appId: 7209090
-bundleId: 7058704
+appId: 8786682
+bundleId: 7059193
 url: https://tadeuedersilva.shinyapps.io/DairyPrintModel/
-when: 1680808285.10289
-lastSyncTime: 1680808285.10294
+when: 1680817079.77699
+lastSyncTime: 1680817079.77701
 asMultiple: FALSE
 asStatic: FALSE
