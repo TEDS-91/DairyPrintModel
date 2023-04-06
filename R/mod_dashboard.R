@@ -534,8 +534,9 @@ mod_dashboard_server <- function(id,
 
               params = list(
                 total_co2e_q_emitted = total_co2e_q_emitted(),
-                methane_table = methane_table(),
-                suma_table    = report()
+                co2eq_milk           = total_co2e_q_emitted() / milk_yield_fpc(),
+                methane_table        = methane_table(),
+                suma_table           = report()
               )
             )
 

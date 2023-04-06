@@ -1415,6 +1415,22 @@
         "stringi"
       ]
     },
+    "summaryBox": {
+      "Package": "summaryBox",
+      "Version": "0.1.0",
+      "Source": "GitHub",
+      "RemoteType": "github",
+      "RemoteHost": "api.github.com",
+      "RemoteRepo": "summaryBox",
+      "RemoteUsername": "deepanshu88",
+      "RemoteRef": "HEAD",
+      "RemoteSha": "8cc2bb92d26da1dca15e3a1d5cade064a000cf1c",
+      "Hash": "ca047c114065304fc9efaf3a61f67a11",
+      "Requirements": [
+        "fontawesome",
+        "htmltools"
+      ]
+    },
     "sys": {
       "Package": "sys",
       "Version": "3.4",

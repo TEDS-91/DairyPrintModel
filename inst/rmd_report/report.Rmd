@@ -6,10 +6,10 @@ output:
       version: 4
 params:
   total_co2e_q_emitted: 'NULL'
+  co2eq_milk: 'NULL'
   methane_table: 'NULL'
   suma_table: 'NULL'
  
-  
 ---
 
 <style type = "text/css">
@@ -85,16 +85,41 @@ This report represents ... Disclaimer?
 
 fluidRow(
 summaryBox::summaryBox("Total Carbon Eq. (ton./year)", round(params$total_co2e_q_emitted / 1000, 1), width = 4, icon = "fa-solid fa-chart-line", style = "info"),
-summaryBox::summaryBox("Carbon Eq. per kg Milk", round(params$suma_table, 1), width = 4, icon = "fa-solid fa-chart-line", style = "info")
+summaryBox::summaryBox("Carbon Eq. per kg Milk", round(params$co2eq_milk, 1), width = 4, icon = "fa-solid fa-chart-line", style = "info"),
+summaryBox::summaryBox("Carbon Eq. per kg Milk", round(params$co2eq_milk, 1), width = 4, icon = "fa-solid fa-chart-line", style = "info")
 
 )
-
 
 ```
 
 
+```{r, warning = FALSE, echo = FALSE}
 
-## **This is just a test for report generation**
+fig <- plotly::plot_ly(
+  domain = list(x = c(0, 1), y = c(0, 1)),
+  value = round(params$co2eq_milk, 1),
+  title = list(text = "CO2eq/kgMilk"),
+  type = "indicator",
+  mode = "gauge+number+delta",
+  delta = list(reference = 1),
+  gauge = list(
+    axis = list(range = list(NULL, 2)),
+    steps = list(
+      list(range = c(0, 1), color = "lightgray"),
+      list(range = c(1, 1.8), color = "orange")),
+    threshold = list(
+      line = list(color = "red", width = 6),
+      thickness = 0.75,
+      value = 1.8)),
+  width = 400, height = 300) %>%
+  plotly::config(displayModeBar = FALSE) %>%
+  plotly::layout(showlegend = FALSE)
+
+fig
+
+```
+
+## ** 2. Animal outcomes **
 
 ```{r, warning = FALSE, echo = FALSE}
 
@@ -107,7 +132,7 @@ summaryBox::summaryBox("Methane Yield",     round(params$suma_table, 1), width =
 
 ```
 
-
+## ** **
 
 ```{r, warning = FALSE, echo = FALSE}
 
@@ -116,5 +141,29 @@ reactable::reactable(params$methane_table, pagination = FALSE, highlight = TRUE)
 
 ```
 
+## ** 3. **
+
+```{r}
+
+
+```
+
+
+
+</div>
+
+&nbsp;
+<hr />
+<p style = "text-align: center; color: #007582;"> All rights reserved - University of Wisconsin-Madison </p>
+<center>
+```{r, echo = FALSE}
+ 
+htmltools::img(
+   src = knitr::image_uri(here::here("inst/app/www/uw_logo.png")),
+   style = "width:45px; height:45px;")
+   
+```
+</center>
+&nbsp;
 
 

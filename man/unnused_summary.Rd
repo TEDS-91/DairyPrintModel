@@ -2,10 +2,10 @@
 % Please edit documentation in R/utils.R
 \name{unnused_summary}
 \alias{unnused_summary}
-\title{Function to accomodate the summaryBox package.}
+\title{Function to accomodate the summaryBox and here packages. These packages are being used in the Rmarkdown report}
 \usage{
 unnused_summary()
 }
 \description{
-Function to accomodate the summaryBox package.
+Function to accomodate the summaryBox and here packages. These packages are being used in the Rmarkdown report
 }

@@ -42,10 +42,14 @@ empty_day <- function(empty_time) {
 
 }
 
-#' Function to accomodate the summaryBox package.
+#' Function to accomodate the summaryBox and here packages. These packages are being used in the Rmarkdown report
 #'
 unnused_summary <- function() {
-  summaryBox::summaryBox()
+  list(
+  summaryBox::summaryBox(),
+  here::here(),
+  htmltools::h1()
+  )
 }
 
 
