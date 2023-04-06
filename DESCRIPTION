@@ -1,12 +1,12 @@
-Package: EZMoneyTool
-Title: Easy Money Tool
+Package: DairyPrintModel
+Title: Dairy Print Model
 Version: 0.0.0.9000
 Authors@R: 
     person("Tadeu", "Silva", , "tdasilva2@wisc.edu", role = c("cre", "aut"))
 Description: Package to perform high level enviromental farm assessement.
 License: MIT + file LICENSE
-URL: https://github.com/TEDS-91/EZMoneyTool
-BugReports: https://github.com/TEDS-91/EZMoneyTool/issues
+URL: https://github.com/TEDS-91/DairyPrintModel
+BugReports: https://github.com/TEDS-91/DairyPrintModel/issues
 Imports: 
     bs4Dash,
     config (>= 0.3.1),

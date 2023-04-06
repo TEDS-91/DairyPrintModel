@@ -46,7 +46,7 @@ usethis::use_test("app")
 # Documentation
 
 ## Vignette ----
-usethis::use_vignette("EZMoneyTool")
+usethis::use_vignette("DairyPrintModel")
 devtools::build_vignettes()
 
 ## Code Coverage----

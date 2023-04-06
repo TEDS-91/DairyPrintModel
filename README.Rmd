@@ -13,7 +13,7 @@ knitr::opts_chunk$set(
 )
 ```
 
-# EZMoneyTool
+# DairyPrintModel
 
 <!-- badges: start -->
 <!-- badges: end -->
@@ -22,11 +22,11 @@ Package in progress ...
 
 ## Installation
 
-You can install the development version of EZMoneyTool from [GitHub](https://github.com/) with:
+You can install the development version of DairyPrintModel from [GitHub](https://github.com/) with:
 
 ``` r
 # install.packages("devtools")
-devtools::install_github("TEDS-91/EZMoneyTool")
+devtools::install_github("TEDS-91/DairyPrintModel")
 ```
 
 ## Example
@@ -35,7 +35,7 @@ This is a basic example which shows you how to solve a common problem:
 
 ```{r example}
 
-library(EZMoneyTool)
+library(DairyPrintModel)
 
 ## basic example code
 

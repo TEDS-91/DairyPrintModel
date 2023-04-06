@@ -520,7 +520,7 @@ mod_dashboard_server <- function(id,
 
     output$rmd_report <- downloadHandler(
 
-      "EZMoneyToolReport.html",
+      "DairyPrintModelReport.html",
 
       content =
 

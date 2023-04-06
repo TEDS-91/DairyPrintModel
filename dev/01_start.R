@@ -19,8 +19,8 @@
 ## to change the name in the app_sys() function in app_config.R /!\
 ##
 golem::fill_desc(
-  pkg_name = "EZMoneyTool", # The Name of the package containing the App
-  pkg_title = "Easy Money Tool", # The Title of the package containing the App
+  pkg_name = "DairyPrintModel", # The Name of the package containing the App
+  pkg_title = "Dairy Print Model", # The Title of the package containing the App
   pkg_description = "Package to perform high level enviromental farm assessement", # The Description of the package containing the App
   author_first_name = "Tadeu", # Your First Name
   author_last_name = "Silva", # Your Last Name
