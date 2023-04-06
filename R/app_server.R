@@ -111,40 +111,7 @@ app_server <- function(input, output, session) {
 
   mod_info_server("info_1")
 
-  report <- reactive({
 
-    animal_data()
-
-  })
-
-  output$rmd_report <- downloadHandler(
-
-      "EZMoneyToolReport.html",
-
-      content =
-        function(file) {
-
-          withProgress(message = "Rendering the report...", {
-
-          rmarkdown::render(
-            input       = "inst/rmd_report/report.Rmd",
-            output_file = "built_report.html",
-
-            params = list(
-              suma_table = report()
-            )
-          )
-
-          readBin(con  = "inst/rmd_report/built_report.html",
-                  what = "raw",
-                  n    = file.info("inst/rmd_report/built_report.html")[ , "size"]) %>%
-
-            writeBin(con = file)
-
-        })
-
-      }
-    )
 
 }
 

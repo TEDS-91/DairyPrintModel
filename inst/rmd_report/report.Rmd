@@ -1,26 +1,120 @@
 ---
-title: "Untitled"
-author: "Tadeu E da Silva"
-date: '2022-10-19'
-output: html_document
+title: "**DairyPrint Model Report**"
+output:
+  html_document:
+    theme:
+      version: 4
 params:
+  total_co2e_q_emitted: 'NULL'
+  methane_table: 'NULL'
   suma_table: 'NULL'
  
   
 ---
 
-# This is just a test for report generation
+<style type = "text/css">
 
-```{r}
+body{ /* Normal  */
+      font-family: Helvetica;
+      font-size: 12px;
+      color: Grey;
+        
+  }
+td {  /* Table  */
+  font-family: Helvetica;
+  font-size: 12px;
+  text-align: center;
+}
+h1.title {
+  font-family: Helvetica;
+  font-size: 34px;
+  color: #007582;
+}
+h1 { /* Header 1 */
+  font-family: Helvetica;
+  font-size: 28px;
+  color: #007582;
+  text-align: center;
 
-params$suma_table 
+}
+h2 { /* Header 2 */
+  font-family: Helvetica;
+  font-size: 22px;
+  color: #007582;
+ 
+}
+h3 { /* Header 3 */
+  font-family: Helvetica;
+  font-size: 22px;
+  color: #007582;
+  
+}
+code.r{ /* Code block */
+    font-family: Helvetica;
+    font-size: 12px;
+}
+pre { /* Code block - determines code spacing between lines */
+    font-family: Helvetica;
+    font-size: 14px;
+}
+</style>
+
+<style>
+.column-left{
+  float: left;
+  width: 50%;
+  text-align: left;
+}
+.column-center{
+  display: inline-block;
+  width: 50%;
+  text-align: center;
+}
+</style>
+
+***
+
+This report represents ... Disclaimer?
+
+***
+
+
+## **1. Overall environmental outcomes** 
+
+```{r, warning = FALSE, echo = FALSE}
+
+fluidRow(
+summaryBox::summaryBox("Total Carbon Eq. (ton./year)", round(params$total_co2e_q_emitted / 1000, 1), width = 4, icon = "fa-solid fa-chart-line", style = "info"),
+summaryBox::summaryBox("Carbon Eq. per kg Milk", round(params$suma_table, 1), width = 4, icon = "fa-solid fa-chart-line", style = "info")
+
+)
+
 
 ```
 
-## Ploting 
 
-```{r, message = FALSE, warning = FALSE, error = FALSE}
+
+## **This is just a test for report generation**
+
+```{r, warning = FALSE, echo = FALSE}
+
+fluidRow(
+summaryBox::summaryBox("Methane Intensity", round(params$suma_table, 1), width = 4, icon = "fa-solid fa-chart-line", style = "info"),
+summaryBox::summaryBox("Methane Intensity", round(params$suma_table, 1), width = 4, icon = "fa-solid fa-chart-line", style = "info"),
+summaryBox::summaryBox("Methane Yield",     round(params$suma_table, 1), width = 4, icon = "fa-solid fa-chart-line", style = "info")
+
+)
+
+```
+
+
+
+```{r, warning = FALSE, echo = FALSE}
+
+reactable::reactable(params$methane_table, pagination = FALSE, highlight = TRUE)
 
 
 ```
+
+
 

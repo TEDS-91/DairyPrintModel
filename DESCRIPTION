@@ -22,6 +22,7 @@ Imports:
     rmarkdown,
     shiny (>= 1.7.1),
     stats,
+    summaryBox,
     tibble,
     tidyr
 Suggests: 

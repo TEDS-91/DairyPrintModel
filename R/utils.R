@@ -41,3 +41,11 @@ empty_day <- function(empty_time) {
   return(empty_day)
 
 }
+
+#' Function to accomodate the summaryBox package.
+#'
+unnused_summary <- function() {
+  summaryBox::summaryBox()
+}
+
+

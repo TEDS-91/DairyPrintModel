@@ -461,15 +461,13 @@ mod_dashboard_server <- function(id,
 
     })
 
-    output$methane_table <- DT::renderDataTable({
-
-      animal_data()
+    methane_table <- reactive({
 
       data <- animal_data() %>%
         dplyr::group_by(Categories) %>%
         dplyr::summarise(
           "Methane" = (total_ch4_kg * total_animals)
-          ) %>%
+        ) %>%
         dplyr::ungroup() %>%
         dplyr::mutate(
           total_methane = sum(Methane)
@@ -484,7 +482,15 @@ mod_dashboard_server <- function(id,
         dplyr::arrange(dplyr::desc(Methane)) %>%
         dplyr::select(-total_methane, -Methane)
 
-      DT::datatable(data,
+      data
+
+    })
+
+
+    output$methane_table <- DT::renderDataTable({
+
+
+      DT::datatable(methane_table(),
                     rownames= FALSE,
                     options = list(dom = 't',
                                    initComplete = DT::JS(
@@ -493,13 +499,60 @@ mod_dashboard_server <- function(id,
                                      "}"))) %>%
         DT::formatStyle(
           'Methane (%)',
-          background = DT::styleColorBar(data$`Methane (%)`, "#3c8dbc"),
+          background = DT::styleColorBar(methane_table()$`Methane (%)`, "#3c8dbc"),
           backgroundSize = '100% 90%',
           backgroundRepeat = 'no-repeat',
           backgroundPosition = 'center'
         )
 
     })
+
+
+# -------------------------------------------------------------------------
+# Report generation -------------------------------------------------------
+# -------------------------------------------------------------------------
+
+    report <- reactive({
+
+      methane_yield_and_intens()$methane_intens
+
+    })
+
+    output$rmd_report <- downloadHandler(
+
+      "EZMoneyToolReport.html",
+
+      content =
+
+        function(file) {
+
+          withProgress(message = "Rendering the report...", {
+
+            rmarkdown::render(
+              input       = "inst/rmd_report/report.Rmd",
+              output_file = "built_report.html",
+
+              params = list(
+                total_co2e_q_emitted = total_co2e_q_emitted(),
+                methane_table = methane_table(),
+                suma_table    = report()
+              )
+            )
+
+            readBin(con  = "inst/rmd_report/built_report.html",
+                    what = "raw",
+                    n    = file.info("inst/rmd_report/built_report.html")[ , "size"]) %>%
+
+              writeBin(con = file)
+
+          })
+
+        }
+    )
+
+
+
+
 
 
   })
