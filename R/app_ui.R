@@ -35,7 +35,7 @@ app_ui <- function(request) {
           bs4Dash::bs4SidebarMenuItem(
             "Crops",
             tabName = "crop",
-            icon = icon("fa-solid fa-wheat", verify_fa = FALSE, lib = "font-awesome")
+            icon = icon("fa-solid fa-wheat-awn", verify_fa = FALSE, lib = "font-awesome")
           ),
           bs4Dash::bs4SidebarMenuItem(
             "Economics",
