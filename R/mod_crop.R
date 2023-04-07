@@ -275,7 +275,6 @@ mod_crop_server <- function(id,
 # -------------------------------------------------------------------------
 
 
-
     total_co2 <- reactive({
 
       total_co2 <- crop_calculations() %>%
@@ -335,7 +334,7 @@ mod_crop_server <- function(id,
         sparkobj = NULL,
         subtitle = tagList(),
         info     = " ",
-        icon     = icon("fa-solid fa-fire-flame-simple", verify_fa = FALSE),
+        icon     = " ",
         width    = 4,
         color    = "white",
         href     = NULL
@@ -354,7 +353,7 @@ mod_crop_server <- function(id,
         sparkobj = NULL,
         subtitle = tagList(),
         info     = " ",
-        icon     = icon("fa-solid fa-fire-flame-simple", verify_fa = FALSE),
+        icon     = " ",
         width    = 4,
         color    = "white",
         href     = NULL
@@ -372,7 +371,7 @@ mod_crop_server <- function(id,
         sparkobj = NULL,
         subtitle = tagList(),
         info     = " ",
-        icon     = icon("fa-solid fa-fire-flame-simple", verify_fa = FALSE),
+        icon     = " ",
         width    = 4,
         color    = "white",
         href     = NULL
@@ -390,7 +389,7 @@ mod_crop_server <- function(id,
         sparkobj = NULL,
         subtitle = tagList(),
         info     = " ",
-        icon     = icon("fa-solid fa-fire-flame-simple", verify_fa = FALSE),
+        icon     = " ",
         width    = 4,
         color    = "white",
         href     = NULL

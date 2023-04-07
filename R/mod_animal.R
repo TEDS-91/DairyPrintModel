@@ -111,12 +111,12 @@ mod_animal_ui <- function(id){
       #                           "Report.html",
       #                           style = "color: #fff; background-color: #007582; border-color: #007582; height:40px; width:160px"))))),
 
-    #textOutput(ns("lambda")),
+    #textOutput(ns("lambda")), <i class="glyphicon glyphicon-repeat"></i>
 
       #fluidRow(
         bs4Dash::bs4Card(
           title = p("Herd Dashboard",
-                    actionButton(ns("button"), "Run!", icon("fa.solid fa-person-running", verify_fa = FALSE),
+                    actionButton(ns("button"), "Run!", icon("repeat", lib = "glyphicon"),
                                  class = "btn-xs",
                                  style = "position: absolute; right: 120px;
                                           color: #fff; background-color: #20C997; padding:4px; font-size:100%;
@@ -948,7 +948,7 @@ mod_animal_server <- function(id){
         sparkobj = NULL,
         subtitle = tagList(),
         info     = " ",
-        icon     = icon("fa-thin fa-leaf", verify_fa = FALSE),
+        icon     = " ",
         width    = 1,
         color    = "white",
         href     = NULL
@@ -963,7 +963,7 @@ mod_animal_server <- function(id){
         sparkobj = NULL,
         subtitle = tagList(),
         info     = " ",
-        icon     = icon("fa-thin fa-leaf", verify_fa = FALSE),
+        icon     = " ",
         width    = 1,
         color    = "white",
         href     = NULL
@@ -979,7 +979,7 @@ mod_animal_server <- function(id){
         sparkobj = NULL,
         subtitle = tagList(),
         info     = " ",
-        icon     = icon("fa-thin fa-leaf", verify_fa = FALSE),
+        icon     = " ",
         width    = 4,
         color    = "white",
         href     = NULL
@@ -997,7 +997,7 @@ mod_animal_server <- function(id){
         sparkobj = NULL,
         subtitle = tagList(),
         info     = " ",
-        icon     = icon("fa-duotone fa-glass-water", verify_fa = FALSE),
+        icon     = " ",
         width    = 1,
         color    = "white",
         href     = NULL
@@ -1012,7 +1012,7 @@ mod_animal_server <- function(id){
         sparkobj = NULL,
         subtitle = tagList(),
         info     = " ",
-        icon     = icon("fa-duotone fa-glass-water", verify_fa = FALSE),
+        icon     = " ",
         width    = 1,
         color    = "white",
         href     = NULL
@@ -1028,7 +1028,7 @@ mod_animal_server <- function(id){
         sparkobj = NULL,
         subtitle = tagList(),
         info     = " ",
-        icon     = icon("fa-duotone fa-glass-water", verify_fa = FALSE),
+        icon     =  " ",
         width    = 4,
         color    = "white",
         href     = NULL
@@ -1046,7 +1046,7 @@ mod_animal_server <- function(id){
         sparkobj = NULL,
         subtitle = tagList(),
         info     = " ",
-        icon     = icon("fa-solid fa-cow", verify_fa = FALSE),
+        icon     =  " ",
         width    = 4,
         color    = "white",
         href     = NULL
@@ -1064,7 +1064,7 @@ mod_animal_server <- function(id){
         sparkobj = NULL,
         subtitle = tagList(),
         info     = " ",
-        icon     = icon("fa-solid fa-cow", verify_fa = FALSE),
+        icon     =  " ",
         width    = 4,
         color    = "white",
         href     = NULL
@@ -1082,7 +1082,7 @@ mod_animal_server <- function(id){
         sparkobj = NULL,
         subtitle = tagList(" "),
         info     = " ",
-        icon     = icon("fa-solid fa-fire", verify_fa = FALSE),
+        icon     =  " ",
         width    = 4,
         color    = "white",
         href     = NULL
@@ -1146,7 +1146,7 @@ mod_animal_server <- function(id){
         sparkobj = NULL,
         subtitle = tagList(),
         info     = " ",
-        icon     = icon("fa-solid fa-fire-flame-simple", verify_fa = FALSE),
+        icon     =  " ",
         width    = 4,
         color    = "white",
         href     = NULL
@@ -1162,7 +1162,7 @@ mod_animal_server <- function(id){
         sparkobj = NULL,
         subtitle = tagList(),
         info     = " ",
-        icon     = icon("fa-solid fa-fire-flame-simple", verify_fa = FALSE),
+        icon     =  " ",
         width    = 4,
         color    = "white",
         href     = NULL
@@ -1178,7 +1178,7 @@ mod_animal_server <- function(id){
         sparkobj = NULL,
         subtitle = tagList(" "),
         info     = " ",
-        icon     = icon("fa-solid fa-fire-flame-simple", verify_fa = FALSE),
+        icon     =  " ",
         width    = 4,
         color    = "white",
         href     = NULL
@@ -1198,7 +1198,7 @@ mod_animal_server <- function(id){
         sparkobj = NULL,
         subtitle = tagList(),
         info     = " ",
-        icon     = icon("fa-solid fa-poop", verify_fa = FALSE),
+        icon     =  " ",
         width    = 4,
         color    = "white",
         href     = NULL
@@ -1214,7 +1214,7 @@ mod_animal_server <- function(id){
         sparkobj = NULL,
         subtitle = tagList(),
         info     = " ",
-        icon     = icon("fa-solid fa-poop", verify_fa = FALSE),
+        icon     =  " ",
         width    = 4,
         color    = "white",
         href     = NULL
@@ -1230,7 +1230,7 @@ mod_animal_server <- function(id){
         sparkobj = NULL,
         subtitle = tagList(),
         info     = " ",
-        icon     = icon("fa-solid fa-poop", verify_fa = FALSE),
+        icon     =  " ",
         width    = 4,
         color    = "white",
         href     = NULL
@@ -1296,7 +1296,7 @@ mod_animal_server <- function(id){
         sparkobj = NULL,
         subtitle = tagList(),
         info     = " ",
-        icon     = icon("fa-solid fa-poop", verify_fa = FALSE),
+        icon     = " ",
         width    = 4,
         color    = "white",
         href     = NULL
@@ -1312,7 +1312,7 @@ mod_animal_server <- function(id){
         sparkobj = NULL,
         subtitle = tagList(),
         info     = " ",
-        icon     = icon("fa-solid fa-poop", verify_fa = FALSE),
+        icon     = " ",
         width    = 4,
         color    = "white",
         href     = NULL
@@ -1328,7 +1328,7 @@ mod_animal_server <- function(id){
         sparkobj = NULL,
         subtitle = tagList(),
         info     = " ",
-        icon     = icon("fa-solid fa-poop", verify_fa = FALSE),
+        icon     = " ",
         width    = 4,
         color    = "white",
         href     = NULL
@@ -1346,7 +1346,7 @@ mod_animal_server <- function(id){
         sparkobj = NULL,
         subtitle = tagList(),
         info     = " ",
-        icon     = icon("fa-solid fa-poop", verify_fa = FALSE),
+        icon     = " ",
         width    = 4,
         color    = "white",
         href     = NULL
@@ -1362,7 +1362,7 @@ mod_animal_server <- function(id){
         sparkobj = NULL,
         subtitle = tagList(),
         info     = " ",
-        icon     = icon("fa-solid fa-poop", verify_fa = FALSE),
+        icon     = " ",
         width    = 4,
         color    = "white",
         href     = NULL
@@ -1378,7 +1378,7 @@ mod_animal_server <- function(id){
         sparkobj = NULL,
         subtitle = tagList(),
         info     = " ",
-        icon     = icon("fa-solid fa-poop", verify_fa = FALSE),
+        icon     = " ",
         width    = 4,
         color    = "white",
         href     = NULL
@@ -1396,7 +1396,7 @@ mod_animal_server <- function(id){
         sparkobj = NULL,
         subtitle = tagList(),
         info     = " ",
-        icon     = icon("fa-solid fa-poop", verify_fa = FALSE),
+        icon     = " ",
         width    = 4,
         color    = "white",
         href     = NULL
@@ -1412,7 +1412,7 @@ mod_animal_server <- function(id){
         sparkobj = NULL,
         subtitle = tagList(),
         info     = " ",
-        icon     = icon("fa-solid fa-poop", verify_fa = FALSE),
+        icon     = " ",
         width    = 4,
         color    = "white",
         href     = NULL
@@ -1428,7 +1428,7 @@ mod_animal_server <- function(id){
         sparkobj = NULL,
         subtitle = tagList(),
         info     = " ",
-        icon     = icon("fa-solid fa-poop", verify_fa = FALSE),
+        icon     = " ",
         width    = 4,
         color    = "white",
         href     = NULL

@@ -7,7 +7,9 @@
 app_ui <- function(request) {
   tagList(
     # Leave this function for adding external resources
+
     golem_add_external_resources(),
+
     # Your application UI logic
 
     bs4Dash::bs4DashPage(
@@ -25,32 +27,32 @@ app_ui <- function(request) {
           bs4Dash::bs4SidebarMenuItem(
             "Herd Calibration",
             tabName = "herd_calibration",
-            icon = icon("fa-solid fa-cow", verify_fa = FALSE, lib = "font-awesome")
+            icon = icon("wrench", lib = "glyphicon")
           ),
           bs4Dash::bs4SidebarMenuItem(
             "Manure Handling",
             tabName = "manure",
-            icon = icon("fa-thin fa-poop", verify_fa = FALSE, lib = "font-awesome")
+            icon = icon("option-horizontal", lib = "glyphicon")
           ),
           bs4Dash::bs4SidebarMenuItem(
             "Crops",
             tabName = "crop",
-            icon = icon("fa-solid fa-wheat-awn", verify_fa = FALSE, lib = "font-awesome")
+            icon = icon("leaf", lib = "glyphicon")
           ),
           bs4Dash::bs4SidebarMenuItem(
             "Economics",
             tabName = "economics",
-            icon = icon("fa-solid fa-dollar-sign", verify_fa = FALSE, lib = "font-awesome")
+            icon = icon("usd", lib = "glyphicon")
           ),
           bs4Dash::bs4SidebarMenuItem(
             "Dashboard",
             tabName = "dashboard",
-            icon = icon("fa-solid fa-gauge", verify_fa = FALSE, lib = "font-awesome")
+            icon = icon("stats", lib = "glyphicon")
           ),
           bs4Dash::bs4SidebarMenuItem(
             "About DairyPrint Model",
             tabName = "info",
-            icon = icon("fa-solid fa-circle-info", verify_fa = FALSE, lib = "font-awesome")
+            icon = icon("info-sign", lib = "glyphicon")
           ),
           fluidRow(
             column(offset = 1,
@@ -99,30 +101,6 @@ app_ui <- function(request) {
 
 
 
-
-
-
-    #fluidPage(
-
-      #h1("EZMoneyTool", align = "center"),
-
-      #mod_animal_ui("animal"),
-
-      #general_ui_prms(),
-
-      #mod_nh3_emissions_ui("nh3_emissions"),
-
-      #mod_ch4_emissions_ui("ch4_emissions"),
-
-      #mod_nitrous_oxide_emissions_ui("nitrous_oxide"),
-
-      #mod_fuel_combustion_ui("fuel_combustion"),
-
-      #mod_economics_ui("economics"),
-
-      #mod_crop_ui("crop")
-
-    #)
   )
 }
 

@@ -1,5 +1,5 @@
 Package: DairyPrintModel
-Title: Dairy Print Model
+Title: DairyPrintModel
 Version: 0.0.0.9000
 Authors@R: 
     person("Tadeu", "Silva", , "tdasilva2@wisc.edu", role = c("cre", "aut"))
@@ -22,7 +22,8 @@ Imports:
     purrr,
     reactable,
     rmarkdown,
-    shiny (>= 1.7.1),
+    roxygen2,
+    shiny (>= 1.7.0),
     stats,
     tibble,
     tidyr
