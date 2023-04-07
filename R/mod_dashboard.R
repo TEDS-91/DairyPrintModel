@@ -589,30 +589,50 @@ mod_dashboard_server <- function(id,
         # }
         #
 
-      filename = "DairyPrintModelReport.html",
+      # filename = "DairyPrintModelReport.html",
+      #
+      # content = function(file) {
+      #
+      #   src <- normalizePath('report.Rmd')
+      #
+      #   # temporarily switch to the temp dir, in case you do not have write
+      #   # permission to the current working directory
+      #   owd <- setwd(tempdir())
+      #
+      #   on.exit(setwd(owd))
+      #
+      #   file.copy(src, 'report.Rmd', overwrite = TRUE)
+      #
+      #   out <- rmarkdown::render('report.Rmd',
+      #                               params = list(
+      #                                 total_co2e_q_emitted = total_co2e_q_emitted(),
+      #                                 co2eq_milk           = total_co2e_q_emitted() / milk_yield_fpc(),
+      #                                 methane_table        = methane_table(),
+      #                                 suma_table           = report()
+      #                               ))
+      #   file.rename(out, file)
+      # }
+
+
+      filename <-  "DairyPrintModelReport.html",
 
       content = function(file) {
 
-        src <- normalizePath('report.Rmd')
+        tempReport <- file.path(tempdir(), "report.Rmd")
 
-        # temporarily switch to the temp dir, in case you do not have write
-        # permission to the current working directory
-        owd <- setwd(tempdir())
+        file.copy("../report.Rmd", tempReport, overwrite = TRUE)
 
-        on.exit(setwd(owd))
-
-        file.copy(src, 'report.Rmd', overwrite = TRUE)
-
-        out <- rmarkdown::render('report.Rmd',
-                                    params = list(
-                                      total_co2e_q_emitted = total_co2e_q_emitted(),
-                                      co2eq_milk           = total_co2e_q_emitted() / milk_yield_fpc(),
-                                      methane_table        = methane_table(),
-                                      suma_table           = report()
-                                    ))
-        file.rename(out, file)
+        params = list(
+                                           total_co2e_q_emitted = total_co2e_q_emitted(),
+                                           co2eq_milk           = total_co2e_q_emitted() / milk_yield_fpc(),
+                                           methane_table        = methane_table(),
+                                           suma_table           = report()
+                                         )
+        rmarkdown::render(tempReport, output_file = file,
+                          params = params,
+                          envir = new.env(parent = globalenv())
+        )
       }
-
 
 
 
