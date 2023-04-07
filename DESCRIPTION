@@ -22,7 +22,6 @@ Imports:
     purrr,
     reactable,
     rmarkdown,
-    roxygen2,
     shiny (>= 1.7.0),
     stats,
     tibble,
