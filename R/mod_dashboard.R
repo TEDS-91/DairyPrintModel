@@ -11,6 +11,39 @@ mod_dashboard_ui <- function(id){
   ns <- NS(id)
   tagList(
 
+    fluidRow(
+      bs4Dash::bs4Card(
+        title = "CO2eq Sources",
+        width = 4,
+        footer = NULL,
+        fluidRow(
+          plotly::plotlyOutput(ns("gauge_co2_eq")))),
+      bs4Dash::bs4Card(
+        title = "CO2eq Sources",
+        width = 4,
+        footer = NULL,
+        fluidRow(
+          plotly::plotlyOutput(ns("pie_co2_eq"))
+        )),
+      bs4Dash::bs4Card(
+        title = "CO2eq Sources",
+        width = 4,
+        footer = NULL,
+        fluidRow(
+          echarts4r::echarts4rOutput(ns("pie_co2_eq2"))
+          #plotly::plotlyOutput(ns("pie_co2_eq2"))
+        ))
+
+
+    ),
+
+
+
+
+
+
+
+
     tableOutput(ns("tabela_teste")),
 
     fluidRow(
@@ -84,31 +117,7 @@ mod_dashboard_ui <- function(id){
           bs4Dash::valueBoxOutput(ns("co2eq_milk")),
           bs4Dash::valueBoxOutput(ns("manure_storage_methane"))
         ),
-        fluidRow(
-          bs4Dash::bs4Card(
-            title = "CO2eq Sources",
-            width = 4,
-            footer = NULL,
-            fluidRow(
-              plotly::plotlyOutput(ns("gauge_co2_eq")))),
-          bs4Dash::bs4Card(
-            title = "CO2eq Sources",
-            width = 4,
-            footer = NULL,
-            fluidRow(
-              plotly::plotlyOutput(ns("pie_co2_eq"))
-            )),
-          bs4Dash::bs4Card(
-            title = "CO2eq Sources",
-            width = 4,
-            footer = NULL,
-            fluidRow(
-              echarts4r::echarts4rOutput(ns("pie_co2_eq2"))
-              #plotly::plotlyOutput(ns("pie_co2_eq2"))
-            ))
 
-
-          ),
 
 
 
@@ -529,7 +538,7 @@ mod_dashboard_server <- function(id,
           withProgress(message = "Rendering the report...", {
 
             rmarkdown::render(
-              input       = here::here("inst/rmd_report/report.Rmd"),
+              input       = "report.Rmd",
               output_file = "built_report.html",
 
               params = list(
@@ -540,9 +549,9 @@ mod_dashboard_server <- function(id,
               )
             )
 
-            readBin(con  = "inst/rmd_report/built_report.html",
+            readBin(con  = "built_report.html",
                     what = "raw",
-                    n    = file.info(here::here("inst/rmd_report/built_report.html"))[ , "size"]) %>%
+                    n    = file.info("built_report.html")[ , "size"]) %>%
 
               writeBin(con = file)
 

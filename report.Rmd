@@ -1,0 +1,179 @@
+---
+title: "**DairyPrint Model Report**"
+output:
+  html_document:
+    theme:
+      version: 4
+params:
+  total_co2e_q_emitted: 'NULL'
+  co2eq_milk: 'NULL'
+  methane_table: 'NULL'
+  suma_table: 'NULL'
+ 
+---
+
+<style type = "text/css">
+
+body{ /* Normal  */
+      font-family: Helvetica;
+      font-size: 12px;
+      color: Grey;
+        
+  }
+td {  /* Table  */
+  font-family: Helvetica;
+  font-size: 12px;
+  text-align: center;
+}
+h1.title {
+  font-family: Helvetica;
+  font-size: 34px;
+  color: #007582;
+}
+h1 { /* Header 1 */
+  font-family: Helvetica;
+  font-size: 28px;
+  color: #007582;
+  text-align: center;
+
+}
+h2 { /* Header 2 */
+  font-family: Helvetica;
+  font-size: 22px;
+  color: #007582;
+ 
+}
+h3 { /* Header 3 */
+  font-family: Helvetica;
+  font-size: 22px;
+  color: #007582;
+  
+}
+code.r{ /* Code block */
+    font-family: Helvetica;
+    font-size: 12px;
+}
+pre { /* Code block - determines code spacing between lines */
+    font-family: Helvetica;
+    font-size: 14px;
+}
+</style>
+
+<style>
+.column-left{
+  float: left;
+  width: 50%;
+  text-align: left;
+}
+.column-center{
+  display: inline-block;
+  width: 50%;
+  text-align: center;
+}
+</style>
+
+***
+
+This report represents ... Disclaimer?
+
+***
+
+
+## **1. Overall environmental outcomes** 
+
+```{r, warning = FALSE, echo = FALSE}
+
+params$suma_table
+
+reactable::reactable(mtcars, pagination = FALSE, highlight = TRUE)
+
+rnorm(1000000)
+
+```
+
+
+```{r, warning = FALSE, echo = FALSE}
+
+
+```
+
+## ** 2. Animal outcomes **
+
+Just etsting something...
+
+```{r, warning = FALSE, echo = FALSE}
+
+
+
+```
+
+## ** **
+
+```{r, warning = FALSE, echo = FALSE}
+
+reactable::reactable(params$methane_table, pagination = FALSE, highlight = TRUE)
+
+
+```
+
+## ** 3. **
+
+```{r}
+
+
+rnorm(1000000) %>% 
+  hist()
+echarts4r::e_chart(width = 1100, height = 550,
+                         renderer = "svg") %>%
+        echarts4r::e_list(list(
+          tooltip = list(trigger = "item"),
+          legend = list(top = "5%", left = "center"),
+          series = list(
+            list(
+              name = "Access From",
+              type = "pie",
+              radius = c("40%", "70%"),
+              avoidLabelOverlap = FALSE,
+              itemStyle = list(
+                borderRadius = 10,
+                borderColor = "#fff",
+                borderWidth = 2
+              ),
+              label = list(show = FALSE, position = "center"),
+              emphasis = list(
+                label = list(
+                  show = TRUE,
+                  fontSize = 40,
+                  fontWeight = "bold"
+                )
+              ),
+              labelLine = list(show = TRUE),
+              data = list(
+                list(value = 50, me = "Methane"),
+                list(value = 20,     name  = "CO2"),
+                list(value = 30,     name  = "N2O")
+              )
+            )
+          )
+        ))
+```
+
+
+
+</div>
+
+&nbsp;
+<hr />
+<p style = "text-align: center; color: #007582;"> All rights reserved - University of Wisconsin-Madison </p>
+<center>
+```{r, echo = FALSE}
+ 
+htmltools::img(
+   src = knitr::image_uri(here::here("inst/app/www/uw_logo.png")),
+   style = "width:45px; height:45px;")
+   
+```
+</center>
+&nbsp;
+
+
