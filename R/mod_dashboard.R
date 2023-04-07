@@ -559,31 +559,66 @@ mod_dashboard_server <- function(id,
       #
       #   }
 
-        # For PDF output, change this to "report.pdf"
-        filename = "DairyPrintReport.html",
-        content = function(file) {
-          # Copy the report file to a temporary directory before processing it, in
-          # case we don't have write permissions to the current working dir (which
-          # can happen when deployed).
-          tempReport <- file.path(tempdir(), "report.Rmd")
-          file.copy("report.Rmd", tempReport, overwrite = TRUE)
 
-          # Set up parameters to pass to Rmd document
-          params = list(
-            total_co2e_q_emitted = total_co2e_q_emitted(),
-            co2eq_milk           = total_co2e_q_emitted() / milk_yield_fpc(),
-            methane_table        = methane_table(),
-            suma_table           = report()
-          )
 
-          # Knit the document, passing in the `params` list, and eval it in a
-          # child of the global environment (this isolates the code in the document
-          # from the code in this app).
-          rmarkdown::render(input = tempReport, output_file = file,
-                            params = params,
-                            envir = new.env(parent = globalenv())
-          )
-        }
+
+        # # For PDF output, change this to "report.pdf"
+        # filename = "DairyPrintModelReport.html",
+        # content = function(file) {
+        #   # Copy the report file to a temporary directory before processing it, in
+        #   # case we don't have write permissions to the current working dir (which
+        #   # can happen when deployed).
+        #   tempReport <- file.path(tempdir(), "report.Rmd")
+        #   file.copy("report.Rmd", tempReport, overwrite = TRUE)
+        #
+        #   # Set up parameters to pass to Rmd document
+        #   params = list(
+        #     total_co2e_q_emitted = total_co2e_q_emitted(),
+        #     co2eq_milk           = total_co2e_q_emitted() / milk_yield_fpc(),
+        #     methane_table        = methane_table(),
+        #     suma_table           = report()
+        #   )
+        #
+        #   # Knit the document, passing in the `params` list, and eval it in a
+        #   # child of the global environment (this isolates the code in the document
+        #   # from the code in this app).
+        #   rmarkdown::render(input = tempReport, output_file = file,
+        #                     params = params,
+        #                     envir = new.env(parent = globalenv())
+        #   )
+        # }
+        #
+
+      filename = "DairyPrintModelReport.html",
+
+      content = function(file) {
+
+        src <- normalizePath('report.Rmd')
+
+        # temporarily switch to the temp dir, in case you do not have write
+        # permission to the current working directory
+        owd <- setwd(tempdir())
+
+        on.exit(setwd(owd))
+
+        file.copy(src, 'report.Rmd', overwrite = TRUE)
+
+        out <- rmarkdown::render('report.Rmd',
+                                    params = list(
+                                      total_co2e_q_emitted = total_co2e_q_emitted(),
+                                      co2eq_milk           = total_co2e_q_emitted() / milk_yield_fpc(),
+                                      methane_table        = methane_table(),
+                                      suma_table           = report()
+                                    ))
+        file.rename(out, file)
+      }
+
+
+
+
+
+
+
       )
 
 
