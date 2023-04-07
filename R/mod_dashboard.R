@@ -620,7 +620,7 @@ mod_dashboard_server <- function(id,
 
         tempReport <- file.path(tempdir(), "report.Rmd")
 
-        file.copy("../report.Rmd", tempReport, overwrite = TRUE)
+        file.copy("report.Rmd", tempReport, overwrite = TRUE)
 
         params = list(
                                            total_co2e_q_emitted = total_co2e_q_emitted(),
