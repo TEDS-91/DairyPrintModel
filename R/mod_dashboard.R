@@ -172,7 +172,7 @@ mod_dashboard_server <- function(id,
 
       crop <- total_n2o() * 264 + total_co2() + total_ch4() * 28
 
-      herd + fac + storage + crop
+      herd + fac + storage + crop + co2_eq_fuel_col_spread()
 
 
     })

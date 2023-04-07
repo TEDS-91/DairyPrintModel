@@ -40,8 +40,8 @@ app_ui <- function(request) {
             icon = icon("leaf", lib = "glyphicon")
           ),
           bs4Dash::bs4SidebarMenuItem(
-            "Economics",
-            tabName = "economics",
+            "Miscellaneous",
+            tabName = "miscellaneous",
             icon = icon("usd", lib = "glyphicon")
           ),
           bs4Dash::bs4SidebarMenuItem(
@@ -82,8 +82,8 @@ app_ui <- function(request) {
             mod_crop_ui("crop")
           ),
           bs4Dash::bs4TabItem(
-            tabName = "economics",
-            mod_economics_ui("economics")
+            tabName = "miscellaneous",
+            mod_miscellaneous_ui("miscellaneous")
           ),
           bs4Dash::bs4TabItem(
             tabName = "dashboard",

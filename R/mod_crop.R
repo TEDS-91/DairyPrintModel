@@ -62,6 +62,10 @@ mod_crop_server <- function(id,
   moduleServer( id, function(input, output, session){
     ns <- session$ns
 
+# -------------------------------------------------------------------------
+# UI for crop according to the number of crops
+# -------------------------------------------------------------------------
+
     output$crop_types <- renderUI({
 
       evens <- function(x) subset(x, x %% 2 == 0)
@@ -91,90 +95,14 @@ mod_crop_server <- function(id,
 
     })
 
-    output$df <- renderPrint({
 
-     print( co2eq_purchased() )
-
-    })
-
-
-    valores <- reactive({
-
-      req(input[[paste0(input$number_crops,"_crop_type")]])
-
-      crop_values <- function(input_id) {
-
-        unlist(purrr::map(1:input$number_crops, function(i) { input[[paste0(i, input_id)]] } ))
-
-      }
+# -------------------------------------------------------------------------
+# Nitrogen from manure ----------------------------------------------------
+# -------------------------------------------------------------------------
 
 
-      crop_prms <- tibble::tibble(
-        "crop_id"           = seq(1:input$number_crops),
-        "crop_type"         = crop_values("_crop_type"),
-        "area"              = crop_values("_area"),
-        "yield"             = crop_values("_yield"),
-        "manure_pct"        = crop_values("_manure_pct"),
-        "total_n_applied"   = crop_values("_total_n_applied"),
-        "urea_pct_applied"  = crop_values("_urea_pct_n"),
-        "phosphate_applied" = crop_values("_p2o5_applied"),
-        "potash_applied"    = crop_values("_k2o_applied"),
-        "lime_applied"      = crop_values("_lime_applied")
+    # recalculate this - all logic is not correct!
 
-      )
-
-     crop_prms
-
-    })
-
-    crop_calculations <- reactive({
-
-      crop_list <- list("Corn silage (ton)",
-                        "Corn grain (bu)",
-                        "Alfalfa silage (ton)",
-                        "Soybean seed (bu)",
-                        "Barley rolled (bu)",
-                        "Wheat rolled (bu)",
-                        "Sorghum grain (bu)",
-                        "Oat grain (bu)")
-
-
-      crop_nutrient_removal_n_fix <- tibble::tribble(
-        ~crop,                  ~n_removal,  ~p_removal, ~k_removal, ~nitrogen_fix,
-        "Corn silage (ton)",     4.4,         1.41,        3.31,     0,
-        "Corn grain (bu)",       0.3,         0.16,        0.11,     0,
-        "Alfalfa silage (ton)",  23.13,       5.44,        22.22,    16.16,
-        "Soybean seed (bu)",     1.5,         0.33,        0.54,     0.89,
-        "Barley rolled (bu)",    0.45,        0.18,        0.15,     0,
-        "Wheat rolled (bu)",     0.63,        0.23,        0.14,     0,
-        "Sorghum grain (bu)",    0.30,        0.18,        0.12,     0,
-        "Oat grain (bu)",        0.35,        0.13,        0.09,     0
-      )
-
-
-      valores <- valores()
-
-      valores <- valores %>%
-        dplyr::mutate_at(c(3:10), as.numeric) %>%
-        dplyr::mutate(
-          co2_lime         = lime_decomposition_co2(lime_applied = lime_applied * 1000) * area,
-          co2_urea         = urea_decomposition_co2(urea_applied = (urea_pct_applied / 100 * total_n_applied)) * area,
-          nh3_n_fertilizer = fertilizer_nh3(nitrogen_applied = total_n_applied) * area,
-          nitrous_oxide    = fert_manure_nitrous_oxide(nitrogen_applied = total_n_applied) * area # TODO! missing manure N
-        )
-
-      valores %>%
-        dplyr::inner_join(crop_nutrient_removal_n_fix, by = c("crop_type" = "crop")) %>%
-        dplyr::mutate(
-          total_n_removal = n_removal * yield,
-          total_p_removal = p_removal * yield / 2.29,
-          total_k_removal = k_removal * yield / 1.21,
-          total_n_fixed   = nitrogen_fix * yield,
-          crop_n_balance  = total_n_applied - total_n_removal + total_n_fixed
-        )
-
-
-    })
 
     nitrogen_from_manure <- reactive({
 
@@ -212,9 +140,131 @@ mod_crop_server <- function(id,
 
     })
 
+
+
+
+
+
+
+
+
+
+    output$df <- renderPrint({
+
+     print( co2eq_purchased() )
+
+    })
+
+
+    valores <- reactive({
+
+      req(input[[paste0(input$number_crops,"_crop_type")]])
+
+      crop_values <- function(input_id) {
+
+        unlist(purrr::map(1:input$number_crops, function(i) { input[[paste0(i, input_id)]] } ))
+
+      }
+
+      crop_prms <- tibble::tibble(
+        "crop_id"           = seq(1:input$number_crops),
+        "crop_type"         = crop_values("_crop_type"),
+        "area"              = crop_values("_area"),
+        "yield"             = crop_values("_yield"),
+        "manure_pct"        = crop_values("_manure_pct"),
+        "total_n_applied"   = crop_values("_total_n_applied"),
+        "urea_pct_applied"  = crop_values("_urea_pct_n"),
+        "phosphate_applied" = crop_values("_p2o5_applied"),
+        "potash_applied"    = crop_values("_k2o_applied"),
+        "lime_applied"      = crop_values("_lime_applied")
+
+      )
+
+     crop_prms
+
+    })
+
+
+
+    crop_calculations <- reactive({
+
+      crop_list <- list("Corn silage (ton)",
+                        "Corn grain (bu)",
+                        "Alfalfa silage (ton)",
+                        "Soybean seed (bu)",
+                        "Barley rolled (bu)",
+                        "Wheat rolled (bu)",
+                        "Sorghum grain (bu)",
+                        "Oat grain (bu)")
+
+
+      crop_nutrient_removal_n_fix <- tibble::tribble(
+        ~crop,                  ~n_removal,  ~p_removal, ~k_removal, ~nitrogen_fix,
+        "Corn silage (ton)",     4.4,         1.41,        3.31,     0,
+        "Corn grain (bu)",       0.3,         0.16,        0.11,     0,
+        "Alfalfa silage (ton)",  23.13,       5.44,        22.22,    16.16,
+        "Soybean seed (bu)",     1.5,         0.33,        0.54,     0.89,
+        "Barley rolled (bu)",    0.45,        0.18,        0.15,     0,
+        "Wheat rolled (bu)",     0.63,        0.23,        0.14,     0,
+        "Sorghum grain (bu)",    0.30,        0.18,        0.12,     0,
+        "Oat grain (bu)",        0.35,        0.13,        0.09,     0
+      )
+
+
+      valores <- valores()
+
+      valores <- valores %>%
+        dplyr::mutate_at(c(3:10), as.numeric) %>%
+        dplyr::mutate(
+          co2_lime         = lime_decomposition_co2(lime_applied = lime_applied * 1000) * area,
+          co2_urea         = urea_decomposition_co2(urea_applied = (urea_pct_applied / 100 * total_n_applied)) * area,
+          nh3_n_fertilizer = fertilizer_nh3(nitrogen_applied = total_n_applied) * area,
+          # calculating the total nitrous oxide from fert application after leaching
+          nitrous_oxide    = fert_manure_nitrous_oxide(nitrogen_applied = total_n_applied * 0.7) * area # TODO! missing manure N
+        )
+
+
+
+      print(valores)
+
+      valores %>%
+        dplyr::inner_join(crop_nutrient_removal_n_fix, by = c("crop_type" = "crop")) %>%
+        dplyr::mutate(
+          total_n_removal = n_removal * yield,
+          total_p_removal = p_removal * yield / 2.29,
+          total_k_removal = k_removal * yield / 1.21,
+          total_n_fixed   = nitrogen_fix * yield,
+          crop_n_balance  = total_n_applied - total_n_removal + total_n_fixed
+        )
+
+
+
+    })
+
+    # Nitrogen leached calculation - 30% of the N applied in fields is leached in WI - IPCC 2006!
+
+    n_leached <- reactive({
+
+      leached_from_fert <- valores() %>%
+        dplyr::mutate(
+          total_n_fert = total_n_applied * area * 0.7
+        ) %>%
+        dplyr::pull(total_n_fert) %>%
+        sum()
+
+      leached_from_manure <- nitrogen_from_manure()$totalN * 0.7
+
+      (leached_from_fert + leached_from_manure) * 0.0075
+
+
+    })
+
+
     nh3_from_manure_application <- reactive({
 
-      (nitrogen_from_manure()$totalTAN * ((20 + 5 * manure_data()$manure_dm[1]) * (7/7.3)) * 17/14) / 100
+      #print(paste("Leached", n_leached))
+
+      (nitrogen_from_manure()$totalTAN * ((20 + 5 * manure_data()$manure_dm[1]) * (7 / 7.3)) * 17 / 14) / 100
 
     })
 
@@ -305,7 +355,13 @@ mod_crop_server <- function(id,
 
     total_n2o <- reactive({
 
-      n2o_from_field <- (nitrogen_from_manure()$totalN - nh3_from_manure_application() * 0.82 ) * 0.7 * 0.01
+      # calculating the total N applied from manure and discounting the leached fraction and NH3
+
+      n2o_from_field_man <- (nitrogen_from_manure()$totalN * 0.7 - nh3_from_manure_application() * 0.82 ) * 0.01
+
+      # calculation of nitrous oxide from N leached
+
+      n2o_from_n_leached <- n_leached() / 0.64
 
       total_nitrous_oxide <- crop_calculations() %>%
         dplyr::summarise(
@@ -313,13 +369,13 @@ mod_crop_server <- function(id,
           total_nitrous_oxide = sum(nitrous_oxide)
         ) %>%
         dplyr::mutate(
-          total_nitrous_oxide = total_nitrous_oxide / 0.64 + 0.01 * total_nh3 / 0.64
+          total_nitrous_oxide = total_nitrous_oxide / 0.64 + total_nh3 / 0.64 * 0.01
         ) %>%
         dplyr::pull(total_nitrous_oxide)
 
-      print(paste(" n2o fert", total_nitrous_oxide, "n2o manure", n2o_from_field))
+      print(paste(" n2o fert", total_nitrous_oxide, " field", n2o_from_field_man, "leached", n2o_from_n_leached))
 
-      total_nitrous_oxide + n2o_from_field
+      total_nitrous_oxide + n2o_from_field_man + n2o_from_n_leached
 
 
     })

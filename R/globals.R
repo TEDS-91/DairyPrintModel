@@ -132,7 +132,9 @@ utils::globalVariables(
     "dmi_kg",
     "total_nitrogen_field",
     "total_tan_field",
-    "water_intake_l_animal"
+    "water_intake_l_animal",
+    "total_co2_eq_fuel",
+    "total_n_fert"
 
 
   )

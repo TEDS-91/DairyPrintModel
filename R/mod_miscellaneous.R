@@ -7,7 +7,7 @@
 #' @noRd
 #'
 #' @importFrom shiny NS tagList
-mod_economics_ui <- function(id){
+mod_miscellaneous_ui <- function(id){
   ns <- NS(id)
   tagList(
 
@@ -29,6 +29,26 @@ mod_economics_ui <- function(id){
           column(3,
                  numericInput(ns("milk_price"),       label = "Milk Price ($/cwt):",     value = 21))))),
 
+
+    fluidRow(
+      bs4Dash::bs4Card(
+        title = "Fuel Combustion",
+        elevation = 1,
+        width = 12,
+        solidHeader = TRUE,
+        status = "teal",
+        collapsible = TRUE,
+        fluidRow(
+          column(4,
+                 numericInput(ns("gasoline"), label = "Gasoline Consumption (L/day):", value = 5, min = 0, max = 1000)),
+          column(4,
+                 numericInput(ns("natural_gas"), label = "Natural Gas Consumption (L/day):", value = 5, min = 0, max = 1000)),
+          column(4,
+                 numericInput(ns("diesel"), label = "Diesel Consumption (L/day):", value = 5, min = 0, max = 1000))))),
+
+    tableOutput(ns("tabela2")),
+
+
     fluidRow(
       bs4Dash::bs4Card(
         title = "Economic analysis",
@@ -47,7 +67,7 @@ mod_economics_ui <- function(id){
 #' economics Server Functions
 #'
 #' @noRd
-mod_economics_server <- function(id,
+mod_miscellaneous_server <- function(id,
                                  animal_data,
                                  calf_milk_intake){
   moduleServer( id, function(input, output, session){
@@ -139,6 +159,47 @@ mod_economics_server <- function(id,
       economics
 
     })
+
+
+
+# -------------------------------------------------------------------------
+# CO2 from fuels ----------------------------------------------------------
+# -------------------------------------------------------------------------
+
+    tabela_calc <- reactive({
+
+      tabela <- tibble::tibble(
+
+        gasoline_co2eq = gasoline_co2eq(input$gasoline),
+        natural_gas_co2eq = natural_gas_co2eq(input$natural_gas),
+        diesel_co2eq = diesel_co2eq(input$diesel)
+      )
+
+      tabela %>%
+        dplyr::summarise(
+          total_co2_eq_fuel = gasoline_co2eq + natural_gas_co2eq + diesel_co2eq
+        ) %>%
+        dplyr::pull(total_co2_eq_fuel)
+
+    })
+
+    output$tabela2 <- renderTable({
+
+      tabela_calc()
+
+    })
+
+# -------------------------------------------------------------------------
+# Outcomes from this module to populate others ----------------------------
+# -------------------------------------------------------------------------
+
+    return(
+      list(
+        co2_eq_fuel = reactive(tabela_calc())
+      )
+    )
+
+
 
   })
 }

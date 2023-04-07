@@ -46,9 +46,9 @@ app_server <- function(input, output, session) {
 
   calf_milk_sup <- animal_data[[2]]
 
-  mod_economics_server("economics",
-                       animal_data      = animal_data[[1]],
-                       calf_milk_intake = calf_milk_sup)
+  miscellaneous <- mod_miscellaneous_server("miscellaneous",
+                                            animal_data      = animal_data[[1]],
+                                            calf_milk_intake = calf_milk_sup)
 
   ghg_emissions <- mod_manure_ghg_emissions_server("ch4_emissions",
                                                    animal_data         = animal_data[[1]],
@@ -102,7 +102,9 @@ app_server <- function(input, output, session) {
                        storage_methane    = ghg_emissions[["storage_methane"]],
                        fac_ammonia        = ghg_emissions[["fac_ammonia"]],
                        storage_ammonia    = ghg_emissions[["storage_ammonia"]],
-                       co2_eq_fuel_col_spread = ghg_emissions[["co2_eq_fuel"]],
+
+                       co2_eq_fuel_col_spread = miscellaneous[["co2_eq_fuel"]],
+
                        total_co2          = ghg_crop[["total_co2"]],
                        total_nh3          = ghg_crop[["total_nh3"]],
                        total_n2o          = ghg_crop[["total_n2o"]],
