@@ -136,6 +136,7 @@ mod_dashboard_ui <- function(id){
 mod_dashboard_server <- function(id,
                                  animal_data,
                                  calf_milk_intake,
+                                 animal_inputs,
                                  nh3_emissions,
                                  herd_methane,
                                  fac_methane,
@@ -475,7 +476,8 @@ mod_dashboard_server <- function(id,
       data <- animal_data() %>%
         dplyr::group_by(Categories) %>%
         dplyr::summarise(
-          "Methane" = (total_ch4_kg * total_animals)
+          "Methane" = (total_ch4_kg * 365),
+          "Total Methane (ton.)" = round(Methane / 1000, 1)
         ) %>%
         dplyr::ungroup() %>%
         dplyr::mutate(
@@ -620,13 +622,14 @@ mod_dashboard_server <- function(id,
 
         tempReport <- file.path(tempdir(), "report.Rmd")
 
-        file.copy("report.Rmd", tempReport, overwrite = TRUE)
+        file.copy("inst/app/rmd_report/report.Rmd", tempReport, overwrite = TRUE)
 
         params = list(
                                            total_co2e_q_emitted = total_co2e_q_emitted(),
                                            co2eq_milk           = total_co2e_q_emitted() / milk_yield_fpc(),
                                            methane_table        = methane_table(),
-                                           suma_table           = report()
+                                           suma_table           = report(),
+                                           animal_inputs        = animal_inputs()
                                          )
         rmarkdown::render(tempReport, output_file = file,
                           params = params,

@@ -1,0 +1,194 @@
+---
+title: "**DairyPrint Model Report**"
+output:
+  html_document:
+    theme:
+      version: 4
+params:
+  total_co2e_q_emitted: 'NULL'
+  co2eq_milk: 'NULL'
+  methane_table: 'NULL'
+  suma_table: 'NULL'
+  animal_inputs: 'NULL'
+ 
+---
+
+<style type = "text/css">
+
+body{ /* Normal  */
+      font-family: Helvetica;
+      font-size: 12px;
+      color: Grey;
+        
+  }
+td {  /* Table  */
+  font-family: Helvetica;
+  font-size: 12px;
+  text-align: center;
+}
+h1.title {
+  font-family: Helvetica;
+  font-size: 34px;
+  color: #007582;
+}
+h1 { /* Header 1 */
+  font-family: Helvetica;
+  font-size: 28px;
+  color: #007582;
+  text-align: center;
+
+}
+h2 { /* Header 2 */
+  font-family: Helvetica;
+  font-size: 22px;
+  color: #007582;
+ 
+}
+h3 { /* Header 3 */
+  font-family: Helvetica;
+  font-size: 18px;
+  color: #007582;
+  
+}
+h4 { /* Header 4 */
+  font-family: Helvetica;
+  font-size: 14px;
+  color: #007582;
+  
+}
+code.r{ /* Code block */
+    font-family: Helvetica;
+    font-size: 12px;
+}
+pre { /* Code block - determines code spacing between lines */
+    font-family: Helvetica;
+    font-size: 14px;
+}
+</style>
+
+<style>
+.column-left{
+  float: left;
+  width: 50%;
+  text-align: left;
+}
+.column-center{
+  display: inline-block;
+  width: 50%;
+  text-align: center;
+}
+</style>
+
+<style>
+  .col2 {
+    columns: 2 200px;         /* number of columns and width in pixels*/
+    -webkit-columns: 2 200px; /* chrome, safari */
+    -moz-columns: 2 200px;    /* firefox */
+  }
+  .col3 {
+    columns: 3 100px;
+    -webkit-columns: 3 100px;
+    -moz-columns: 3 100px;
+  }
+</style>
+
+## **1. Farm Inputs:**
+
+### **1.1 Herd Management**
+
+```{r, warning = FALSE, echo = FALSE}
+library(formattable)
+#library(kableExtra)
+
+kableExtra::kbl(params$animal_inputs, escape = FALSE) %>%
+  kableExtra::kable_paper("hover", full_width = TRUE) %>% 
+  kableExtra::row_spec(0, bold = T, color = "white", background = "#007582")
+
+```
+
+
+### **1.2 Manure Management**
+
+### **1.3 Crops and Purchased Feeds**
+
+## **2. Farm Outcomes**
+
+
+
+
+### This section will have three columns
+
+<div class="col3">
+**1** one  
+**2** two  
+**3** three  
+**4** four  
+**5** five  
+**6** six  
+**7** seven  
+**8** eight  
+**9** nine  
+</div>
+
+### This section will have two columns
+
+<div class="col2">
+```{r, warning = FALSE, echo = FALSE}
+
+rnorm(1000) %>% hist()
+
+methane_table <- params$methane_table %>% tibble::as_tibble()
+methane_table$`Methane (%)` <- color_bar("lightgreen")(methane_table$`Methane (%)`)
+
+kableExtra::kbl(methane_table, escape = FALSE) %>%
+  kableExtra::kable_paper("hover", full_width = TRUE) %>% 
+  kableExtra::row_spec(0, bold = TRUE, color = "white", background = "#007582")
+
+```
+</div>
+
+
+## **1. Overall environmental outcomes** 
+
+```{r, warning = FALSE, echo = FALSE}
+
+params$suma_table
+
+
+```
+
+
+```{r, warning = FALSE, echo = FALSE}
+
+
+```
+
+## ** 2. Animal outcomes **
+
+Just testing something...
+
+```{r, warning = FALSE, echo = FALSE}
+
+
+
+```
+
+
+
+</div>
+
+&nbsp;
+<hr />
+<p style = "text-align: center; color: #007582;"> All rights reserved - University of Wisconsin-Madison </p>
+<center>
+```{r, echo = FALSE}
+ 
+htmltools::img(
+   src = knitr::image_uri(here::here("inst/app/www/uw_logo.png")),
+   style = "width:45px; height:45px;")
+   
+```
+</center>
+&nbsp;
+
+

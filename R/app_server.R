@@ -96,6 +96,8 @@ app_server <- function(input, output, session) {
   mod_dashboard_server("dashboard",
                        animal_data        = animal_data[[1]],
                        calf_milk_intake   = calf_milk_sup,
+                       animal_inputs        = animal_data[["inputs"]],
+
                        nh3_emissions      = ghg_emissions[["nh3_emissions"]],
                        herd_methane       = ghg_emissions[["herd_methane"]],
                        fac_methane        = ghg_emissions[["fac_methane"]],

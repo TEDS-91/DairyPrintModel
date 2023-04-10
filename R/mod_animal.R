@@ -1500,6 +1500,27 @@ mod_animal_server <- function(id){
 
     })
 
+
+
+# -------------------------------------------------------------------------
+# Report outcomes - inputs ------------------------------------------------
+# -------------------------------------------------------------------------
+
+    inputs <- reactive({
+
+      df <- tibble::tibble(
+        number_of_cows       = input$animal_n_cows,
+        age_at_first_calving = input$animal_time_first_calv,
+        calving_interval     = input$animal_cow_calving_int,
+        milk_yield           = input$animal_average_milk_yield
+      )
+
+      df
+
+    })
+
+
+
 # -------------------------------------------------------------------------
 # Outputs from this module to populate others -----------------------------
 # -------------------------------------------------------------------------
@@ -1515,7 +1536,10 @@ mod_animal_server <- function(id){
     return(
       list(
         df = reactive(df_sum()),
-        milk_intake = reactive(milk_supply())
+        milk_intake = reactive(milk_supply()),
+
+        inputs = reactive(inputs())
+
       )
     )
 
