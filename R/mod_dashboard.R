@@ -542,8 +542,12 @@ mod_dashboard_server <- function(id,
 
           withProgress(message = "Rendering the report...", {
 
+            path1 <- system.file("app/rmd_file/", "report.Rmd", package = "DairyPrintModel")
+
+            path2 <- system.file("app/rmd_file/", "built_report.html", package="DairyPrintModel")
+
             rmarkdown::render(
-              input       = "inst/app/rmd_file/report.Rmd",
+              input       = path1,
               output_file = "built_report.html",
 
               params = list(
@@ -555,9 +559,9 @@ mod_dashboard_server <- function(id,
               )
             )
 
-            readBin(con  = "inst/app/rmd_file/built_report.html",
+            readBin(con  = path1,
                     what = "raw",
-                    n    = file.info("inst/app/rmd_file/built_report.html")[ , "size"]) %>%
+                    n    = file.info(path2)[ , "size"]) %>%
 
               writeBin(con = file)
 
