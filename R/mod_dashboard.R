@@ -543,7 +543,7 @@ mod_dashboard_server <- function(id,
           withProgress(message = "Rendering the report...", {
 
             rmarkdown::render(
-              input       = "inst/app/report.Rmd",
+              input       = "inst/app/rmd_file/report.Rmd",
               output_file = "built_report.html",
 
               params = list(
@@ -555,9 +555,9 @@ mod_dashboard_server <- function(id,
               )
             )
 
-            readBin(con  = "inst/app/built_report.html",
+            readBin(con  = "inst/app/rmd_file/built_report.html",
                     what = "raw",
-                    n    = file.info("inst/app/built_report.html")[ , "size"]) %>%
+                    n    = file.info("inst/app/rmd_file/built_report.html")[ , "size"]) %>%
 
               writeBin(con = file)
 
