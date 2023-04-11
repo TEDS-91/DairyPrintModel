@@ -622,14 +622,15 @@ mod_dashboard_server <- function(id,
 
         tempReport <- file.path(tempdir(), "report.Rmd")
 
-        file.copy("inst/app/rmd_report/report.Rmd", tempReport, overwrite = TRUE)
+        file.copy("inst/app/www/rmd_report/report.Rmd", tempReport, overwrite = TRUE)
 
         params = list(
                                            total_co2e_q_emitted = total_co2e_q_emitted(),
                                            co2eq_milk           = total_co2e_q_emitted() / milk_yield_fpc(),
                                            methane_table        = methane_table(),
                                            suma_table           = report(),
-                                           animal_inputs        = animal_inputs()
+                                           animal_inputs        = animal_inputs(),
+                                           nh3_emissions        = nh3_emissions()
                                          )
         rmarkdown::render(tempReport, output_file = file,
                           params = params,
