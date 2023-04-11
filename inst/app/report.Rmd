@@ -212,20 +212,4 @@ Here are the comments
 
 
 
-</div>
-
-&nbsp;
-<hr />
-<p style = "text-align: center; color: #007582;"> All rights reserved - University of Wisconsin-Madison </p>
-<center>
-```{r, echo = FALSE}
- 
-htmltools::img(
-   src = knitr::image_uri(here::here("inst/app/www/uw_logo.png")),
-   style = "width:45px; height:45px;")
-   
-```
-</center>
-&nbsp;
-
 
