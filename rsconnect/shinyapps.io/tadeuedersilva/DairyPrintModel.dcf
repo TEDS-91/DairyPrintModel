@@ -5,9 +5,9 @@ account: tadeuedersilva
 server: shinyapps.io
 hostUrl: https://api.shinyapps.io/v1
 appId: 8788299
-bundleId: 7062475
+bundleId: 7076147
 url: https://tadeuedersilva.shinyapps.io/DairyPrintModel/
-when: 1680892592.23793
-lastSyncTime: 1680892592.23793
+when: 1681229516.36406
+lastSyncTime: 1681229516.36406
 asMultiple: FALSE
 asStatic: FALSE
