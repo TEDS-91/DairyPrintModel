@@ -543,6 +543,8 @@ mod_dashboard_server <- function(id,
 
             path1 <- system.file("app", "report.Rmd", package = "DairyPrintModel")
 
+            path2 <- system.file("app", "built_report.html", package = "DairyPrintModel")
+
             rmarkdown::render(
               input       = path1, #"inst/app/report.Rmd",
               output_file = "built_report.html",
@@ -558,7 +560,7 @@ mod_dashboard_server <- function(id,
 
             readBin(con  = "inst/app/built_report.html",
                     what = "raw",
-                    n    = file.info("inst/app/built_report.html")[ , "size"]) %>%
+                    n    = file.info(path2)[ , "size"]) %>%
 
               writeBin(con = file)
 
