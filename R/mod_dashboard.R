@@ -571,7 +571,7 @@ mod_dashboard_server <- function(id,
           # case we don't have write permissions to the current working dir (which
           # can happen when deployed).
           tempReport <- file.path(tempdir(), "report.Rmd")
-          file.copy("www/report.Rmd", tempReport, overwrite = TRUE)
+          file.copy("inst/app/www/report.Rmd", tempReport, overwrite = TRUE)
 
           # Set up parameters to pass to Rmd document
           params = list(
