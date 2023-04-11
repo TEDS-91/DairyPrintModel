@@ -531,66 +531,66 @@ mod_dashboard_server <- function(id,
 
     output$rmd_report <- downloadHandler(
 
-      # "DairyPrintModelReport.html",
-      #
-      # content =
-      #
-      #   function(file) {
-      #
-      #     withProgress(message = "Rendering the report...", {
-      #
-      #       rmarkdown::render(
-      #         input       = "report.Rmd",
-      #         output_file = "built_report.html",
-      #
-      #         params = list(
-      #           total_co2e_q_emitted = total_co2e_q_emitted(),
-      #           co2eq_milk           = total_co2e_q_emitted() / milk_yield_fpc(),
-      #           methane_table        = methane_table(),
-      #           suma_table           = report()
-      #         )
-      #       )
-      #
-      #       readBin(con  = "built_report.html",
-      #               what = "raw",
-      #               n    = file.info("built_report.html")[ , "size"]) %>%
-      #
-      #         writeBin(con = file)
-      #
-      #     })
-      #
-      #   }
+      "DairyPrintModelReport.html",
 
+      content =
 
+        function(file) {
 
+          withProgress(message = "Rendering the report...", {
 
-        # # For PDF output, change this to "report.pdf"
-        filename = "DairyPrintModelReport.html",
-        content = function(file) {
-          # Copy the report file to a temporary directory before processing it, in
-          # case we don't have write permissions to the current working dir (which
-          # can happen when deployed).
-          tempReport <- file.path(tempdir(), "report.Rmd")
-          file.copy("report.Rmd", tempReport, overwrite = TRUE)
+            rmarkdown::render(
+              input       = "report.Rmd",
+              output_file = "built_report.html",
 
-          # Set up parameters to pass to Rmd document
-          params = list(
-      total_co2e_q_emitted = total_co2e_q_emitted(),
-      co2eq_milk           = total_co2e_q_emitted() / milk_yield_fpc(),
-      methane_table        = methane_table(),
-      suma_table           = report(),
-      animal_inputs        = animal_inputs(),
-      nh3_emissions        = nh3_emissions()
-          )
+              params = list(
+                total_co2e_q_emitted = total_co2e_q_emitted(),
+                co2eq_milk           = total_co2e_q_emitted() / milk_yield_fpc(),
+                methane_table        = methane_table(),
+                suma_table           = report()
+              )
+            )
 
-          # Knit the document, passing in the `params` list, and eval it in a
-          # child of the global environment (this isolates the code in the document
-          # from the code in this app).
-          rmarkdown::render(input = tempReport, output_file = file,
-                            params = params,
-                            envir = new.env(parent = globalenv())
-          )
+            readBin(con  = "built_report.html",
+                    what = "raw",
+                    n    = file.info("built_report.html")[ , "size"]) %>%
+
+              writeBin(con = file)
+
+          })
+
         }
+
+
+
+#
+#         # # For PDF output, change this to "report.pdf"
+#         filename = "DairyPrintModelReport.html",
+#         content = function(file) {
+#           # Copy the report file to a temporary directory before processing it, in
+#           # case we don't have write permissions to the current working dir (which
+#           # can happen when deployed).
+#           tempReport <- file.path(tempdir(), "report.Rmd")
+#           file.copy("report.Rmd", tempReport, overwrite = TRUE)
+#
+#           # Set up parameters to pass to Rmd document
+#           params = list(
+#       total_co2e_q_emitted = total_co2e_q_emitted(),
+#       co2eq_milk           = total_co2e_q_emitted() / milk_yield_fpc(),
+#       methane_table        = methane_table(),
+#       suma_table           = report(),
+#       animal_inputs        = animal_inputs(),
+#       nh3_emissions        = nh3_emissions()
+#           )
+#
+#           # Knit the document, passing in the `params` list, and eval it in a
+#           # child of the global environment (this isolates the code in the document
+#           # from the code in this app).
+#           rmarkdown::render(input = tempReport, output_file = file,
+#                             params = params,
+#                             envir = new.env(parent = globalenv())
+#           )
+#         }
         #
 
       # filename = "DairyPrintModelReport.html",
