@@ -107,6 +107,7 @@ app_server <- function(input, output, session) {
 
                        co2_eq_fuel_col_spread = miscellaneous[["co2_eq_fuel"]],
 
+                       crop_inputs = ghg_crop[["crop_inputs"]],
                        total_co2          = ghg_crop[["total_co2"]],
                        total_nh3          = ghg_crop[["total_nh3"]],
                        total_n2o          = ghg_crop[["total_n2o"]],

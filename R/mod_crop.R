@@ -453,12 +453,16 @@ mod_crop_server <- function(id,
 
     })
 
+
+
+
 # -------------------------------------------------------------------------
 # Outputs from this module to populate others -----------------------------
 # -------------------------------------------------------------------------
 
     return(
       list(
+        crop_inputs = reactive(valores()),
         total_co2 = reactive(total_co2()),
         total_nh3 = reactive(total_nh3()),
         total_n2o = reactive(total_n2o()),

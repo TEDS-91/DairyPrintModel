@@ -11,6 +11,7 @@ params:
   suma_table: 'NULL'
   animal_inputs: 'NULL'
   nh3_emissions: 'NULL'
+  crop_inputs: 'NULL'
  
 ---
 
@@ -151,6 +152,9 @@ kableExtra::kbl(params$animal_inputs, escape = FALSE) %>%
 #   ggplot2::xlab("Year days") + ggplot2::ylab("Methane Emissions") + ggplot2::ggtitle("Storage")
 # 
 # patchwork::wrap_plots(barn, storage, ncol = 2)
+
+params$crop_inputs
+
 
 ```
 

@@ -144,6 +144,7 @@ mod_dashboard_server <- function(id,
                                  fac_ammonia,
                                  storage_ammonia,
                                  co2_eq_fuel_col_spread,
+                                 crop_inputs,
                                  total_co2,
                                  total_nh3,
                                  total_n2o,
@@ -540,20 +541,21 @@ mod_dashboard_server <- function(id,
           withProgress(message = "Rendering the report...", {
 
             rmarkdown::render(
-              input       = "inst/app/www/report.Rmd",
+              input       = "inst/report.Rmd",
               output_file = "built_report.html",
 
               params = list(
                 total_co2e_q_emitted = total_co2e_q_emitted(),
                 co2eq_milk           = total_co2e_q_emitted() / milk_yield_fpc(),
                 methane_table        = methane_table(),
-                suma_table           = report()
+                suma_table           = report(),
+                crop_inputs          = crop_inputs()
               )
             )
 
-            readBin(con  = "inst/app/www/built_report.html",
+            readBin(con  = "inst/built_report.html",
                     what = "raw",
-                    n    = file.info("inst/app/www/built_report.html")[ , "size"]) %>%
+                    n    = file.info("inst/built_report.html")[ , "size"]) %>%
 
               writeBin(con = file)
 
