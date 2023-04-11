@@ -547,7 +547,7 @@ mod_dashboard_server <- function(id,
 
             rmarkdown::render(
               input       = path1, #"inst/app/report.Rmd",
-              output_file = "built_report.html",
+              output_file = path2,# "built_report.html",
 
               params = list(
                 total_co2e_q_emitted = total_co2e_q_emitted(),
