@@ -56,7 +56,6 @@ utils::globalVariables(
     "loss_kg_m2",
     "r",
     "tan_kg_m2",
-    "wi_weather",
     "yday",
     "area_exposed_m2",
     "const",
