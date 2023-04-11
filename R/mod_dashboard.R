@@ -541,9 +541,9 @@ mod_dashboard_server <- function(id,
 
           withProgress(message = "Rendering the report...", {
 
-            path1 <- system.file("app/", "report.Rmd", package = "DairyPrintModel")
+            path1 <- system.file("app", "report.Rmd", package = "DairyPrintModel")
 
-            path2 <- system.file("app/", "built_report.html", package = "DairyPrintModel")
+            path2 <- system.file("app", "built_report.html", package = "DairyPrintModel")
 
             rmarkdown::render(
               input       = path1, #"inst/app/report.Rmd",
