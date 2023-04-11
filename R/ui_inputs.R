@@ -44,7 +44,7 @@ manure_ui_prms <- function() {
   manure_ui_prms <- list(
 
       column(2,
-             selectInput("county",          label = "County:",                   choices = unique(wi_weather$county), selected = "Dane")),
+             selectInput("county",          label = "County:",                   choices = unique(wisconsin_weather_data$county), selected = "Dane")),
 
       column(2,
              selectInput("facilitie",       label = "Facility:",                 choices = c("freestall",

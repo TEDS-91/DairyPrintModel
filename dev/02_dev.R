@@ -37,7 +37,7 @@ golem::add_sass_file("custom")
 
 ## Add internal datasets ----
 ## If you have data in your package
-usethis::use_data_raw(name = "wi_weather", open = TRUE)
+usethis::use_data_raw(name = "wisconsin_weather_data", open = TRUE)
 
 ## Tests ----
 ## Add one line by test you want to create

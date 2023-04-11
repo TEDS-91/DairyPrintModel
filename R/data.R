@@ -13,4 +13,4 @@
 #'   ...
 #' }
 #' @source Data retrieved from \href{https://daymet.ornl.gov/}{Daymet website}.
-"wi_weather"
+"wisconsin_weather_data"

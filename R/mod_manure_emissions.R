@@ -238,7 +238,7 @@ mod_manure_ghg_emissions_server <- function(id,
 
       yday <- seq(1, 730, 1)
 
-      temp_c <- rep(wi_weather %>%
+      temp_c <- rep( wisconsin_weather_data %>%
                       dplyr::filter(county == county()) %>%
                       dplyr::pull(aver_tempC), 2)
 
@@ -1182,7 +1182,7 @@ mod_manure_ghg_emissions_server <- function(id,
 
       acumulado_manure
 
-       temp_c <- rep(wi_weather %>%
+       temp_c <- rep( wisconsin_weather_data %>%
                        dplyr::filter(county == county()) %>%
                        dplyr::pull(aver_tempC), 2)
 
