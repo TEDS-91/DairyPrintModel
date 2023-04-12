@@ -212,5 +212,22 @@ Here are the comments
 
 
 
+</div>
+
+&nbsp;
+<hr />
+<p style = "text-align: center; color: #007582;"> All rights reserved - University of Wisconsin-Madison </p>
+<center>
+```{r, echo = FALSE}
+
+path_logo <- system.file("app/www", "uw_logo.png", package = "DairyPrintModel")
+
+htmltools::img(
+   src = knitr::image_uri(path_logo),
+   style = "width:45px; height:45px;")
+   
+```
+</center>
+&nbsp;
 
 

@@ -57,6 +57,7 @@ utils::globalVariables(
     "r",
     "tan_kg_m2",
     "yday",
+    "wisconsin_weather_data",
     "area_exposed_m2",
     "const",
     "gamma_densi",
