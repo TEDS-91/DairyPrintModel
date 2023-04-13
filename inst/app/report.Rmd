@@ -187,7 +187,7 @@ kableExtra::kbl(purchased_feeds, escape = FALSE) %>%
 methane <- params$nh3_emissions %>% 
   tibble::as_tibble()
 
-barn <- methane %>%
+barn <- params$nh3_emissions %>%
   dplyr::filter("year_day" > 365) %>%
   ggplot2::ggplot( ggplot2::aes( x = year_day, y = barn_ch4_emissions_kg)) +
   ggplot2::theme_bw() +
@@ -195,7 +195,7 @@ barn <- methane %>%
   ggplot2::geom_line(ggplot2::aes( x = year_day, y = barn_ch4_emissions_kg), col = "black") +
   ggplot2::xlab("Year days") + ggplot2::ylab("Methane Emissions") + ggplot2::ggtitle("Barn")
 
-storage <- methane %>%
+storage <- params$nh3_emissions %>%
   dplyr::filter("year_day" > 365) %>%
   ggplot2::ggplot( ggplot2::aes( x = year_day, y = storage_ch4_emissions_kg)) +
   ggplot2::theme_bw() +
