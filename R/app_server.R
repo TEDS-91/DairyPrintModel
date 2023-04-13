@@ -96,9 +96,11 @@ app_server <- function(input, output, session) {
   mod_dashboard_server("dashboard",
                        animal_data        = animal_data[[1]],
                        calf_milk_intake   = calf_milk_sup,
-                       animal_inputs        = animal_data[["inputs"]],
-                       raw_animal_df = animal_data[["raw_animal_df"]],
+                       herd_inputs        = animal_data[["herd_inputs"]],
+                       raw_animal_df      = animal_data[["raw_animal_df"]],
+                       diet_inputs        = animal_data[["diet_inputs"]],
 
+                       manure_inputs      = ghg_emissions[["manure_inputs"]],
                        nh3_emissions      = ghg_emissions[["nh3_emissions"]],
                        herd_methane       = ghg_emissions[["herd_methane"]],
                        fac_methane        = ghg_emissions[["fac_methane"]],
@@ -108,7 +110,7 @@ app_server <- function(input, output, session) {
 
                        co2_eq_fuel_col_spread = miscellaneous[["co2_eq_fuel"]],
 
-                       crop_inputs = ghg_crop[["crop_inputs"]],
+                       crop_inputs               = ghg_crop[["crop_inputs"]],
                        co2eq_purchased           = co2eq_purchased[[1]],
                        purchased_feeds           = co2eq_purchased[["purchased_feeds"]],
 

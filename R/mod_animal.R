@@ -1506,20 +1506,38 @@ mod_animal_server <- function(id){
 # Report outcomes - inputs ------------------------------------------------
 # -------------------------------------------------------------------------
 
-    inputs <- reactive({
+    herd_inputs <- reactive({
 
       df <- tibble::tibble(
-        number_of_cows       = input$animal_n_cows,
-        age_at_first_calving = input$animal_time_first_calv,
-        calving_interval     = input$animal_cow_calving_int,
-        milk_yield           = input$animal_average_milk_yield
+        "Total Cows"                = input$animal_n_cows,
+        "Calving Interval (mo)"     = input$animal_cow_calving_int,
+        "Cow Culling Rate (%)"      = input$animal_cow_rep_rate,
+        "Age at First Calving (mo)" = input$animal_time_first_calv,
+        "Heifers Culling Rate (%)"  = input$animal_calves_heifers_cul,
+        "Milk Yield (kg/day)"       = input$animal_average_milk_yield,
+        "Milking Frequency"         = input$animal_milk_freq
       )
 
       df
 
     })
 
+    diet_inputs <- reactive({
 
+      df <- tibble::tibble(
+        "Category" = c("Lactating Cows", "Dry Cows", "Heifers"),
+        "CP (%)"   = c(input$diet_lac_cp, input$diet_dry_cp, input$diet_hei_cp),
+        "NDF (%)"  = c(input$diet_lac_ndf, input$diet_dry_ndf, input$diet_hei_ndf),
+        "ADF (%)"  = c(input$diet_lac_adf, input$diet_dry_adf, input$diet_hei_adf),
+        "EE (%)"   = c(input$diet_lac_ee, input$diet_dry_ee, input$diet_hei_ee),
+        "P (%)"    = c(input$diet_lac_p, input$diet_dry_p, input$diet_hei_p),
+        "K (%)"    = c(input$diet_lac_k, input$diet_dry_k, input$diet_hei_k)
+
+      )
+
+      df
+
+    })
 
 # -------------------------------------------------------------------------
 # Outputs from this module to populate others -----------------------------
@@ -1538,7 +1556,8 @@ mod_animal_server <- function(id){
         df = reactive(df_sum()),
         milk_intake = reactive(milk_supply()),
 
-        inputs = reactive(inputs()),
+        herd_inputs = reactive(herd_inputs()),
+        diet_inputs = reactive(diet_inputs()),
         raw_animal_df = reactive({ df() })
 
       )

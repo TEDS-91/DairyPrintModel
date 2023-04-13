@@ -137,7 +137,8 @@ mod_dashboard_server <- function(id,
 
                                  animal_data,
                                  calf_milk_intake,
-                                 animal_inputs,
+                                 herd_inputs,
+                                 diet_inputs,
                                  raw_animal_df,
 
                                  nh3_emissions,
@@ -146,6 +147,8 @@ mod_dashboard_server <- function(id,
                                  storage_methane,
                                  fac_ammonia,
                                  storage_ammonia,
+                                 manure_inputs,
+
                                  co2_eq_fuel_col_spread,
                                  crop_inputs,
                                  co2eq_purchased,
@@ -551,8 +554,8 @@ mod_dashboard_server <- function(id,
             path2 <- system.file("app", "built_report.html", package = "DairyPrintModel")
 
             rmarkdown::render(
-              input       = path1, #"inst/app/report.Rmd",
-              output_file = path2, # "built_report.html",
+              input       = path1,
+              output_file = path2,
 
               params = list(
                 total_co2e_q_emitted = total_co2e_q_emitted(),
@@ -563,12 +566,14 @@ mod_dashboard_server <- function(id,
                 co2eq_purchased      = co2eq_purchased(),
                 purchased_feeds      = purchased_feeds(),
                 nh3_emissions        = nh3_emissions(),
-                animal_inputs        = animal_inputs(),
+                manure_inputs        = manure_inputs(),
+                herd_inputs          = herd_inputs(),
+                diet_inputs          = diet_inputs(),
                 raw_animal_df        = raw_animal_df()
               )
             )
 
-            readBin(con  = path2,#"inst/app/built_report.html",
+            readBin(con  = path2,
                     what = "raw",
                     n    = file.info(path2)[ , "size"]) %>%
 

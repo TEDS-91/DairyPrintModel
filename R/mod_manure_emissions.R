@@ -1442,14 +1442,25 @@ mod_manure_ghg_emissions_server <- function(id,
 
     })
 
-
-
 # -------------------------------------------------------------------------
 # Report outcomes - inputs ------------------------------------------------
 # -------------------------------------------------------------------------
 
+    manure_inputs <- reactive({
 
+      manure_inputs <- tibble::tibble(
 
+        "County"            = county(),
+        "Facility"          = facilitie(),
+        "Bedding Type"      = bedding(),
+        "Manure Management" = manure_management(),
+        "Manure Type"       = type_manure(),
+        "Empty Time"        = empty_time()
+      )
+
+      manure_inputs
+
+    })
 
 # -------------------------------------------------------------------------
 # Outputs from this module to populate others -----------------------------
@@ -1457,6 +1468,7 @@ mod_manure_ghg_emissions_server <- function(id,
 
     return(
       list(
+        manure_inputs      = reactive(manure_inputs()),
         nh3_emissions      = reactive(storage()),
         herd_methane       = reactive(summarized_data()[["total_ch4_herd"]]),
         fac_methane        = reactive(summarized_data()[["total_ch4_fac"]]),

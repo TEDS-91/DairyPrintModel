@@ -9,12 +9,14 @@ params:
   co2eq_milk: 'NULL'
   methane_table: 'NULL'
   suma_table: 'NULL'
-  animal_inputs: 'NULL'
+  herd_inputs: 'NULL'
   nh3_emissions: 'NULL'
   crop_inputs: 'NULL'
   co2eq_purchased: 'NULL'
   purchased_feeds: 'NULL'
   raw_animal_df: 'NULL'
+  manure_inputs: 'NULL'
+  diet_inputs: 'NULL'
  
 ---
 
@@ -99,20 +101,39 @@ pre { /* Code block - determines code spacing between lines */
 
 ## **1. Farm Inputs:**
 
+## {.tabset}
+
 ### **1.1 Herd Management**
 
 ```{r, warning = FALSE, echo = FALSE}
 library(formattable)
 library(dplyr)
 
-kableExtra::kbl(params$animal_inputs, escape = FALSE) %>%
+kableExtra::kbl(params$herd_inputs, escape = FALSE) %>%
   kableExtra::kable_paper("hover", full_width = TRUE) %>% 
   kableExtra::row_spec(0, bold = T, color = "white", background = "#007582")
 
 ```
 
+```{r, warning = FALSE, echo = FALSE}
+
+kableExtra::kbl(params$diet_inputs, escape = FALSE) %>%
+  kableExtra::kable_paper("hover", full_width = TRUE) %>% 
+  kableExtra::row_spec(0, bold = T, color = "white", background = "#007582")
+
+```
 
 ### **1.2 Manure Management**
+
+```{r, warning = FALSE, echo = FALSE}
+
+manure_inputs <- params$manure_inputs 
+
+kableExtra::kbl(manure_inputs, escape = FALSE) %>%
+  kableExtra::kable_paper("hover", full_width = TRUE) %>% 
+  kableExtra::row_spec(0, bold = T, color = "white", background = "#007582")
+
+```
 
 ### **1.3 Crops and Purchased Feeds**
 
@@ -157,54 +178,27 @@ kableExtra::kbl(purchased_feeds, escape = FALSE) %>%
 
 ```
 
-## **2. Farm Outcomes**
+## {-}
 
-### This section will have three columns
+## **2. Overall environmental Outcomes** 
 
-<div class="col3">
-**1** one  
-**2** two  
-**3** three  
-**4** four  
-**5** five  
-**6** six  
-**7** seven  
-**8** eight  
-**9** nine  
-</div>
+## {.tabset}
 
+### **2.1 Herd**
 
-```{r, warning = FALSE, echo = FALSE, fig.width = 10, fig.height = 4, fig.fullwidth = TRUE}
+```{r, warning = FALSE, echo = FALSE}
 
-barn <- params$nh3_emissions %>%
-  dplyr::filter(year_day > 365) %>%
-  ggplot2::ggplot( ggplot2::aes( x = year_day, y = barn_ch4_emissions_kg)) +
-  ggplot2::theme_bw() +
-  ggplot2::geom_point(col = "blue") +
-  ggplot2::geom_line(ggplot2::aes( x = year_day, y = barn_ch4_emissions_kg), col = "black") +
-  ggplot2::xlab("Year days") + ggplot2::ylab("Methane Emissions") + ggplot2::ggtitle("Barn")
+methane_table <- params$methane_table %>% tibble::as_tibble()
+methane_table$`Methane (%)` <- color_bar("lightgreen")(methane_table$`Methane (%)`)
 
-storage <- params$nh3_emissions %>%
-  dplyr::filter(year_day > 365) %>%
-  ggplot2::ggplot( ggplot2::aes( x = year_day, y = storage_ch4_emissions_kg)) +
-  ggplot2::theme_bw() +
-  ggplot2::geom_point(col = "blue") +
-  ggplot2::geom_line(ggplot2::aes( x = year_day, y = storage_ch4_emissions_kg), col = "blue") +
-  ggplot2::xlab("Year days") + ggplot2::ylab("Methane Emissions") + ggplot2::ggtitle("Storage")
-
-patchwork::wrap_plots(barn, storage, ncol = 2)
+kableExtra::kbl(methane_table, escape = FALSE) %>%
+  kableExtra::kable_paper("hover", full_width = TRUE) %>% 
+  kableExtra::row_spec(0, bold = TRUE, color = "white", background = "#007582")
 
 ```
 
-## **1. Overall environmental outcomes** 
 
-## Results {.tabset}
-
-### **Plots**
-
-We show a scatter plot in this section.
-
-```{r, warning = FALSE, echo = FALSE, fig.width = 10, fig.height = 4, fig.fullwidth = TRUE}
+```{r, warning = FALSE, echo = FALSE, fig.width = 10, fig.height = 3, fig.fullwidth = TRUE}
 
 animal_data_plots <- params$raw_animal_df %>%
   tibble::as_tibble() %>% 
@@ -242,7 +236,7 @@ patchwork::wrap_plots(milk_yield, DMI, water_intake, ncol = 3)
 ```
 
 
-```{r, warning = FALSE, echo = FALSE, fig.width = 10, fig.height = 4, fig.fullwidth = TRUE}
+```{r, warning = FALSE, echo = FALSE, fig.width = 10, fig.height = 3, fig.fullwidth = TRUE}
 
 manure_excretion <- animal_data_plots %>% 
   ggplot2::ggplot( ggplot2::aes(x = Month, y = fresh_manure_output_kg_day, col = Phase)) +
@@ -264,7 +258,7 @@ patchwork::wrap_plots(manure_excretion, enteric_methane, ncol = 2)
 
 ```
 
-```{r, warning = FALSE, echo = FALSE, fig.width = 10, fig.height = 4, fig.fullwidth = TRUE}
+```{r, warning = FALSE, echo = FALSE, fig.width = 10, fig.height = 3, fig.fullwidth = TRUE}
 
 nit_excretion <- animal_data_plots %>% 
   ggplot2::ggplot( ggplot2::aes(x = Month, y = total_nitrogen_excreted_g, col = Phase)) +
@@ -294,19 +288,29 @@ patchwork::wrap_plots(nit_excretion, phos_excretion, pot_excretion, ncol = 3)
 
 ```
 
-### **Tables**
+### **2.2 Manure**
 
-```{r, warning = FALSE, echo = FALSE}
+```{r, warning = FALSE, echo = FALSE, fig.width = 10, fig.height = 3, fig.fullwidth = TRUE}
 
-methane_table <- params$methane_table %>% tibble::as_tibble()
-methane_table$`Methane (%)` <- color_bar("lightgreen")(methane_table$`Methane (%)`)
+barn <- params$nh3_emissions %>%
+  dplyr::filter(year_day > 365) %>%
+  ggplot2::ggplot( ggplot2::aes( x = year_day, y = barn_ch4_emissions_kg)) +
+  ggplot2::theme_bw() +
+  ggplot2::geom_point(col = "blue") +
+  ggplot2::geom_line(ggplot2::aes( x = year_day, y = barn_ch4_emissions_kg), col = "black") +
+  ggplot2::xlab("Year days") + ggplot2::ylab("Methane Emissions") + ggplot2::ggtitle("Barn")
 
-kableExtra::kbl(methane_table, escape = FALSE) %>%
-  kableExtra::kable_paper("hover", full_width = TRUE) %>% 
-  kableExtra::row_spec(0, bold = TRUE, color = "white", background = "#007582")
+storage <- params$nh3_emissions %>%
+  dplyr::filter(year_day > 365) %>%
+  ggplot2::ggplot( ggplot2::aes( x = year_day, y = storage_ch4_emissions_kg)) +
+  ggplot2::theme_bw() +
+  ggplot2::geom_point(col = "blue") +
+  ggplot2::geom_line(ggplot2::aes( x = year_day, y = storage_ch4_emissions_kg), col = "blue") +
+  ggplot2::xlab("Year days") + ggplot2::ylab("Methane Emissions") + ggplot2::ggtitle("Storage")
+
+patchwork::wrap_plots(barn, storage, ncol = 2)
 
 ```
-
 
 ## {-}
 
@@ -318,20 +322,20 @@ div.blue { background-color:#e6f0ff; border-radius: 5px; padding: 20px;}
 
 Here are the comments
 
-
 </div>
 
 &nbsp;
 <hr />
 <p style = "text-align: center; color: #007582;"> All rights reserved - University of Wisconsin-Madison </p>
 <center>
-```{r, echo = FALSE}
+
+```{r, warning = FALSE, echo = FALSE}
 
 path_logo <- system.file("app/www", "uw_logo.png", package = "DairyPrintModel")
 
 htmltools::img(
    src = knitr::image_uri(path_logo),
-   style = "width:45px; height:45px;")
+   style = "width:25px; height:40px;")
    
 ```
 </center>
