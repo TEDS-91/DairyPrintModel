@@ -103,7 +103,7 @@ pre { /* Code block - determines code spacing between lines */
 
 ```{r, warning = FALSE, echo = FALSE}
 library(formattable)
-
+library(dplyr)
 
 kableExtra::kbl(params$animal_inputs, escape = FALSE) %>%
   kableExtra::kable_paper("hover", full_width = TRUE) %>% 
