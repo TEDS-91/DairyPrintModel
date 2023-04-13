@@ -176,23 +176,30 @@ mod_purchased_feeds_server <- function(id){
 
       })
 
+    purchased_feeds <- reactive({
+
+      req(input[[paste0("feed_", 1)]])
+
+      purchased_feeds <- tibble::tibble(
+        "feeds"  = unlist(purrr::map(1:counter$n, function(i) { input[[paste0("feed_", i)]] } )),
+        "Qntdds" = unlist(purrr::map(1:counter$n, function(i) { input[[paste0("qnt_", i)]]  } ))
+      ) %>%
+        dplyr::left_join(carbon_footprint(), by = c("feeds" = "feeds"))
+
+      purchased_feeds
+
+    })
+
     CO2eq_calculations <- reactive({
 
       req(input[[paste0("feed_", 1)]])
 
-       dados <- tibble::tibble(
-         "feeds"  = unlist(purrr::map(1:counter$n, function(i) { input[[paste0("feed_", i)]] } )),
-         "Qntdds" = unlist(purrr::map(1:counter$n, function(i) { input[[paste0("qnt_", i)]]  } ))
-
-       ) %>%
-         dplyr::left_join(carbon_footprint(), by = c("feeds" = "feeds")) %>%
+      purchased_feeds() %>%
          dplyr::mutate(
            CO2eq = carbon_foot * Qntdds * 1000
           ) %>%
          dplyr::summarise(total = sum(CO2eq)) %>%
          dplyr::pull(total)
-
-      dados
 
 
     })
@@ -203,9 +210,18 @@ mod_purchased_feeds_server <- function(id){
 
     })
 
+
+# -------------------------------------------------------------------------
+# Outputs from this module to populate others -----------------------------
+# -------------------------------------------------------------------------
+
+
+
+
     return(
       list(
-        teste = reactive({ CO2eq_calculations() })
+        teste           = reactive({ CO2eq_calculations() }),
+        purchased_feeds = reactive({ purchased_feeds() })
       )
     )
 

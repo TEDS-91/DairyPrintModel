@@ -54,17 +54,32 @@ app_ui <- function(request) {
             tabName = "info",
             icon = icon("info-sign", lib = "glyphicon")
           ),
-          fluidRow(
-            column(offset = 1,
-                   4,
-                   h6("Supported by:"))),
-          fluidRow(
-            column(offset = 1,
-                   4,
-                   img(src='www/DIH_logo.png', align = "left", width = 91, height = 75))
+
+        fluidRow(
+          column(offset = 1,
+                 4,
+                 HTML(paste("Authors:", "</br>",
+                            "Prof. Victor E. Cabrera, PhD.", "</br>",
+                            "Tadeu E. da Silva, PhD.")
+              )
+            )
+          ),
+
+        br(),
+
+        fluidRow(
+          column(offset = 1,
+                 4,
+                 h6("Project supported by:"))),
+        fluidRow(
+          column(offset = 1,
+                 4,
+                 img(src='www/DIH_logo.png', align = "left", width = 91, height = 75)
+          )
         )
-        )
-      ),
+      )
+    ),
+
       bs4Dash::bs4DashBody(
         bs4Dash::bs4TabItems(
           bs4Dash::bs4TabItem(
@@ -96,11 +111,6 @@ app_ui <- function(request) {
         )
       )
     )
-
-
-
-
-
   )
 }
 

@@ -145,6 +145,8 @@ mod_dashboard_server <- function(id,
                                  storage_ammonia,
                                  co2_eq_fuel_col_spread,
                                  crop_inputs,
+                                 co2eq_purchased,
+                                 purchased_feeds,
                                  total_co2,
                                  total_nh3,
                                  total_n2o,
@@ -554,7 +556,11 @@ mod_dashboard_server <- function(id,
                 co2eq_milk           = total_co2e_q_emitted() / milk_yield_fpc(),
                 methane_table        = methane_table(),
                 suma_table           = report(),
-                crop_inputs          = crop_inputs()
+                crop_inputs          = crop_inputs(),
+                co2eq_purchased      = co2eq_purchased(),
+                purchased_feeds      = purchased_feeds(),
+                nh3_emissions        = nh3_emissions(),
+                animal_inputs        = animal_inputs()
               )
             )
 
