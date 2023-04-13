@@ -1538,7 +1538,8 @@ mod_animal_server <- function(id){
         df = reactive(df_sum()),
         milk_intake = reactive(milk_supply()),
 
-        inputs = reactive(inputs())
+        inputs = reactive(inputs()),
+        raw_animal_df = reactive({ df() })
 
       )
     )

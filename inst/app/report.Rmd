@@ -14,6 +14,7 @@ params:
   crop_inputs: 'NULL'
   co2eq_purchased: 'NULL'
   purchased_feeds: 'NULL'
+  raw_animal_df: 'NULL'
  
 ---
 
@@ -102,14 +103,13 @@ pre { /* Code block - determines code spacing between lines */
 
 ```{r, warning = FALSE, echo = FALSE}
 library(formattable)
-#library(kableExtra)
+
 
 kableExtra::kbl(params$animal_inputs, escape = FALSE) %>%
   kableExtra::kable_paper("hover", full_width = TRUE) %>% 
   kableExtra::row_spec(0, bold = T, color = "white", background = "#007582")
 
 ```
-
 
 ### **1.2 Manure Management**
 
@@ -131,7 +131,6 @@ crop_inputs <- params$crop_inputs %>%
     "Potash Applied (kg/ha)"             = potash_applied,
     "Lime Applied (kg/ha)"               = lime_applied
   )
-
 
 kableExtra::kbl(crop_inputs, escape = FALSE) %>%
   kableExtra::kable_paper("hover", full_width = TRUE) %>% 
@@ -156,8 +155,6 @@ kableExtra::kbl(purchased_feeds, escape = FALSE) %>%
   kableExtra::row_spec(0, bold = TRUE, color = "white", background = "#007582")
 
 ```
-
-
 
 ## **2. Farm Outcomes**
 
@@ -196,25 +193,7 @@ storage <- params$nh3_emissions %>%
 
 patchwork::wrap_plots(barn, storage, ncol = 2)
 
-
 ```
-
-
-### This section will have two columns
-
-<div class="col2">
-```{r}
-
-methane_table <- params$methane_table %>% tibble::as_tibble()
-methane_table$`Methane (%)` <- color_bar("lightgreen")(methane_table$`Methane (%)`)
-
-kableExtra::kbl(methane_table, escape = FALSE) %>%
-  kableExtra::kable_paper("hover", full_width = TRUE) %>% 
-  kableExtra::row_spec(0, bold = TRUE, color = "white", background = "#007582")
-
-```
-</div>
-
 
 ## **1. Overall environmental outcomes** 
 
@@ -224,21 +203,109 @@ kableExtra::kbl(methane_table, escape = FALSE) %>%
 
 We show a scatter plot in this section.
 
-```{r, fig.dim=c(5, 3)}
-par(mar = c(4, 4, .5, .1))
-plot(mpg ~ hp, data = mtcars, pch = 19)
+```{r, warning = FALSE, echo = FALSE, fig.width = 10, fig.height = 4, fig.fullwidth = TRUE}
+
+
+animal_data_plots <- params$raw_animal_df %>%
+  dplyr::filter(Categories == "Cow" & MonthSimulated == 1 & Phase %in% c("Lac1", "Lac2", "Lac3")) %>%
+  dplyr::mutate(
+    Phase = dplyr::if_else(Phase == "Lac1", "Primip", dplyr::if_else(Phase == "Lac2", "Second", "Multi"))
+  ) 
+
+milk_yield <- animal_data_plots %>% 
+  ggplot2::ggplot( ggplot2::aes(x = Month, y = milk_yield_kg_cow2, col = Phase)) +
+  ggplot2::theme_minimal() +
+  ggplot2::geom_line() +
+  ggplot2::geom_point() +
+  ggplot2::xlab("Months in lactation") + ggplot2::ylab(" ") + ggplot2::ggtitle("Milk Yield (kg/day)") +
+  ggplot2::theme(legend.position = "none")
+
+DMI <- animal_data_plots %>% 
+  ggplot2::ggplot( ggplot2::aes(x = Month, y = dry_matter_intake_kg_animal, col = Phase)) +
+  ggplot2::theme_minimal() +
+  ggplot2::geom_line() +
+  ggplot2::geom_point() +
+  ggplot2::xlab("Months in lactation") + ggplot2::ylab(" ") + ggplot2::ggtitle("Dry Matter Intake (kg/day)") +
+  ggplot2::theme(legend.position = "bottom")
+
+water_intake <- animal_data_plots %>% 
+  ggplot2::ggplot( ggplot2::aes(x = Month, y = water_intake_l_animal, col = Phase)) +
+  ggplot2::theme_minimal() +
+  ggplot2::geom_line() +
+  ggplot2::geom_point() +
+  ggplot2::xlab("Months in lactation") + ggplot2::ylab(" ") + ggplot2::ggtitle("Water Intake (l/day)") +
+  ggplot2::theme(legend.position = "none")
+
+patchwork::wrap_plots(milk_yield, DMI, water_intake, ncol = 3)
+
+```
+
+
+```{r, warning = FALSE, echo = FALSE, fig.width = 10, fig.height = 4, fig.fullwidth = TRUE}
+
+manure_excretion <- animal_data_plots %>% 
+  ggplot2::ggplot( ggplot2::aes(x = Month, y = fresh_manure_output_kg_day, col = Phase)) +
+  ggplot2::theme_minimal() +
+  ggplot2::geom_line() +
+  ggplot2::geom_point() +
+  ggplot2::xlab("Months in lactation") + ggplot2::ylab(" ") + ggplot2::ggtitle("Manure Excretion (kg/day)") +
+  ggplot2::theme(legend.position = "none")
+
+enteric_methane <- animal_data_plots %>% 
+  ggplot2::ggplot( ggplot2::aes(x = Month, y = enteric_methane_g_animal_day, col = Phase)) +
+  ggplot2::theme_minimal() +
+  ggplot2::geom_line() +
+  ggplot2::geom_point() +
+  ggplot2::xlab("Months in lactation") + ggplot2::ylab(" ") + ggplot2::ggtitle("Enteric Methane (kg/day)") +
+  ggplot2::theme(legend.position = "bottom")
+
+patchwork::wrap_plots(manure_excretion, enteric_methane, ncol = 2)
+
+```
+
+```{r, warning = FALSE, echo = FALSE, fig.width = 10, fig.height = 4, fig.fullwidth = TRUE}
+
+nit_excretion <- animal_data_plots %>% 
+  ggplot2::ggplot( ggplot2::aes(x = Month, y = total_nitrogen_excreted_g, col = Phase)) +
+  ggplot2::theme_minimal() +
+  ggplot2::geom_line() +
+  ggplot2::geom_point() +
+  ggplot2::xlab("Months in lactation") + ggplot2::ylab(" ") + ggplot2::ggtitle("Nitrogen Excretion (kg/day)") +
+  ggplot2::theme(legend.position = "none")
+
+phos_excretion <- animal_data_plots %>% 
+  ggplot2::ggplot( ggplot2::aes(x = Month, y = total_phosphorus_excretion_g, col = Phase)) +
+  ggplot2::theme_minimal() +
+  ggplot2::geom_line() +
+  ggplot2::geom_point() +
+  ggplot2::xlab("Months in lactation") + ggplot2::ylab(" ") + ggplot2::ggtitle("Phosphorous Excretion (kg/day)") +
+  ggplot2::theme(legend.position = "bottom")
+
+pot_excretion <- animal_data_plots %>% 
+  ggplot2::ggplot( ggplot2::aes(x = Month, y = total_potassium_excretion_g, col = Phase)) +
+  ggplot2::theme_minimal() +
+  ggplot2::geom_line() +
+  ggplot2::geom_point() +
+  ggplot2::xlab("Months in lactation") + ggplot2::ylab(" ") + ggplot2::ggtitle("Potassium Excretion (kg/day)") +
+  ggplot2::theme(legend.position = "none")
+
+patchwork::wrap_plots(nit_excretion, phos_excretion, pot_excretion, ncol = 3)
+
 ```
 
 ### **Tables**
 
-We show the data in this tab.
-
 ```{r, warning = FALSE, echo = FALSE}
 
-params$suma_table
+methane_table <- params$methane_table %>% tibble::as_tibble()
+methane_table$`Methane (%)` <- color_bar("lightgreen")(methane_table$`Methane (%)`)
 
+kableExtra::kbl(methane_table, escape = FALSE) %>%
+  kableExtra::kable_paper("hover", full_width = TRUE) %>% 
+  kableExtra::row_spec(0, bold = TRUE, color = "white", background = "#007582")
 
 ```
+
 
 ## {-}
 
@@ -249,8 +316,6 @@ div.blue { background-color:#e6f0ff; border-radius: 5px; padding: 20px;}
 <div class = "blue">
 
 Here are the comments
-
-
 
 
 </div>

@@ -134,9 +134,12 @@ mod_dashboard_ui <- function(id){
 #'
 #' @noRd
 mod_dashboard_server <- function(id,
+
                                  animal_data,
                                  calf_milk_intake,
                                  animal_inputs,
+                                 raw_animal_df,
+
                                  nh3_emissions,
                                  herd_methane,
                                  fac_methane,
@@ -560,7 +563,8 @@ mod_dashboard_server <- function(id,
                 co2eq_purchased      = co2eq_purchased(),
                 purchased_feeds      = purchased_feeds(),
                 nh3_emissions        = nh3_emissions(),
-                animal_inputs        = animal_inputs()
+                animal_inputs        = animal_inputs(),
+                raw_animal_df        = raw_animal_df()
               )
             )
 

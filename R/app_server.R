@@ -97,6 +97,7 @@ app_server <- function(input, output, session) {
                        animal_data        = animal_data[[1]],
                        calf_milk_intake   = calf_milk_sup,
                        animal_inputs        = animal_data[["inputs"]],
+                       raw_animal_df = animal_data[["raw_animal_df"]],
 
                        nh3_emissions      = ghg_emissions[["nh3_emissions"]],
                        herd_methane       = ghg_emissions[["herd_methane"]],
