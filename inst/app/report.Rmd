@@ -123,16 +123,16 @@ crop_inputs <- params$crop_inputs %>%
   tibble::as_tibble()
 
 crop_inputs <- crop_inputs %>% 
-  dplyr::select(-crop_id) %>% 
+  dplyr::select(-"crop_id") %>% 
   dplyr::rename(
-    "Crop"                               = crop_type,
-    "Area"                               = area,
-    "Manure Applied (%)"                 = manure_pct,
-    "Total N Fertilizer Applied (kg/ha)" = total_n_applied,
-    "Urea Applied (% of N)"              = urea_pct_applied,
-    "Phosphate Applied (kg/ha)"          = phosphate_applied,
-    "Potash Applied (kg/ha)"             = potash_applied,
-    "Lime Applied (kg/ha)"               = lime_applied
+    "Crop"                               = "crop_type",
+    "Area"                               = "area",
+    "Manure Applied (%)"                 = "manure_pct",
+    "Total N Fertilizer Applied (kg/ha)" = "total_n_applied",
+    "Urea Applied (% of N)"              = "urea_pct_applied",
+    "Phosphate Applied (kg/ha)"          = "phosphate_applied",
+    "Potash Applied (kg/ha)"             = "potash_applied",
+    "Lime Applied (kg/ha)"               = "lime_applied"
   )
 
 kableExtra::kbl(crop_inputs, escape = FALSE) %>%
@@ -145,14 +145,19 @@ kableExtra::kbl(crop_inputs, escape = FALSE) %>%
 
 ```{r, warning = FALSE, echo = FALSE}
 
+params$purchased_feeds %>% 
+  tibble::as_tibble() %>% 
+  head()
+
 purchased_feeds <- params$purchased_feeds %>%
   tibble::as_tibble() %>% 
   dplyr::rename(
-    "Feeds"                         = feeds,
-    "Quantitity (ton.)"             = Qntdds,
-    "Carbon Footprint (Carbon eq.)" = carbon_foot
+    "Feeds"                         = "feeds",
+    "Quantitity (ton.)"             = "Qntdds",
+    "Carbon Footprint (Carbon eq.)" = "carbon_foot"
   )
 
+purchased_feeds %>% head()
 
 kableExtra::kbl(purchased_feeds, escape = FALSE) %>%
   kableExtra::kable_paper("hover", full_width = TRUE) %>% 
@@ -183,7 +188,7 @@ methane <- params$nh3_emissions %>%
   tibble::as_tibble()
 
 barn <- methane %>%
-  dplyr::filter(year_day > 365) %>%
+  dplyr::filter("year_day" > 365) %>%
   ggplot2::ggplot( ggplot2::aes( x = year_day, y = barn_ch4_emissions_kg)) +
   ggplot2::theme_bw() +
   ggplot2::geom_point(col = "blue") +
@@ -191,7 +196,7 @@ barn <- methane %>%
   ggplot2::xlab("Year days") + ggplot2::ylab("Methane Emissions") + ggplot2::ggtitle("Barn")
 
 storage <- methane %>%
-  dplyr::filter(year_day > 365) %>%
+  dplyr::filter("year_day" > 365) %>%
   ggplot2::ggplot( ggplot2::aes( x = year_day, y = storage_ch4_emissions_kg)) +
   ggplot2::theme_bw() +
   ggplot2::geom_point(col = "blue") +
