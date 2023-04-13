@@ -120,17 +120,17 @@ kableExtra::kbl(params$animal_inputs, escape = FALSE) %>%
 ```{r, warning = FALSE, echo = FALSE}
 
 crop_inputs <- params$crop_inputs %>% 
-  dplyr::select(-crop_id) %>% 
-  dplyr::rename(
-    "Crop"                               = crop_type,
-    "Area"                               = area,
-    "Manure Applied (%)"                 = manure_pct,
-    "Total N Fertilizer Applied (kg/ha)" = total_n_applied,
-    "Urea Applied (% of N)"              = urea_pct_applied,
-    "Phosphate Applied (kg/ha)"          = phosphate_applied,
-    "Potash Applied (kg/ha)"             = potash_applied,
-    "Lime Applied (kg/ha)"               = lime_applied
-  )
+  dplyr::select(-crop_id) #%>% 
+  # dplyr::rename(
+  #   "Crop"                               = crop_type,
+  #   "Area"                               = area,
+  #   "Manure Applied (%)"                 = manure_pct,
+  #   "Total N Fertilizer Applied (kg/ha)" = total_n_applied,
+  #   "Urea Applied (% of N)"              = urea_pct_applied,
+  #   "Phosphate Applied (kg/ha)"          = phosphate_applied,
+  #   "Potash Applied (kg/ha)"             = potash_applied,
+  #   "Lime Applied (kg/ha)"               = lime_applied
+  # )
 
 kableExtra::kbl(crop_inputs, escape = FALSE) %>%
   kableExtra::kable_paper("hover", full_width = TRUE) %>% 
@@ -142,12 +142,13 @@ kableExtra::kbl(crop_inputs, escape = FALSE) %>%
 
 ```{r, warning = FALSE, echo = FALSE}
 
-purchased_feeds <- params$purchased_feeds %>% 
-  dplyr::rename(
-    "Feeds"                         = feeds,
-    "Quantitity (ton.)"             = Qntdds,
-    "Carbon Footprint (Carbon eq.)" = carbon_foot 
-  )
+purchased_feeds <- params$purchased_feeds 
+# %>% 
+#   dplyr::rename(
+#     "Feeds"                         = feeds,
+#     "Quantitity (ton.)"             = Qntdds,
+#     "Carbon Footprint (Carbon eq.)" = carbon_foot 
+#   )
 
 
 kableExtra::kbl(purchased_feeds, escape = FALSE) %>%
