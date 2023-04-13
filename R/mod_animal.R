@@ -178,7 +178,7 @@ mod_animal_ui <- function(id){
                 bs4Dash::bs4Card(
                   title = "Milk Yield",
                   width = 6,
-                  footer = "Milk yield calculated according to the Wood's model (1986).",
+                  footer = "Milk yield calculated according to the Wood's model (1967).",
                   plotly::plotlyOutput(ns("lactation_curves_plotly"))),
                 bs4Dash::bs4Card(
                   title = "Dry Matter Intake",

@@ -109,6 +109,7 @@ app_server <- function(input, output, session) {
                        storage_ammonia    = ghg_emissions[["storage_ammonia"]],
 
                        co2_eq_fuel_col_spread = miscellaneous[["co2_eq_fuel"]],
+                       fuel_inputs = miscellaneous[["fuel_inputs"]],
 
                        crop_inputs               = ghg_crop[["crop_inputs"]],
                        co2eq_purchased           = co2eq_purchased[[1]],

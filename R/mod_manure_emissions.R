@@ -875,8 +875,8 @@ mod_manure_ghg_emissions_server <- function(id,
     output$total_manure_managed <- bs4Dash::renderValueBox({
 
       value_box_spark(
-        value    = round(emissions()$total_manure_manag_kg[1], 1),
-        title    = "Total Manure Produced Daily (kg)",
+        value    = round(emissions()$total_manure_manag_kg[1] / 1000, 2),
+        title    = "Total Manure Produced Daily (Ton.)",
         sparkobj = NULL,
         subtitle = tagList(),
         info     = " ",
@@ -895,8 +895,8 @@ mod_manure_ghg_emissions_server <- function(id,
     output$herd_methane <- bs4Dash::renderValueBox({
 
       value_box_spark(
-        value    = round(summarized_data()[["total_ch4_herd"]], 1),
-        title    = "Total Herd Methane Emissions (kg/year)",
+        value    = round(summarized_data()[["total_ch4_herd"]] / 1000, 2),
+        title    = "Total Herd Methane Emissions (Ton./year)",
         sparkobj = NULL,
         subtitle = tagList(),
         info     = " ",
@@ -911,8 +911,8 @@ mod_manure_ghg_emissions_server <- function(id,
     output$facilitie_methane <- bs4Dash::renderValueBox({
 
       value_box_spark(
-        value    = round(summarized_data()[["total_ch4_fac"]], 2),
-        title    = "Total Barn Methane Emissions (kg/year)",
+        value    = round(summarized_data()[["total_ch4_fac"]] / 1000, 2),
+        title    = "Total Barn Methane Emissions (Ton./year)",
         sparkobj = NULL,
         subtitle = tagList(),
         info     = " ",
@@ -927,8 +927,8 @@ mod_manure_ghg_emissions_server <- function(id,
     output$manure_storage_methane <- bs4Dash::renderValueBox({
 
       value_box_spark(
-        value    = round(sum(summarized_data()[["total_ch4_storage"]], na.rm = TRUE), 1),
-        title    = "Total Storage Methane Emissions (kg/year)",
+        value    = round(sum(summarized_data()[["total_ch4_storage"]] / 1000, na.rm = TRUE), 2),
+        title    = "Total Storage Methane Emissions (Ton./year)",
         sparkobj = NULL,
         subtitle = tagList(),
         info     = " ",
@@ -1290,8 +1290,8 @@ mod_manure_ghg_emissions_server <- function(id,
     output$barn_nh3 <- bs4Dash::renderValueBox({
 
       value_box_spark(
-        value    = round(barn_nh3() / 0.82, 1),
-        title    = "Barn Ammonia Emissions (kg/year)",
+        value    = round(barn_nh3() / 0.82 / 1000, 2),
+        title    = "Barn Ammonia Emissions (Ton./year)",
         sparkobj = NULL,
         subtitle = tagList(),
         info     = " ",
@@ -1306,8 +1306,8 @@ mod_manure_ghg_emissions_server <- function(id,
     output$storage_nh3 <- bs4Dash::renderValueBox({
 
       value_box_spark(
-        value    = round(storage_nh3() / 0.82, 1),
-        title    = "Storage Ammonia Emissions (kg/year)",
+        value    = round(storage_nh3() / 0.82 / 1000, 2),
+        title    = "Storage Ammonia Emissions (Ton./year)",
         sparkobj = NULL,
         subtitle = tagList(),
         info     = " ",
@@ -1322,8 +1322,8 @@ mod_manure_ghg_emissions_server <- function(id,
     output$total_n2o <- bs4Dash::renderValueBox({
 
       value_box_spark(
-        value    = round((storage_nh3() + barn_nh3()) / 100 / 0.64 + n2o_from_storage(), 1),
-        title    = "Nitrous Oxide Emissions (kg/year)",
+        value    = round(((storage_nh3() + barn_nh3()) / 100 / 0.64 + n2o_from_storage()) / 1000, 2),
+        title    = "Nitrous Oxide Emissions (Ton./year)",
         sparkobj = NULL,
         subtitle = tagList(),
         info     = " ",

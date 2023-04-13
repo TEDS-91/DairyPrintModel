@@ -68,8 +68,8 @@ mod_miscellaneous_ui <- function(id){
 #'
 #' @noRd
 mod_miscellaneous_server <- function(id,
-                                 animal_data,
-                                 calf_milk_intake){
+                                     animal_data,
+                                     calf_milk_intake){
   moduleServer( id, function(input, output, session){
     ns <- session$ns
 
@@ -126,7 +126,6 @@ mod_miscellaneous_server <- function(id,
 
       economics <- tibble::tibble(
 
-        #"Feed Efficiency (kg/kg)"                 = feed_efic,
         "Total Milk Income ($/cow)"               = total_income,
         "Feed Cost ($/cow)"                       = feed_cost_lac,
         "Income Over Feed Cost Lac ($/cow)"       = iofc_lac,
@@ -190,16 +189,32 @@ mod_miscellaneous_server <- function(id,
     })
 
 # -------------------------------------------------------------------------
+# Report outcomes - inputs ------------------------------------------------
+# -------------------------------------------------------------------------
+
+    fuel_inputs <- reactive({
+
+      df <- tibble::tibble(
+        "Gasoline (l/year)"    = input$gasoline,
+        "Natural Gas (l/year)" = input$natural_gas,
+        "Diesel (l/year)"      = input$diesel
+      )
+
+      df
+
+    })
+
+
+# -------------------------------------------------------------------------
 # Outcomes from this module to populate others ----------------------------
 # -------------------------------------------------------------------------
 
     return(
       list(
-        co2_eq_fuel = reactive(tabela_calc())
+        co2_eq_fuel = reactive(tabela_calc()),
+        fuel_inputs = reactive(fuel_inputs())
       )
     )
-
-
 
   })
 }
