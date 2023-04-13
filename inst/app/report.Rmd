@@ -150,12 +150,12 @@ params$purchased_feeds %>%
   head()
 
 purchased_feeds <- params$purchased_feeds %>%
-  tibble::as_tibble() %>% 
-  dplyr::rename(
-    "Feeds"                         = "feeds",
-    "Quantitity (ton.)"             = "Qntdds",
-    "Carbon Footprint (Carbon eq.)" = "carbon_foot"
-  )
+  tibble::as_tibble() #%>% 
+  # dplyr::rename(
+  #   "Feeds"                         = "feeds",
+  #   "Quantitity (ton.)"             = "Qntdds",
+  #   "Carbon Footprint (Carbon eq.)" = "carbon_foot"
+  # )
 
 purchased_feeds %>% head()
 
