@@ -120,17 +120,20 @@ kableExtra::kbl(params$animal_inputs, escape = FALSE) %>%
 ```{r, warning = FALSE, echo = FALSE}
 
 crop_inputs <- params$crop_inputs %>% 
-  dplyr::select(-crop_id) #%>% 
-  # dplyr::rename(
-  #   "Crop"                               = crop_type,
-  #   "Area"                               = area,
-  #   "Manure Applied (%)"                 = manure_pct,
-  #   "Total N Fertilizer Applied (kg/ha)" = total_n_applied,
-  #   "Urea Applied (% of N)"              = urea_pct_applied,
-  #   "Phosphate Applied (kg/ha)"          = phosphate_applied,
-  #   "Potash Applied (kg/ha)"             = potash_applied,
-  #   "Lime Applied (kg/ha)"               = lime_applied
-  # )
+  tibble::as_tibble()
+
+crop_inputs <- crop_inputs %>% 
+  dplyr::select(-crop_id) %>% 
+  dplyr::rename(
+    "Crop"                               = crop_type,
+    "Area"                               = area,
+    "Manure Applied (%)"                 = manure_pct,
+    "Total N Fertilizer Applied (kg/ha)" = total_n_applied,
+    "Urea Applied (% of N)"              = urea_pct_applied,
+    "Phosphate Applied (kg/ha)"          = phosphate_applied,
+    "Potash Applied (kg/ha)"             = potash_applied,
+    "Lime Applied (kg/ha)"               = lime_applied
+  )
 
 kableExtra::kbl(crop_inputs, escape = FALSE) %>%
   kableExtra::kable_paper("hover", full_width = TRUE) %>% 
@@ -142,13 +145,13 @@ kableExtra::kbl(crop_inputs, escape = FALSE) %>%
 
 ```{r, warning = FALSE, echo = FALSE}
 
-purchased_feeds <- params$purchased_feeds 
-# %>% 
-#   dplyr::rename(
-#     "Feeds"                         = feeds,
-#     "Quantitity (ton.)"             = Qntdds,
-#     "Carbon Footprint (Carbon eq.)" = carbon_foot 
-#   )
+purchased_feeds <- params$purchased_feeds %>%
+  tibble::as_tibble() %>% 
+  dplyr::rename(
+    "Feeds"                         = feeds,
+    "Quantitity (ton.)"             = Qntdds,
+    "Carbon Footprint (Carbon eq.)" = carbon_foot
+  )
 
 
 kableExtra::kbl(purchased_feeds, escape = FALSE) %>%
@@ -176,7 +179,10 @@ kableExtra::kbl(purchased_feeds, escape = FALSE) %>%
 
 ```{r, warning = FALSE, echo = FALSE, fig.width = 10, fig.height = 4, fig.fullwidth = TRUE}
 
-barn <- params$nh3_emissions %>%
+methane <- params$nh3_emissions %>% 
+  tibble::as_tibble()
+
+barn <- methane %>%
   dplyr::filter(year_day > 365) %>%
   ggplot2::ggplot( ggplot2::aes( x = year_day, y = barn_ch4_emissions_kg)) +
   ggplot2::theme_bw() +
@@ -184,7 +190,7 @@ barn <- params$nh3_emissions %>%
   ggplot2::geom_line(ggplot2::aes( x = year_day, y = barn_ch4_emissions_kg), col = "black") +
   ggplot2::xlab("Year days") + ggplot2::ylab("Methane Emissions") + ggplot2::ggtitle("Barn")
 
-storage <- params$nh3_emissions %>%
+storage <- methane %>%
   dplyr::filter(year_day > 365) %>%
   ggplot2::ggplot( ggplot2::aes( x = year_day, y = storage_ch4_emissions_kg)) +
   ggplot2::theme_bw() +
@@ -208,6 +214,7 @@ We show a scatter plot in this section.
 
 
 animal_data_plots <- params$raw_animal_df %>%
+  tibble::as_tibble() %>% 
   dplyr::filter(Categories == "Cow" & MonthSimulated == 1 & Phase %in% c("Lac1", "Lac2", "Lac3")) %>%
   dplyr::mutate(
     Phase = dplyr::if_else(Phase == "Lac1", "Primip", dplyr::if_else(Phase == "Lac2", "Second", "Multi"))
