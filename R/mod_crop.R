@@ -39,9 +39,9 @@ mod_crop_ui <- function(id){
         bs4Dash::valueBoxOutput(ns("total_nitrous_oxide")),
         bs4Dash::valueBoxOutput(ns("ch4_field")),
         tableOutput(ns("teste"))
-      ),
+      )#,
 
-    textOutput(ns("df"))
+    #textOutput(ns("df"))
 
     )
 
@@ -100,11 +100,15 @@ mod_crop_server <- function(id,
 # Nitrogen from manure ----------------------------------------------------
 # -------------------------------------------------------------------------
 
-
     # recalculate this - all logic is not correct!
 
-
     nitrogen_from_manure <- reactive({
+
+      # correcting the TAN losses for the type of application method
+
+      tan_losses <- dplyr::if_else(manure_application_method() == "Broadcast spreading", 0.99,
+                                   dplyr::if_else(manure_application_method() == "Irrigation", 0.90, 1))
+
 
       if( manure_management() == "Daily Hauling") {
 
@@ -114,11 +118,16 @@ mod_crop_server <- function(id,
           dplyr::slice(366:730) %>%
           dplyr::mutate(
             total_nitrogen_field = total_tan_kg + fecal_n_kg - loss_animal_kg,
-            total_tan_field = total_tan_kg - loss_animal_kg
+            total_tan_field      = total_tan_kg - loss_animal_kg
           ) %>%
           dplyr::summarise(
-            totalN = sum(total_nitrogen_field),
+            totalN   = sum(total_nitrogen_field),
             totalTAN = sum(total_tan_field)
+          ) %>%
+          dplyr::mutate(
+            nh3_application_method = totalTAN - (totalTAN * tan_losses),
+            totalTAN               = totalTAN * tan_losses,
+            totalN                 = totalN - (totalTAN - (totalTAN * tan_losses))
           )
 
       } else {
@@ -129,11 +138,22 @@ mod_crop_server <- function(id,
           dplyr::slice(366:730) %>%
           dplyr::mutate(
             total_nitrogen_field = total_tan_kg + fecal_n_kg - loss_animal_kg - total_storage_N_loss,
-            total_tan_field = total_tan_kg - loss_animal_kg - total_storage_N_loss
+            total_tan_field      = total_tan_kg - loss_animal_kg - total_storage_N_loss
           ) %>%
           dplyr::summarise(
-            totalN = sum(total_nitrogen_field),
+
+            totaTAN1 = sum(total_tan_kg),
+            fecal_n = sum(fecal_n_kg),
+            storage_loss = sum(total_storage_N_loss),
+            loss_animal_kg = sum(loss_animal_kg),
+
+            totalN   = sum(total_nitrogen_field),
             totalTAN = sum(total_tan_field)
+          ) %>%
+          dplyr::mutate(
+            nh3_application_method = totalTAN - (totalTAN * tan_losses),
+            totalTAN               = totalTAN * tan_losses,
+            totalN                 = totalN - (totalTAN - (totalTAN * tan_losses))
           )
 
       }
@@ -141,17 +161,11 @@ mod_crop_server <- function(id,
     })
 
 
-
-
-
-
-
-
-
-
     output$df <- renderPrint({
 
-     print( co2eq_purchased() )
+     #print( co2eq_purchased() )
+
+      print(paste("The manure method is ", manure_application_method()))
 
     })
 
@@ -183,8 +197,6 @@ mod_crop_server <- function(id,
      crop_prms
 
     })
-
-
 
     crop_calculations <- reactive({
 
@@ -324,7 +336,6 @@ mod_crop_server <- function(id,
 # End of calculations -----------------------------------------------------
 # -------------------------------------------------------------------------
 
-
     total_co2 <- reactive({
 
       total_co2 <- crop_calculations() %>%
@@ -348,7 +359,7 @@ mod_crop_server <- function(id,
         ) %>%
         dplyr::pull(total_nh3)
 
-      total_nh3 + nh3_from_manure_application()
+      total_nh3 + nh3_from_manure_application() + nitrogen_from_manure()$nh3_application_method
 
 
     })
@@ -357,7 +368,9 @@ mod_crop_server <- function(id,
 
       # calculating the total N applied from manure and discounting the leached fraction and NH3
 
-      n2o_from_field_man <- (nitrogen_from_manure()$totalN * 0.7 - nh3_from_manure_application() * 0.82 ) * 0.01
+      n2o_from_field_man <- (nitrogen_from_manure()$totalN * 0.7 - nh3_from_manure_application() ) * 0.01 + nitrogen_from_manure()$nh3_application_method * 0.01
+
+      print(paste("N2o man appl", nitrogen_from_manure()$nh3_application_method * 0.01))
 
       # calculation of nitrous oxide from N leached
 

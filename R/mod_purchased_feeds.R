@@ -18,6 +18,7 @@ mod_purchased_feeds_ui <- function(id){
       elevation = 2,
       solidHeader = TRUE,
       status = "teal",
+      footer = "Carbon dioxide equivalents obtained from BASF's Eco-efficiency analysis tool representative of U.S. national values (BASF, Ludwigshafen, Germany) (Rotz et al, 2021).",
       collapsed = FALSE,
         fluidRow(
         column(4,
@@ -31,8 +32,8 @@ mod_purchased_feeds_ui <- function(id){
 
       fluidRow(
         column(12,
-               uiOutput(ns("textbox_ui"))),
-       tableOutput(ns("teste"))
+               uiOutput(ns("textbox_ui")))#,
+       #tableOutput(ns("teste"))
        )))
 
 

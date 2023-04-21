@@ -86,6 +86,8 @@ utils::globalVariables(
     "urea_pct_applied",
     "vs_manure",
     "yield",
+    "totalN",
+    "totalTAN",
 
     "n2o_emissions_g",
     "nitrogen_fix",
@@ -98,6 +100,14 @@ utils::globalVariables(
     "y",
     "name",
     "total_potassium_excretion_g",
+
+    "Source",
+    "Herd",
+    "Barn",
+    "Manure",
+    "Crop production and purchased feeds",
+    "Fuel",
+
 
 
 

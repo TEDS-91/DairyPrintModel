@@ -94,11 +94,16 @@ app_server <- function(input, output, session) {
 
 
   mod_dashboard_server("dashboard",
+
+                       # All the inputs bellow are coming from the herd module
+
                        animal_data        = animal_data[[1]],
                        calf_milk_intake   = calf_milk_sup,
                        herd_inputs        = animal_data[["herd_inputs"]],
                        raw_animal_df      = animal_data[["raw_animal_df"]],
                        diet_inputs        = animal_data[["diet_inputs"]],
+
+                       # All the inputs bellow are coming from the manure module
 
                        manure_inputs      = ghg_emissions[["manure_inputs"]],
                        nh3_emissions      = ghg_emissions[["nh3_emissions"]],
@@ -108,13 +113,22 @@ app_server <- function(input, output, session) {
                        fac_ammonia        = ghg_emissions[["fac_ammonia"]],
                        storage_ammonia    = ghg_emissions[["storage_ammonia"]],
 
+                       # All the inputs bellow are coming from the miscellaneous module
+
                        co2_eq_fuel_col_spread = miscellaneous[["co2_eq_fuel"]],
                        fuel_inputs = miscellaneous[["fuel_inputs"]],
+                       milk_price  = miscellaneous[["milk_price"]],
+                       dry_diet_cost = miscellaneous[["dry_diet_cost"]],
+                       lact_diet_cost = miscellaneous[["lact_diet_cost"]],
 
-                       crop_inputs               = ghg_crop[["crop_inputs"]],
+                       # All the inputs bellow are coming from the crop and purchased feeds module
+
                        co2eq_purchased           = co2eq_purchased[[1]],
                        purchased_feeds           = co2eq_purchased[["purchased_feeds"]],
 
+                       # All the inputs bellow are coming from the crop and purchased feeds module
+
+                       crop_inputs        = ghg_crop[["crop_inputs"]],
                        total_co2          = ghg_crop[["total_co2"]],
                        total_nh3          = ghg_crop[["total_nh3"]],
                        total_n2o          = ghg_crop[["total_n2o"]],

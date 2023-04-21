@@ -94,9 +94,9 @@ manure_manag_ui <- function(manure_managment, type_manure) {
         column(3,
                selectInput("empty",           label = "Emptying Time:",           choices = c("Fall", "Spring", "Fall and Spring"), selected = "Fall and Spring")),
         column(3,
-               selectInput("application",     label = "Manure Application:",      choices = c("Spread",
+               selectInput("application",     label = "Manure Application:",      choices = c("Broadcast spreading",
                                                                                               "Injected",
-                                                                                              "Irrigation"), selected = "Spread")))
+                                                                                              "Irrigation"), selected = "Broadcast spreading")))
 
     } else if (manure_managment == "Biodigester") {
 
@@ -110,9 +110,9 @@ manure_manag_ui <- function(manure_managment, type_manure) {
                                                                                               "Spring",
                                                                                               "Fall and Spring"), selected = "Fall and Spring")),
         column(3,
-               selectInput("application",     label = "Manure Application:",      choices = c("Spread",
+               selectInput("application",     label = "Manure Application:",      choices = c("Broadcast spreading",
                                                                                               "Injected",
-                                                                                              "Irrigation"), selected = "Spread")))
+                                                                                              "Irrigation"), selected = "Broadcast spreading")))
 
     } else if (manure_managment == "Daily Hauling") {
 
@@ -128,13 +128,13 @@ manure_manag_ui <- function(manure_managment, type_manure) {
           column(3,
                  numericInput("storage_area",   label = "Manure Storage Area:",     value = 1360)),
           column(3,
-                 selectInput("crust",           label = "Crust Formation:",         choices = c("yes", "no"), selected = "yes")),
+                 selectInput("crust",           label = "Crust Formation:",         choices = c("yes", "no"), selected = "no")),
           column(3,
                  selectInput("enclosed_manure", label = "Enclosed Manure:",         choices = c("yes", "no"), selected = "no")),
           column(3,
-                 selectInput("application",     label = "Manure Application:",      choices = c("Spread",
+                 selectInput("application",     label = "Manure Application:",      choices = c("Broadcast spreading",
                                                                                                 "Injected",
-                                                                                                "Irrigation"), selected = "Spread")))
+                                                                                                "Irrigation"), selected = "Broadcast spreading")))
 
       } else {
 
@@ -145,9 +145,9 @@ manure_manag_ui <- function(manure_managment, type_manure) {
                                                                                                 "Fall and Spring"), selected = "Fall and Spring")),
 
           column(6,
-                 selectInput("application",     label = "Manure Application:",      choices = c("Spread",
+                 selectInput("application",     label = "Manure Application:",      choices = c("Broadcast spreading",
                                                                                                 "Injected",
-                                                                                                "Irrigation"), selected = "Spread")))
+                                                                                                "Irrigation"), selected = "Broadcast spreading")))
 
       }
 

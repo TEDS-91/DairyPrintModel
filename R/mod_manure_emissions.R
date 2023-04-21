@@ -95,7 +95,6 @@ mod_manure_ghg_emissions_ui <- function(id){
                 plotly::plotlyOutput(ns("pie_chart")))
               ))
             )
-          #tableOutput(ns("tabela"))
           ))),
 
   )
@@ -154,7 +153,7 @@ mod_manure_ghg_emissions_server <- function(id,
 
       county <- county()
 
-      crust <- crust()
+      crust <- dplyr::if_else(manure_management() == "Biodigester + Solid-liquid Separator" | manure_management() == "Biodigester" , "no", crust())
 
       facilitie <- facilitie()
 
@@ -285,7 +284,7 @@ mod_manure_ghg_emissions_server <- function(id,
 
         h2o_to_add <- (total_ts_managed_kg / (manure_dm / 100)) - total_mass_managed_corSS_kg
 
-        total_manure_manag_kg <- total_mass_managed_kg + h2o_to_add
+        total_manure_manag_kg <- total_mass_managed_kg + ifelse(h2o_to_add > 0, h2o_to_add, 0)
 
         vs_solid_loaded_kg_day <- total_vs_managed_kg
 
@@ -330,7 +329,7 @@ mod_manure_ghg_emissions_server <- function(id,
 
           h2o_to_add <- (total_ts_managed_kg / (manure_dm / 100)) - total_mass_managed_corSS_kg
 
-          total_manure_manag_kg <- total_mass_managed_kg + h2o_to_add
+          total_manure_manag_kg <- total_mass_managed_kg + ifelse(h2o_to_add > 0, h2o_to_add, 0)
 
           vs_solid_loaded_kg_day <- dplyr::if_else(empty_day == 1, 0, total_vs_managed_kg)
 
@@ -368,7 +367,7 @@ mod_manure_ghg_emissions_server <- function(id,
 
           h2o_to_add <- (total_ts_managed_kg / (manure_dm / 100)) - total_mass_managed_corSS_kg
 
-          total_manure_manag_kg <- total_mass_managed_kg + h2o_to_add
+          total_manure_manag_kg <- total_mass_managed_kg + ifelse(h2o_to_add > 0, h2o_to_add, 0)
 
           vs_liq_loaded_kg_day <- dplyr::if_else(empty_day == 1, 0, total_vs_managed_kg)
 
@@ -486,7 +485,7 @@ mod_manure_ghg_emissions_server <- function(id,
 
         h2o_to_add <- (total_ts_managed_kg / (manure_dm / 100)) - total_mass_managed_corSS_kg
 
-        total_manure_manag_kg <- total_mass_managed_kg + h2o_to_add
+        total_manure_manag_kg <- total_mass_managed_kg + ifelse(h2o_to_add > 0, h2o_to_add, 0)
 
         vs_solid_loaded_kg_day <- ifelse(empty_day == 1, 0, total_vs_managed_kg)
 
@@ -529,8 +528,6 @@ mod_manure_ghg_emissions_server <- function(id,
         # solid storage
 
         #empty_days <- empty_day(empty_time = empty_time)
-
-
 
 
         empty_day <- empty_day(empty_time = empty_time)
@@ -658,7 +655,8 @@ mod_manure_ghg_emissions_server <- function(id,
 
         h2o_to_add <- (total_ts_managed_kg / (manure_dm / 100)) - total_mass_managed_corSS_kg
 
-        total_manure_manag_kg <- total_mass_managed_kg + h2o_to_add
+
+        total_manure_manag_kg <- total_mass_managed_kg + ifelse(h2o_to_add > 0, h2o_to_add, 0)
 
         vs_solid_loaded_kg_day <- ifelse(empty_day == 1, 0, total_vs_managed_kg)
 
@@ -848,7 +846,6 @@ mod_manure_ghg_emissions_server <- function(id,
 
     })
 
-
     summarized_data <- reactive({
 
       emissions() %>%
@@ -863,10 +860,9 @@ mod_manure_ghg_emissions_server <- function(id,
 
     output$teste2 <- renderTable({
 
-      emissions()[1:10, ]
+      #emissions()[1:10, ]
 
     })
-
 
 # -------------------------------------------------------------------------
 # Total Manure Managed ----------------------------------------------------
@@ -1076,7 +1072,6 @@ mod_manure_ghg_emissions_server <- function(id,
 
     })
 
-
 # -------------------------------------------------------------------------
 # Ammonia emissions -------------------------------------------------------
 # -------------------------------------------------------------------------
@@ -1085,14 +1080,14 @@ mod_manure_ghg_emissions_server <- function(id,
 
       # Barn NH3 emissions
 
-      #total_area <-
+      manure_density <- 0.013 * manure_dm()^3 - 1.28 * manure_dm()^2 + 18.47 * manure_dm() + 958.1
 
       emissions() %>%
         dplyr::mutate(
 
           manure_solution_mass = total_urine_kg / area_exposed_m2,
           manure_solution_pH   = 7.7,
-          gamma_densi          = 1000,
+          gamma_densi          = manure_density,
           const                = 86400,
           Q                    = eq_coeff(temp_c = temp_c, pH = manure_solution_pH),
           r                    = resistence_nh3(hsc = 260, temp_c = temp_c),
@@ -1121,14 +1116,15 @@ mod_manure_ghg_emissions_server <- function(id,
 
           remaining_tan_kg = total_tan_kg - loss_animal_kg + n_mineralized_feces,
 
-          manure_sol_loaded = (100 - manure_dm) * total_manure_manag_kg / 100, #TODO check manure mass
+          manure_sol_loaded = (manure_dm) * total_manure_manag_kg / 100, #TODO check manure mass
 
-          total_nitrogen_storage_kg = (fecal_n_kg - n_mineralized_feces)  + total_tan_kg
+          total_nitrogen_storage_kg = (fecal_n_kg - n_mineralized_feces)  + remaining_tan_kg
         )
 
       tank_capacity <- 365 * teste$manure_sol_loaded[1]
 
       volume_diario <- teste$remaining_tan_kg[1]
+
 
       acumulado <- vector(length =  730)
 
@@ -1158,7 +1154,8 @@ mod_manure_ghg_emissions_server <- function(id,
 
       # logic for cumul manure
 
-      volume_diario_man <- teste$manure_sol_loaded[1]
+      #volume_diario_man <- teste$manure_sol_loaded[1]
+      volume_diario_man <- teste$total_manure_manag_kg[1]
 
       acumulado_manure <- vector(length =  730)
 
@@ -1187,26 +1184,29 @@ mod_manure_ghg_emissions_server <- function(id,
                        dplyr::pull(aver_tempC), 2)
 
       # r for storage
+      #
 
-       if (crust() == "no" & type_manure() == "Slurry") { #TODO
+       crust <- dplyr::if_else(manure_management() == "Biodigester + Solid-liquid Separator" | manure_management() == "Biodigester" , "no", crust())
 
-         r_storage <- resistence_nh3(hsc = 19, temp_c = temp_c)
+       if (crust == "no" & type_manure() == "Slurry") { #TODO
 
-       } else if (crust() == "yes" & type_manure() == "Slurry") {
+         r_storage <- 19#resistence_nh3(hsc = 19, temp_c = temp_c)
 
-         r_storage <- resistence_nh3(hsc = 75, temp_c = temp_c)
+       } else if (crust == "yes" & type_manure() == "Slurry") {
 
-       } else if (crust() == "yes" & type_manure() == "Liquid") {
+         r_storage <- 75#resistence_nh3(hsc = 75, temp_c = temp_c)
 
-         r_storage <- resistence_nh3(hsc = 75, temp_c = temp_c)
+       } else if (crust == "yes" & type_manure() == "Liquid") {
 
-       } else if (crust() == "no" & type_manure() == "Liquid") {
+         r_storage <- 75 #resistence_nh3(hsc = 75, temp_c = temp_c)
 
-         r_storage <- resistence_nh3(hsc = 19, temp_c = temp_c)
+       } else if (crust == "no" & type_manure() == "Liquid") {
+
+         r_storage <- 19 #resistence_nh3(hsc = 19, temp_c = temp_c)
 
        } else {
 
-         r_storage <- resistence_nh3(hsc = 10, temp_c = temp_c)
+         r_storage <- 10#resistence_nh3(hsc = 10, temp_c = temp_c)
 
        }
 
@@ -1231,6 +1231,12 @@ mod_manure_ghg_emissions_server <- function(id,
       teste %>%
         dplyr::mutate(
           temp_c = temp_c,
+          acumulado = acumulado,
+          const = const,
+          gamma_densi = gamma_densi,
+          r_storage = r_storage,
+          acumulado_manure = acumulado_manure,
+          Q_storage = Q_storage,
           storage_N_loss_m2 = storage_N_loss_m2,
           cum_tan_kg = cumsum(remaining_tan_kg),
           total_storage_N_loss = ifelse(manure_management() == "Daily Hauling", 0, storage_N_loss_m2 * manure_storage_area())
@@ -1239,11 +1245,9 @@ mod_manure_ghg_emissions_server <- function(id,
     })
 
 
-  output$ammonia_teste <- renderTable({
+  output$teste2 <- renderTable({
 
-    #storage()
-
-    print(n2o_from_storage() * 0.005 / 0.64)
+    storage()
 
   })
 
@@ -1320,6 +1324,8 @@ mod_manure_ghg_emissions_server <- function(id,
     })
 
     output$total_n2o <- bs4Dash::renderValueBox({
+
+      # round(((storage_nh3() + barn_nh3()) / 100 / 0.64 + n2o_from_storage()) / 1000, 2),
 
       value_box_spark(
         value    = round(((storage_nh3() + barn_nh3()) / 100 / 0.64 + n2o_from_storage()) / 1000, 2),

@@ -17,14 +17,14 @@ mod_animal_ui <- function(id){
 
     tags$head(tags$style('body {color:#696969;}')),
     tags$head(tags$style(HTML(".small-box {height: 92px}"))),
-    tags$head( tags$style(HTML(".fa{font-size: 20px;}"))),
+    tags$head(tags$style(HTML(".fa{font-size: 20px;}"))),
 
 # -------------------------------------------------------------------------
       #h1("Herd calibration"),
 
       fluidRow(
         bs4Dash::bs4Card(
-          title = "Herd Information",
+          title = "Herd Management",
           elevation = 1,
           width = 12,
           solidHeader = TRUE,
@@ -1500,8 +1500,6 @@ mod_animal_server <- function(id){
 
     })
 
-
-
 # -------------------------------------------------------------------------
 # Report outcomes - inputs ------------------------------------------------
 # -------------------------------------------------------------------------
@@ -1525,13 +1523,13 @@ mod_animal_server <- function(id){
     diet_inputs <- reactive({
 
       df <- tibble::tibble(
-        "Category" = c("Lactating Cows", "Dry Cows", "Heifers"),
-        "CP (%)"   = c(input$diet_lac_cp, input$diet_dry_cp, input$diet_hei_cp),
-        "NDF (%)"  = c(input$diet_lac_ndf, input$diet_dry_ndf, input$diet_hei_ndf),
-        "ADF (%)"  = c(input$diet_lac_adf, input$diet_dry_adf, input$diet_hei_adf),
-        "EE (%)"   = c(input$diet_lac_ee, input$diet_dry_ee, input$diet_hei_ee),
-        "P (%)"    = c(input$diet_lac_p, input$diet_dry_p, input$diet_hei_p),
-        "K (%)"    = c(input$diet_lac_k, input$diet_dry_k, input$diet_hei_k)
+        "Categories" = c("Milking Cows", "Dry Cows", "Heifers"),
+        "CP (%)"     = c(input$diet_lac_cp, input$diet_dry_cp, input$diet_hei_cp),
+        "NDF (%)"    = c(input$diet_lac_ndf, input$diet_dry_ndf, input$diet_hei_ndf),
+        "ADF (%)"    = c(input$diet_lac_adf, input$diet_dry_adf, input$diet_hei_adf),
+        "EE (%)"     = c(input$diet_lac_ee, input$diet_dry_ee, input$diet_hei_ee),
+        "P (%)"      = c(input$diet_lac_p, input$diet_dry_p, input$diet_hei_p),
+        "K (%)"      = c(input$diet_lac_k, input$diet_dry_k, input$diet_hei_k)
 
       )
 

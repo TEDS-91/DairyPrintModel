@@ -14,7 +14,9 @@ app_ui <- function(request) {
 
     bs4Dash::bs4DashPage(
       fullscreen = TRUE,
+
       bs4Dash::bs4DashNavbar(
+
         ),
       bs4Dash::bs4DashSidebar(
 

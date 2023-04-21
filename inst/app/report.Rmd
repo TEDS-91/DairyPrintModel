@@ -224,7 +224,8 @@ milk_yield <- animal_data_plots %>%
   ggplot2::geom_line() +
   ggplot2::geom_point() +
   ggplot2::xlab("Months in lactation") + ggplot2::ylab(" ") + ggplot2::ggtitle("Milk Yield (kg/day)") +
-  ggplot2::theme(legend.position = "none")
+  ggplot2::theme(legend.position = "none") +
+  ggplot2::theme(plot.title = ggplot2::element_text(size = 10))
 
 DMI <- animal_data_plots %>% 
   ggplot2::ggplot( ggplot2::aes(x = Month, y = dry_matter_intake_kg_animal, col = Phase)) +
@@ -232,7 +233,8 @@ DMI <- animal_data_plots %>%
   ggplot2::geom_line() +
   ggplot2::geom_point() +
   ggplot2::xlab("Months in lactation") + ggplot2::ylab(" ") + ggplot2::ggtitle("Dry Matter Intake (kg/day)") +
-  ggplot2::theme(legend.position = "bottom")
+  ggplot2::theme(legend.position = "bottom") +
+  ggplot2::theme(plot.title = ggplot2::element_text(size = 10))
 
 water_intake <- animal_data_plots %>% 
   ggplot2::ggplot( ggplot2::aes(x = Month, y = water_intake_l_animal, col = Phase)) +
@@ -240,7 +242,8 @@ water_intake <- animal_data_plots %>%
   ggplot2::geom_line() +
   ggplot2::geom_point() +
   ggplot2::xlab("Months in lactation") + ggplot2::ylab(" ") + ggplot2::ggtitle("Water Intake (l/day)") +
-  ggplot2::theme(legend.position = "none")
+  ggplot2::theme(legend.position = "none") +
+  ggplot2::theme(plot.title = ggplot2::element_text(size = 10))
 
 patchwork::wrap_plots(milk_yield, DMI, water_intake, ncol = 3)
 
@@ -255,7 +258,8 @@ manure_excretion <- animal_data_plots %>%
   ggplot2::geom_line() +
   ggplot2::geom_point() +
   ggplot2::xlab("Months in lactation") + ggplot2::ylab(" ") + ggplot2::ggtitle("Manure Excretion (kg/day)") +
-  ggplot2::theme(legend.position = "none")
+  ggplot2::theme(legend.position = "none") +
+  ggplot2::theme(plot.title = ggplot2::element_text(size = 10))
 
 enteric_methane <- animal_data_plots %>% 
   ggplot2::ggplot( ggplot2::aes(x = Month, y = enteric_methane_g_animal_day, col = Phase)) +
@@ -263,7 +267,8 @@ enteric_methane <- animal_data_plots %>%
   ggplot2::geom_line() +
   ggplot2::geom_point() +
   ggplot2::xlab("Months in lactation") + ggplot2::ylab(" ") + ggplot2::ggtitle("Enteric Methane (kg/day)") +
-  ggplot2::theme(legend.position = "bottom")
+  ggplot2::theme(legend.position = "bottom") +
+  ggplot2::theme(plot.title = ggplot2::element_text(size = 10))
 
 patchwork::wrap_plots(manure_excretion, enteric_methane, ncol = 2)
 
@@ -277,7 +282,8 @@ nit_excretion <- animal_data_plots %>%
   ggplot2::geom_line() +
   ggplot2::geom_point() +
   ggplot2::xlab("Months in lactation") + ggplot2::ylab(" ") + ggplot2::ggtitle("Nitrogen Excretion (kg/day)") +
-  ggplot2::theme(legend.position = "none")
+  ggplot2::theme(legend.position = "none") +
+  ggplot2::theme(plot.title = ggplot2::element_text(size = 10))
 
 phos_excretion <- animal_data_plots %>% 
   ggplot2::ggplot( ggplot2::aes(x = Month, y = total_phosphorus_excretion_g, col = Phase)) +
@@ -285,7 +291,8 @@ phos_excretion <- animal_data_plots %>%
   ggplot2::geom_line() +
   ggplot2::geom_point() +
   ggplot2::xlab("Months in lactation") + ggplot2::ylab(" ") + ggplot2::ggtitle("Phosphorous Excretion (kg/day)") +
-  ggplot2::theme(legend.position = "bottom")
+  ggplot2::theme(legend.position = "bottom") +
+  ggplot2::theme(plot.title = ggplot2::element_text(size = 10))
 
 pot_excretion <- animal_data_plots %>% 
   ggplot2::ggplot( ggplot2::aes(x = Month, y = total_potassium_excretion_g, col = Phase)) +
@@ -293,7 +300,8 @@ pot_excretion <- animal_data_plots %>%
   ggplot2::geom_line() +
   ggplot2::geom_point() +
   ggplot2::xlab("Months in lactation") + ggplot2::ylab(" ") + ggplot2::ggtitle("Potassium Excretion (kg/day)") +
-  ggplot2::theme(legend.position = "none")
+  ggplot2::theme(legend.position = "none") +
+  ggplot2::theme(plot.title = ggplot2::element_text(size = 10))
 
 patchwork::wrap_plots(nit_excretion, phos_excretion, pot_excretion, ncol = 3)
 
@@ -309,7 +317,8 @@ barn <- params$nh3_emissions %>%
   ggplot2::theme_bw() +
   ggplot2::geom_point(col = "blue") +
   ggplot2::geom_line(ggplot2::aes( x = year_day, y = barn_ch4_emissions_kg), col = "black") +
-  ggplot2::xlab("Year days") + ggplot2::ylab("Methane Emissions") + ggplot2::ggtitle("Barn")
+  ggplot2::xlab("Year days") + ggplot2::ylab("Methane Emissions") + ggplot2::ggtitle("Barn") +
+  ggplot2::theme(plot.title = ggplot2::element_text(size = 10))
 
 storage <- params$nh3_emissions %>%
   dplyr::filter(year_day > 365) %>%
@@ -317,7 +326,8 @@ storage <- params$nh3_emissions %>%
   ggplot2::theme_bw() +
   ggplot2::geom_point(col = "blue") +
   ggplot2::geom_line(ggplot2::aes( x = year_day, y = storage_ch4_emissions_kg), col = "blue") +
-  ggplot2::xlab("Year days") + ggplot2::ylab("Methane Emissions") + ggplot2::ggtitle("Storage")
+  ggplot2::xlab("Year days") + ggplot2::ylab("Methane Emissions") + ggplot2::ggtitle("Storage") +
+  ggplot2::theme(plot.title = ggplot2::element_text(size = 10))
 
 patchwork::wrap_plots(barn, storage, ncol = 2)
 

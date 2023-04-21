@@ -15,7 +15,7 @@ mod_miscellaneous_ui <- function(id){
       bs4Dash::bs4Card(
         title = "Diet Costs and Milk Price",
         elevation = 1,
-        width = 12,
+        width = 6,
         solidHeader = TRUE,
         status = "teal",
         collapsible = TRUE,
@@ -27,40 +27,23 @@ mod_miscellaneous_ui <- function(id){
           column(3,
                  numericInput(ns("heifer_diet_cost"), label = "Heifers ($/kgDM):",        value = 0.12)),
           column(3,
-                 numericInput(ns("milk_price"),       label = "Milk Price ($/cwt):",     value = 21))))),
+                 numericInput(ns("milk_price"),       label = "Milk Price ($/cwt):",     value = 21)))),
 
-
-    fluidRow(
       bs4Dash::bs4Card(
         title = "Fuel Combustion",
         elevation = 1,
-        width = 12,
+        width = 6,
         solidHeader = TRUE,
         status = "teal",
         collapsible = TRUE,
         fluidRow(
           column(4,
-                 numericInput(ns("gasoline"), label = "Gasoline Consumption (L/day):", value = 5, min = 0, max = 1000)),
+                 numericInput(ns("gasoline"),    label = "Gasoline Consumption (L/day):", value = 5, min = 0, max = 1000)),
           column(4,
                  numericInput(ns("natural_gas"), label = "Natural Gas Consumption (L/day):", value = 5, min = 0, max = 1000)),
           column(4,
-                 numericInput(ns("diesel"), label = "Diesel Consumption (L/day):", value = 5, min = 0, max = 1000))))),
+                 numericInput(ns("diesel"),      label = "Diesel Consumption (L/day):",      value = 5, min = 0, max = 1000)))))
 
-    tableOutput(ns("tabela2")),
-
-
-    fluidRow(
-      bs4Dash::bs4Card(
-        title = "Economic analysis",
-        elevation = 1,
-        width = 12,
-        solidHeader = TRUE,
-        status = "teal",
-        collapsible = TRUE,
-        maximizable = TRUE,
-        fluidRow(
-          reactable::reactableOutput(ns("tabela"))))
-    )
   )
 }
 
@@ -137,30 +120,6 @@ mod_miscellaneous_server <- function(id,
 
     })
 
-    output$tabela <- reactable::renderReactable({
-
-      economics <- tibble::as_tibble(economics()) %>%
-        reactable::reactable(
-          defaultColDef = reactable::colDef(
-            header = function(value) gsub(".", " ", value, fixed = TRUE),
-            cell = function(value) format(value, nsmall = 1),
-            align = "center",
-            minWidth = 200,
-            headerStyle = list(background = "#f7f7f8")
-          ),
-          columns = list(
-            Species = reactable::colDef(minWidth = 300)  # overrides the default
-          ),
-          bordered = TRUE,
-          highlight = TRUE
-        )
-
-      economics
-
-    })
-
-
-
 # -------------------------------------------------------------------------
 # CO2 from fuels ----------------------------------------------------------
 # -------------------------------------------------------------------------
@@ -179,12 +138,6 @@ mod_miscellaneous_server <- function(id,
           total_co2_eq_fuel = gasoline_co2eq + natural_gas_co2eq + diesel_co2eq
         ) %>%
         dplyr::pull(total_co2_eq_fuel)
-
-    })
-
-    output$tabela2 <- renderTable({
-
-      tabela_calc()
 
     })
 
@@ -211,8 +164,11 @@ mod_miscellaneous_server <- function(id,
 
     return(
       list(
-        co2_eq_fuel = reactive(tabela_calc()),
-        fuel_inputs = reactive(fuel_inputs())
+        co2_eq_fuel    = reactive(tabela_calc()),
+        fuel_inputs    = reactive(fuel_inputs()),
+        milk_price     = reactive(input$milk_price),
+        dry_diet_cost  = reactive(input$dry_diet_cost),
+        lact_diet_cost = reactive(input$lact_diet_cost)
       )
     )
 

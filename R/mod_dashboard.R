@@ -11,40 +11,73 @@ mod_dashboard_ui <- function(id){
   ns <- NS(id)
   tagList(
 
-    fluidRow(
-      bs4Dash::bs4Card(
-        title = "CO2eq Sources",
-        width = 4,
-        footer = NULL,
-        fluidRow(
-          plotly::plotlyOutput(ns("gauge_co2_eq")))),
-      bs4Dash::bs4Card(
-        title = "CO2eq Sources",
-        width = 4,
-        footer = NULL,
-        fluidRow(
-          plotly::plotlyOutput(ns("pie_co2_eq"))
-        )),
-      bs4Dash::bs4Card(
-        title = "CO2eq Sources",
-        width = 4,
-        footer = NULL,
-        fluidRow(
-          echarts4r::echarts4rOutput(ns("pie_co2_eq2"))
-          #plotly::plotlyOutput(ns("pie_co2_eq2"))
-        ))
+    bs4Dash::bs4Card(
+      title = "Carbon Footprint and Main GHG Sources",
+      elevation = 1,
+      width = 12,
+      solidHeader = TRUE,
+      status = "teal",
+      collapsible = TRUE,
+      maximizable = TRUE,
+      footer = "Note: The total carbon dioxide equivalents were calculated considering global warming potential of 28 and 264 for methane and nitrous oxide, respectively (Myhre ey al., 2013).",
+      fluidRow(
+        #bs4Dash::valueBoxOutput(ns("co2eq")),
+        bs4Dash::valueBoxOutput(ns("total_methane")),
+        bs4Dash::valueBoxOutput(ns("total_n2o")),
+        bs4Dash::valueBoxOutput(ns("total_co2"))
+      ),
+      fluidRow(
+        bs4Dash::bs4Card(
+          title = "Carbon dioxide equivalents by kg of Milk",
+          width = 4,
+          footer = NULL,
+          numberColor = "#adb5bd",
+          fluidRow(
+            plotly::plotlyOutput(ns("gauge_co2_eq")))),
+        bs4Dash::bs4Card(
+          title = "Carbon dioxide equivalents by farm sources",
+          width = 4,
+          footer = NULL,
+          fluidRow(
+            plotly::plotlyOutput(ns("pie_co2_eq"))
+          )),
+        bs4Dash::bs4Card(
+          title = "Carbon dioxide equivalents by type of GHG",
+          width = 4,
+          footer = NULL,
+          fluidRow(
+            plotly::plotlyOutput(ns("pie_co2_eq2"))
+          ))#,
 
+        # bs4Dash::bs4Card(
+        #   title = "Carbon dioxide equivalents by type of GHG",
+        #   width = 12,
+        #   footer = NULL,
+        #   fluidRow(
+        #     formattable::formattableOutput(ns("co2eq_table"))
+        #   ))
 
-    ),
+      ),
 
+      column(offset = 10,
+             1,
+             downloadButton(ns("rmd_report"),
+                            "Report.html",
+                            style = "color: #fff; background-color: #007582; border-color: #007582; height:50px; width:140px"))
+      ),
 
+    # fluidRow(
+    #
+    #   column(offset = 10,
+    #          1,
+    #          downloadButton(ns("rmd_report"),
+    #                         "Report.html",
+    #                         style = "color: #fff; background-color: #007582; border-color: #007582; height:50px; width:140px"))
+    #
+    #
+    # ),
 
-
-
-
-
-
-    tableOutput(ns("tabela_teste")),
+    #tableOutput(ns("tabela_teste")),
 
     fluidRow(
 
@@ -75,23 +108,6 @@ mod_dashboard_ui <- function(id){
             ))
         )),
 
-        bs4Dash::bs4Card(
-          title = "Diet Costs and Milk Price",
-          elevation = 1,
-          width = 12,
-          solidHeader = TRUE,
-          status = "teal",
-          collapsible = TRUE,
-          fluidRow(
-            column(3,
-                   numericInput(ns("lact_diet_cost"),   label = "Milking Cows ($/kgDM):",   value = 0.3)),
-            column(3,
-                   numericInput(ns("dry_diet_cost"),    label = "Dry Cows ($/kgDM):",       value = 0.12)),
-            column(3,
-                   numericInput(ns("heifer_diet_cost"), label = "Heifers ($/kgDM):",        value = 0.12)),
-            column(3,
-                   numericInput(ns("milk_price"),       label = "Milk Price ($/cwt):",     value = 21)))),
-
       bs4Dash::bs4Card(
         title = "Economic analysis",
         elevation = 1,
@@ -101,31 +117,8 @@ mod_dashboard_ui <- function(id){
         collapsible = TRUE,
         maximizable = TRUE,
         fluidRow(
-          reactable::reactableOutput(ns("tabela")))),
-
-
-      bs4Dash::bs4Card(
-        title = "Carbon Footprint",
-        elevation = 1,
-        width = 12,
-        solidHeader = TRUE,
-        status = "teal",
-        collapsible = TRUE,
-        maximizable = TRUE,
-        fluidRow(
-          bs4Dash::valueBoxOutput(ns("co2eq")),
-          bs4Dash::valueBoxOutput(ns("co2eq_milk")),
-          bs4Dash::valueBoxOutput(ns("manure_storage_methane"))
-        ),
-
-
-
-
-          column(offset = 11,
-                 1,
-                 downloadButton(ns("rmd_report"),
-                                "Report.html",
-                                style = "color: #fff; background-color: #007582; border-color: #007582; height:50px; width:140px"))))
+          reactable::reactableOutput(ns("tabela"))))
+      )
 
   )
 }
@@ -151,6 +144,9 @@ mod_dashboard_server <- function(id,
 
                                  co2_eq_fuel_col_spread,
                                  fuel_inputs,
+                                 milk_price,
+                                 dry_diet_cost,
+                                 lact_diet_cost,
 
                                  crop_inputs,
                                  co2eq_purchased,
@@ -183,6 +179,25 @@ mod_dashboard_server <- function(id,
 
     })
 
+    total_methane_emmited <- reactive({
+
+      # herd           barn            storage             crop
+      herd_methane() + fac_methane() + storage_methane() + total_ch4()
+
+    })
+
+    total_n2o_emmited <- reactive({
+
+      (fac_ammonia() / 100 / 0.82) + direct_n2o_storage() + (storage_ammonia() / 100 / 0.82) + total_n2o()
+
+    })
+
+    total_co2_emmited <- reactive({
+
+      total_co2() + co2_eq_fuel_col_spread()
+
+    })
+
     total_co2e_q_emitted <- reactive({
 
       herd <- herd_methane() * 28
@@ -197,7 +212,6 @@ mod_dashboard_server <- function(id,
 
 
     })
-
 
 # -------------------------------------------------------------------------
 # Herd Outcomes -----------------------------------------------------------
@@ -214,6 +228,53 @@ mod_dashboard_server <- function(id,
 
     })
 
+    output$total_methane <- bs4Dash::renderValueBox({
+
+      value_box_spark(
+        value    = round(total_methane_emmited() / 1000, 2),
+        title    = "Total Methane (Ton./year)",
+        sparkobj = NULL,
+        subtitle = tagList(),
+        info     = " ",
+        icon     = " ",
+        width    = 2,
+        color    = "white",
+        href     = NULL
+      )
+
+    })
+
+    output$total_n2o <- bs4Dash::renderValueBox({
+
+      value_box_spark(
+        value    = round(total_n2o_emmited() / 1000, 2),
+        title    = "Total Nitrous Oxide (Ton./year)",
+        sparkobj = NULL,
+        subtitle = tagList(),
+        info     = " ",
+        icon     = " ",
+        width    = 2,
+        color    = "white",
+        href     = NULL
+      )
+
+    })
+
+    output$total_co2 <- bs4Dash::renderValueBox({
+
+      value_box_spark(
+        value    = round(total_co2_emmited() / 1000, 2),
+        title    = "Total Carbon Dioxide (Ton./year)",
+        sparkobj = NULL,
+        subtitle = tagList(),
+        info     = " ",
+        icon     = " ",
+        width    = 4,
+        color    = "white",
+        href     = NULL
+      )
+
+    })
 
     output$methane_yield <- bs4Dash::renderValueBox({
 
@@ -250,6 +311,39 @@ mod_dashboard_server <- function(id,
 
 
 # -------------------------------------------------------------------------
+
+
+# -------------------------------------------------------------------------
+
+
+    output$co2eq_table <- formattable::renderFormattable({
+
+      methane_yield_and_intens() %>% print()
+
+      methane_yield_and_intens()$milk_yield_kg_fpc %>% print()
+
+      methane_yield_and_intens()$total_animals %>% print()
+
+      herd_methane() %>%  print()
+
+      df <- tibble::tibble(
+        Source = "Co2 eq.",
+        Herd = round(herd_methane() * 28 / (methane_yield_and_intens()$milk_yield_kg_fpc * 365 * methane_yield_and_intens()$total_animals), 3),
+        Barn = round((fac_methane() * 28 + fac_ammonia() / 100 / 0.82 * 264) / (methane_yield_and_intens()$milk_yield_kg_fpc * 365 * methane_yield_and_intens()$total_animals), 3),
+        Manure = round((storage_methane() * 28 + storage_ammonia() / 100 / 0.82 * 264 + direct_n2o_storage() * 264) / (methane_yield_and_intens()$milk_yield_kg_fpc * 365 * methane_yield_and_intens()$total_animals), 3),
+        "Crop production and purchased feeds" = round((total_n2o() * 264 + total_co2() + total_ch4() * 28) / (methane_yield_and_intens()$milk_yield_kg_fpc * 365 * methane_yield_and_intens()$total_animals), 3),
+        "Fuel" = round(co2_eq_fuel_col_spread() / (methane_yield_and_intens()$milk_yield_kg_fpc * 365 * methane_yield_and_intens()$total_animals), 3)
+      )
+
+      df %>%
+      formattable::formattable(
+        list(formattable::area(col = `Herd`:`Fuel`) ~ formattable::color_tile("transparent", "green"))
+      )
+
+    })
+
+
+# -------------------------------------------------------------------------
 # Economics ---------------------------------------------------------------
 # -------------------------------------------------------------------------
 
@@ -259,29 +353,28 @@ mod_dashboard_server <- function(id,
 
       calf_milk_intake <- calf_milk_intake()
 
-      # animal prmts - they will come from the animal
+      # animal prmts - they will come from the herd module
 
       milking_cows <- animal_data$total_animals[2]
       dry_cows <- animal_data$total_animals[3]
       heifers <- animal_data$total_animals[4]
 
-      #dmi_milking_cows <- 28.5
+      # DMI milking cows
       dmi_milking_cows <- animal_data %>%
         dplyr::filter(Categories == "Cow") %>%
         dplyr::pull("dmi_kg")
 
-      #dmi_dry_cows <- 12
+      # DMI dry cows
       dmi_dry_cows <- animal_data %>%
         dplyr::filter(Categories == "Dry") %>%
         dplyr::pull("dmi_kg")
 
-      #dmi_heifers <- 7.7
+      #DMI heifers
       dmi_heifers <- animal_data %>%
         dplyr::filter(Categories == "Hei") %>%
         dplyr::pull("dmi_kg")
 
-
-      #my_lactating <- input$milk_yield
+      # Milk Yield lactating
       my_lactating <- animal_data %>%
         dplyr::filter(Categories == "Cow") %>%
         dplyr::pull("milk_yield_kg_fpc")
@@ -290,13 +383,13 @@ mod_dashboard_server <- function(id,
 
       # total income discounting milk supplied to calves
 
-      total_income <- input$milk_price / (100 / 2.2) * (my_lactating - (animal_data$total_animals[1] * calf_milk_intake) / milking_cows)
+      total_income <- milk_price() / (100 / 2.2) * (my_lactating - (animal_data$total_animals[1] * calf_milk_intake) / milking_cows)
 
-      feed_cost_lac <- dmi_milking_cows * input$lact_diet_cost
+      feed_cost_lac <- dmi_milking_cows * lact_diet_cost()
 
-      iofc_dry <- 0 - input$dry_diet_cost * dmi_dry_cows
+      iofc_dry <- 0 - dmi_dry_cows * dry_diet_cost()
 
-      feed_cost_dry <- (dry_cows * input$dry_diet_cost * dmi_dry_cows) / milking_cows
+      feed_cost_dry <- (dry_cows * dry_diet_cost() * dmi_dry_cows) / milking_cows
 
       feed_cost_kg_milk <- feed_cost_lac / my_lactating
 
@@ -306,7 +399,6 @@ mod_dashboard_server <- function(id,
 
       economics <- tibble::tibble(
 
-        #"Feed Efficiency (kg/kg)"                 = feed_efic,
         "Total Milk Income ($/cow)"               = total_income,
         "Feed Cost ($/cow)"                       = feed_cost_lac,
         "Income Over Feed Cost Lac ($/cow)"       = iofc_lac,
@@ -421,11 +513,13 @@ mod_dashboard_server <- function(id,
                       textinfo = 'label+percent') %>%
         plotly::add_pie(hole = 0.55) %>%
         plotly::config(displayModeBar = FALSE) %>%
-        plotly::layout(showlegend = FALSE)
+        plotly::layout(showlegend = FALSE,
+                       annotations = list(text = ~ paste(round(total_co2e_q_emitted() / 1000, 1), "ton./year", sep = "<br>"),
+                                          "showarrow"  = FALSE, font = list(size = 25)))
 
     })
 
-    output$pie_co2_eq2 <- echarts4r::renderEcharts4r({
+    output$pie_co2_eq2 <- plotly::renderPlotly({
 
       methane <- round(herd_methane() * 28 + storage_methane() * 28 + fac_methane() * 28 + total_ch4() * 28, 1)
 
@@ -439,46 +533,12 @@ mod_dashboard_server <- function(id,
 
       labels = c("Methane", "CO2", "N2O")
 
-      echarts4r::e_chart(width = 1100, height = 550,
-                         renderer = "svg") %>%
-        echarts4r::e_list(list(
-          tooltip = list(trigger = "item"),
-          legend = list(top = "5%", left = "center"),
-          series = list(
-            list(
-              name = "Access From",
-              type = "pie",
-              radius = c("40%", "70%"),
-              avoidLabelOverlap = FALSE,
-              itemStyle = list(
-                borderRadius = 10,
-                borderColor = "#fff",
-                borderWidth = 2
-              ),
-              label = list(show = FALSE, position = "center"),
-              emphasis = list(
-                label = list(
-                  show = TRUE,
-                  fontSize = 40,
-                  fontWeight = "bold"
-                )
-              ),
-              labelLine = list(show = TRUE),
-              data = list(
-                list(value = round(methane / total_co2eq * 100, 1), name = "Methane"),
-                list(value = round(co2 / total_co2eq * 100, 1),     name  = "CO2"),
-                list(value = round(n2o / total_co2eq * 100, 1),     name  = "N2O")
-              )
-            )
-          )
-        ))
-
-      # plotly::plot_ly(values = ~round(values, 1),
-      #                 labels = ~labels,
-      #                 textinfo = 'label+percent') %>%
-      #   plotly::add_pie(hole = 0.55) %>%
-      #   plotly::config(displayModeBar = FALSE) %>%
-      #   plotly::layout(showlegend = FALSE)
+      plotly::plot_ly(values = ~round(values, 1),
+                      labels = ~labels,
+                      textinfo = 'label+percent') %>%
+        plotly::add_pie(hole = 0.55) %>%
+        plotly::config(displayModeBar = FALSE) %>%
+        plotly::layout(showlegend = FALSE)
 
     })
 
@@ -510,7 +570,6 @@ mod_dashboard_server <- function(id,
 
 
     output$methane_table <- DT::renderDataTable({
-
 
       DT::datatable(methane_table(),
                     rownames= FALSE,
@@ -588,8 +647,6 @@ mod_dashboard_server <- function(id,
 
 
       )
-
-
   })
 }
 
