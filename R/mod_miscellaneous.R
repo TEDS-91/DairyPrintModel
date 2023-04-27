@@ -38,13 +38,13 @@ mod_miscellaneous_ui <- function(id){
         collapsible = TRUE,
         fluidRow(
           column(3,
-                 numericInput(ns("gasoline"),    label = "Gasoline Consumption (L/year):",       value = 5, min = 0, max = 1000)),
+                 numericInput(ns("gasoline"),    label = "Gasoline Consumption (L/year):",       value = 0, min = 0, max = 1000)),
           column(3,
-                 numericInput(ns("natural_gas"), label = "Natural Gas Consumption (L/year):",     value = 5, min = 0, max = 1000)),
+                 numericInput(ns("natural_gas"), label = "Natural Gas Consumption (L/year):",     value = 0, min = 0, max = 1000)),
           column(3,
-                 numericInput(ns("diesel"),      label = "Diesel Consumption (L/year):",          value = 5, min = 0, max = 1000)),
+                 numericInput(ns("diesel"),      label = "Diesel Consumption (L/year):",          value = 0, min = 0, max = 1000)),
           column(3,
-                 numericInput(ns("electricity"), label = "Electricity Consumption (kWh/year):",   value = 5, min = 0, max = 1000)))))
+                 numericInput(ns("electricity"), label = "Electricity Consumption (kWh/year):",   value = 150000, min = 0, max = 1000)))))
 
   )
 }

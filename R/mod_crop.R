@@ -104,7 +104,6 @@ mod_crop_server <- function(id,
 
     })
 
-
 # -------------------------------------------------------------------------
 # Nitrogen from manure ----------------------------------------------------
 # -------------------------------------------------------------------------
@@ -416,8 +415,8 @@ mod_crop_server <- function(id,
     output$ch4_field <- bs4Dash::renderValueBox({
 
       value_box_spark(
-        value    = round(ch4_field_kg(), 1),
-        title    = "Total CH4 emitted from Field (kg/year)",
+        value    = round(ch4_field_kg() / 1000, 2),
+        title    = "Total CH4 emitted from Field (Ton./year)",
         sparkobj = NULL,
         subtitle = tagList(),
         info     = " ",
@@ -428,15 +427,14 @@ mod_crop_server <- function(id,
       )
 
     })
-
 
     # Total CO2 emitted from lime and urea
 
     output$lime_urea_co2 <- bs4Dash::renderValueBox({
 
       value_box_spark(
-        value    = round(total_co2(), 1),
-        title    = "Total CO2 Emissions from Lime and Urea (kg/year)",
+        value    = round(total_co2() / 1000, 1),
+        title    = "Total CO2 Emissions from Lime and Urea (Ton./year)",
         sparkobj = NULL,
         subtitle = tagList(),
         info     = " ",
@@ -448,13 +446,13 @@ mod_crop_server <- function(id,
 
     })
 
-    # Total Ammonia emitted from N fertilzer
+    # Total Ammonia emitted from N fertilizer
 
     output$fert_nh3 <- bs4Dash::renderValueBox({
 
       value_box_spark(
-        value    = round(total_nh3() / 0.82, 1),
-        title    = "Total Ammonia emissions from N Fertizers and Manure (kg/year)",
+        value    = round(total_nh3() / 0.82 / 1000, 1),
+        title    = "Total Ammonia emissions from N Fertizers and Manure (Ton./year)",
         sparkobj = NULL,
         subtitle = tagList(),
         info     = " ",
@@ -466,13 +464,13 @@ mod_crop_server <- function(id,
 
     })
 
-    # Total Nitrous oxide emitted from N fertilzer + Manure
+    # Total Nitrous oxide emitted from N fertilizer + Manure
 
     output$total_nitrous_oxide <- bs4Dash::renderValueBox({
 
       value_box_spark(
-        value    = round(total_n2o(), 1),
-        title    = "Total Nitrous Oxide emissions from N Fertizers and Manure (kg/year)",
+        value    = round(total_n2o() / 1000, 1),
+        title    = "Total Nitrous Oxide emissions from N Fertizers and Manure (Ton./year)",
         sparkobj = NULL,
         subtitle = tagList(),
         info     = " ",
@@ -483,8 +481,6 @@ mod_crop_server <- function(id,
       )
 
     })
-
-
 
 
 # -------------------------------------------------------------------------
@@ -494,10 +490,10 @@ mod_crop_server <- function(id,
     return(
       list(
         crop_inputs = reactive(valores()),
-        total_co2 = reactive(total_co2()),
-        total_nh3 = reactive(total_nh3()),
-        total_n2o = reactive(total_n2o()),
-        total_ch4 = reactive(ch4_field_kg())
+        total_co2   = reactive(total_co2()),
+        total_nh3   = reactive(total_nh3()),
+        total_n2o   = reactive(total_n2o()),
+        total_ch4   = reactive(ch4_field_kg())
       )
     )
 

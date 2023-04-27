@@ -28,34 +28,43 @@ mod_dashboard_ui <- function(id){
       ),
       fluidRow(
         bs4Dash::bs4Card(
-          title = "Carbon dioxide equivalents by kg of Milk",
-          width = 4,
+          title = "Carbon dioxide eq. by kg of Milk",
+          width = 3,
           footer = NULL,
           numberColor = "#adb5bd",
           fluidRow(
             plotly::plotlyOutput(ns("gauge_co2_eq")))),
+
         bs4Dash::bs4Card(
-          title = "Carbon dioxide equivalents by farm sources",
-          width = 4,
+          title = "Carbon dioxide eq./kgMilk by source of GHG",
+          width = 3,
+          footer = NULL,
+          fluidRow(
+            plotly::plotlyOutput(ns("bar_co2_eq"))
+          )),
+
+        bs4Dash::bs4Card(
+          title = "Carbon dioxide eq. by farm sources",
+          width = 3,
           footer = NULL,
           fluidRow(
             plotly::plotlyOutput(ns("pie_co2_eq"))
           )),
         bs4Dash::bs4Card(
-          title = "Carbon dioxide equivalents by type of GHG",
-          width = 4,
+          title = "Carbon dioxide eq. by type of GHG",
+          width = 3,
           footer = NULL,
           fluidRow(
             plotly::plotlyOutput(ns("pie_co2_eq2"))
           )),
 
-        bs4Dash::bs4Card(
-          title = "Carbon dioxide equivalents by type of GHG",
-          width = 4,
-          footer = NULL,
-          fluidRow(
-            formattable::formattableOutput(ns("co2eq_table"))
-          ))
+        # bs4Dash::bs4Card(
+        #   title = "Carbon dioxide equivalents by type of GHG",
+        #   width = 4,
+        #   footer = NULL,
+        #   fluidRow(
+        #     formattable::formattableOutput(ns("co2eq_table"))
+        #   ))
 
       )
       ),
@@ -194,7 +203,7 @@ mod_dashboard_server <- function(id,
 
     total_n2o_emmited <- reactive({
 
-      (fac_ammonia() / 100 / 0.82) + direct_n2o_storage() + (storage_ammonia() / 100 / 0.82) + total_n2o()
+      (fac_ammonia() / 100 / 0.82) + direct_n2o_storage() + (storage_ammonia() / 100 / 0.82) + total_n2o() + sum(animal_data()$total_n2o_kg)
 
     })
 
@@ -289,29 +298,27 @@ mod_dashboard_server <- function(id,
 # -------------------------------------------------------------------------
 
 
-    output$co2eq_table <- formattable::renderFormattable({
-
-      methane_yield_and_intens() %>% print()
-
-      methane_yield_and_intens()$milk_yield_kg_fpc %>% print()
-
-      methane_yield_and_intens()$total_animals %>% print()
-
-      herd_methane() %>%  print()
+    output$bar_co2_eq <- plotly::renderPlotly({
 
       df <- tibble::tibble(
         Source = "Co2 eq.",
         Herd = round(herd_methane() * 28 / (methane_yield_and_intens()$milk_yield_kg_fpc * 365 * methane_yield_and_intens()$total_animals), 3),
         Barn = round((fac_methane() * 28 + fac_ammonia() / 100 / 0.82 * 264) / (methane_yield_and_intens()$milk_yield_kg_fpc * 365 * methane_yield_and_intens()$total_animals), 3),
         Manure = round((storage_methane() * 28 + storage_ammonia() / 100 / 0.82 * 264 + direct_n2o_storage() * 264) / (methane_yield_and_intens()$milk_yield_kg_fpc * 365 * methane_yield_and_intens()$total_animals), 3),
-        "Crop production and purchased feeds" = round((total_n2o() * 264 + total_co2() + total_ch4() * 28) / (methane_yield_and_intens()$milk_yield_kg_fpc * 365 * methane_yield_and_intens()$total_animals), 3),
+        "Crop and purchased feeds" = round((total_n2o() * 264 + total_co2() + total_ch4() * 28) / (methane_yield_and_intens()$milk_yield_kg_fpc * 365 * methane_yield_and_intens()$total_animals), 3),
         "Fuel" = round(co2_eq_fuel_col_spread() / (methane_yield_and_intens()$milk_yield_kg_fpc * 365 * methane_yield_and_intens()$total_animals), 3)
       )
 
-      df %>%
-      formattable::formattable(
-        list(formattable::area(col = `Herd`:`Fuel`) ~ formattable::color_tile("transparent", "green"))
-      )
+      plotly::plot_ly(x = c(df$Herd, df$Barn, df$Manure, df$`Crop and purchased feeds`, df$Fuel),
+                      y = c("Herd", "Barn", "Manure Handling", "Crop/Purch. Feeds", "Fuel"),
+                      text = c(df$Herd, df$Barn, df$Manure, df$`Crop and purchased feeds`, df$Fuel),
+                      type = 'bar',
+                      orientation = 'h') %>%
+        plotly::layout(xaxis = list(title = "Co2eq/kgMilk")) %>%
+        plotly::layout(yaxis = list(categoryorder = "total ascending")) %>%
+        plotly::config(displayModeBar = FALSE) %>%
+        plotly::layout(showlegend = FALSE)
+
 
     })
 

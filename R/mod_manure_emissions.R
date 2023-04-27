@@ -35,13 +35,18 @@ mod_manure_ghg_emissions_ui <- function(id){
         collapsible = TRUE,
         maximizable = TRUE,
         fluidRow(
-          bs4Dash::valueBoxOutput(ns("total_manure_managed")),
-          bs4Dash::valueBoxOutput(ns("herd_methane")),
-          bs4Dash::valueBoxOutput(ns("facilitie_methane")),
-          bs4Dash::valueBoxOutput(ns("manure_storage_methane")),
-          bs4Dash::valueBoxOutput(ns("barn_nh3")),
-          bs4Dash::valueBoxOutput(ns("storage_nh3")),
-          bs4Dash::valueBoxOutput(ns("total_n2o")),
+
+          list(
+            "total_manure_managed",
+            "herd_methane",
+            "facilitie_methane",
+            "manure_storage_methane",
+            "barn_nh3",
+            "storage_nh3",
+            "total_n2o"
+          ) %>%
+            purrr::map(\(x) bs4Dash::valueBoxOutput(ns(x))),
+
           br(),
 
           bs4Dash::tabBox(
@@ -1081,7 +1086,7 @@ mod_manure_ghg_emissions_server <- function(id,
 
       # Barn NH3 emissions
 
-      manure_density <- 0.013 * manure_dm()^3 - 1.28 * manure_dm()^2 + 18.47 * manure_dm() + 958.1
+      manure_density <- manure_density(manure_dm())
 
       emissions() %>%
         dplyr::mutate(
@@ -1226,8 +1231,6 @@ mod_manure_ghg_emissions_server <- function(id,
       storage_N_loss_m2 <- acumulado * const * gamma_densi / (r_storage * acumulado_manure * Q_storage)
 
       cum_N_loss_m2 <- cumsum(storage_N_loss_m2)
-
-      print(paste("The manure storage area is ", manure_storage_area()))
 
       teste %>%
         dplyr::mutate(
