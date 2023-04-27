@@ -50,3 +50,20 @@ diesel_co2eq <- function(diesel_consumption) {
   return(diesel_consumption)
 
 }
+
+#' Estimates the CO2eq emissions from electricity use.
+#'
+#' @param electricity_consumption Electricity consumption (kWh).
+#'
+#' @return CO2eq emissions (kg).
+#' @export
+#'
+#' @examples
+#' electricity_co2eq(electricity_consumption = 10)
+electricity_co2eq <- function(electricity_consumption) {
+
+  electricity_consumption <- 0.66 * electricity_consumption
+
+  return(electricity_consumption)
+
+}

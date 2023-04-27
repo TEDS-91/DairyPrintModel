@@ -162,18 +162,22 @@ mod_animal_ui <- function(id){
               fluidRow(
 
                 # metric cards
-                # DMI
-                bs4Dash::valueBoxOutput(ns("hei_dmi")),
-                bs4Dash::valueBoxOutput(ns("dry_dmi")),
-                bs4Dash::valueBoxOutput(ns("lac_dmi")),
-                # Water
-                bs4Dash::valueBoxOutput(ns("hei_water")),
-                bs4Dash::valueBoxOutput(ns("dry_water")),
-                bs4Dash::valueBoxOutput(ns("lac_water")),
-                # Milk Yield
-                bs4Dash::valueBoxOutput(ns("lac_my")),
-                bs4Dash::valueBoxOutput(ns("lac_my_fpc")),
-                bs4Dash::valueBoxOutput(ns("feed_ef")),
+                list(
+                  # DMI
+                 "hei_dmi",
+                 "dry_dmi",
+                 "lac_dmi",
+                 # water
+                 "hei_water",
+                 "dry_water",
+                 "lac_water",
+                 # Milk yield
+                 "lac_my",
+                 "lac_my_fpc",
+                 "feed_ef"
+                ) %>%
+                  purrr::map(\(x) bs4Dash::valueBoxOutput(ns(x))),
+
                 # Plots
                 bs4Dash::bs4Card(
                   title = "Milk Yield",
@@ -189,12 +193,19 @@ mod_animal_ui <- function(id){
             tabPanel(
               title = "Manure Excretion and GHG Emissions",
               fluidRow(
-                bs4Dash::valueBoxOutput(ns("hei_manure")),
-                bs4Dash::valueBoxOutput(ns("dry_manure")),
-                bs4Dash::valueBoxOutput(ns("lac_manure")),
-                bs4Dash::valueBoxOutput(ns("hei_ch4")),
-                bs4Dash::valueBoxOutput(ns("dry_ch4")),
-                bs4Dash::valueBoxOutput(ns("lac_ch4")),
+
+                list(
+                  "hei_manure",
+                  "dry_manure",
+                  "lac_manure",
+                  "hei_ch4",
+                  "dry_ch4",
+                  "lac_ch4",
+                  "methane_yield",
+                  "methane_intensity"
+                ) %>%
+                  purrr::map(\(x) bs4Dash::valueBoxOutput(ns(x))),
+
                 # Plots
                 bs4Dash::bs4Card(
                   title = "Manure Excretion",
@@ -209,15 +220,20 @@ mod_animal_ui <- function(id){
             tabPanel(
               title = "Nutrient Excretion",
               fluidRow(
-                bs4Dash::valueBoxOutput(ns("hei_nit")),
-                bs4Dash::valueBoxOutput(ns("dry_nit")),
-                bs4Dash::valueBoxOutput(ns("lac_nit")),
-                bs4Dash::valueBoxOutput(ns("hei_pho")),
-                bs4Dash::valueBoxOutput(ns("dry_pho")),
-                bs4Dash::valueBoxOutput(ns("lac_pho")),
-                bs4Dash::valueBoxOutput(ns("hei_pot")),
-                bs4Dash::valueBoxOutput(ns("dry_pot")),
-                bs4Dash::valueBoxOutput(ns("lac_pot")),
+
+                list(
+                  "hei_nit",
+                  "dry_nit",
+                  "lac_nit",
+                  "hei_pho",
+                  "dry_pho",
+                  "lac_pho",
+                  "hei_pot",
+                  "dry_pot",
+                  "lac_pot"
+                ) %>%
+                  purrr::map(\(x) bs4Dash::valueBoxOutput(ns(x))),
+
                 # Plots
                 bs4Dash::bs4Card(
                   title = "Nitrogen",
@@ -1179,6 +1195,38 @@ mod_animal_server <- function(id){
         subtitle = tagList(" "),
         info     = " ",
         icon     =  " ",
+        width    = 4,
+        color    = "white",
+        href     = NULL
+      )
+
+    })
+
+    output$methane_yield <- bs4Dash::renderValueBox({
+
+      value_box_spark(
+        value    = round(df_sum()$total_ch4_kg[2] / df_sum()$total_animals[2] / df_sum()$dmi_kg[2] * 1000, 1),
+        title    = "Methane Yield (g/kg Dry Matter)",
+        sparkobj = NULL,
+        subtitle = tagList(),
+        info     = " ",
+        icon     = " ",
+        width    = 4,
+        color    = "white",
+        href     = NULL
+      )
+
+    })
+
+    output$methane_intensity <- bs4Dash::renderValueBox({
+
+      value_box_spark(
+        value    = round(df_sum()$total_ch4_kg[2] / df_sum()$total_animals[2] / df_sum()$milk_yield_kg_fpc[2] * 1000, 1),
+        title    = "Methane Intensity (g/kg Milk)",
+        sparkobj = NULL,
+        subtitle = tagList(),
+        info     = " ",
+        icon     = " ",
         width    = 4,
         color    = "white",
         href     = NULL

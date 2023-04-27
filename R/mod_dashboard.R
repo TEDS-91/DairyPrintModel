@@ -47,23 +47,17 @@ mod_dashboard_ui <- function(id){
           footer = NULL,
           fluidRow(
             plotly::plotlyOutput(ns("pie_co2_eq2"))
-          ))#,
+          )),
 
-        # bs4Dash::bs4Card(
-        #   title = "Carbon dioxide equivalents by type of GHG",
-        #   width = 12,
-        #   footer = NULL,
-        #   fluidRow(
-        #     formattable::formattableOutput(ns("co2eq_table"))
-        #   ))
+        bs4Dash::bs4Card(
+          title = "Carbon dioxide equivalents by type of GHG",
+          width = 4,
+          footer = NULL,
+          fluidRow(
+            formattable::formattableOutput(ns("co2eq_table"))
+          ))
 
-      ),
-
-      column(offset = 10,
-             1,
-             downloadButton(ns("rmd_report"),
-                            "Report.html",
-                            style = "color: #fff; background-color: #007582; border-color: #007582; height:50px; width:140px"))
+      )
       ),
 
     # fluidRow(
@@ -81,8 +75,27 @@ mod_dashboard_ui <- function(id){
 
     fluidRow(
 
+      # bs4Dash::bs4Card(
+      #   title = "Herd Outcomes",
+      #   elevation = 1,
+      #   width = 12,
+      #   solidHeader = TRUE,
+      #   status = "teal",
+      #   collapsible = TRUE,
+      #   maximizable = TRUE,
+      #   fluidRow(
+      #     bs4Dash::bs4Card(
+      #       title = "Methane",
+      #       width = 6,
+      #       footer = NULL,
+      #       fluidRow(
+      #         DT::dataTableOutput(ns("methane_table"))
+      #         #plotly::plotlyOutput(ns("pie_co2_eq2"))
+      #       ))
+      #   )),
+
       bs4Dash::bs4Card(
-        title = "Herd Outcomes",
+        title = "Nutrient Balances",
         elevation = 1,
         width = 12,
         solidHeader = TRUE,
@@ -90,26 +103,10 @@ mod_dashboard_ui <- function(id){
         collapsible = TRUE,
         maximizable = TRUE,
         fluidRow(
-          bs4Dash::bs4Card(
-            title = "Methane",
-            width = 6,
-            footer = NULL,
-            fluidRow(
-              bs4Dash::valueBoxOutput(ns("methane_yield")),
-              bs4Dash::valueBoxOutput(ns("methane_intensity")) )),
-
-          bs4Dash::bs4Card(
-            title = "Methane",
-            width = 6,
-            footer = NULL,
-            fluidRow(
-              DT::dataTableOutput(ns("methane_table"))
-              #plotly::plotlyOutput(ns("pie_co2_eq2"))
-            ))
-        )),
+          reactable::reactableOutput(ns("tabela2")))),
 
       bs4Dash::bs4Card(
-        title = "Economic analysis",
+        title = "Economic Analysis",
         elevation = 1,
         width = 12,
         solidHeader = TRUE,
@@ -117,7 +114,16 @@ mod_dashboard_ui <- function(id){
         collapsible = TRUE,
         maximizable = TRUE,
         fluidRow(
-          reactable::reactableOutput(ns("tabela"))))
+          reactable::reactableOutput(ns("tabela"))),
+
+
+        column(offset = 10,
+               1,
+               downloadButton(ns("rmd_report"),
+                              "Report.html",
+                              style = "color: #fff; background-color: #007582; border-color: #007582; height:50px; width:140px"))
+
+        )
       )
 
   )
@@ -275,39 +281,6 @@ mod_dashboard_server <- function(id,
       )
 
     })
-
-    output$methane_yield <- bs4Dash::renderValueBox({
-
-      value_box_spark(
-        value    = round(methane_yield_and_intens()$methane_yield, 1),
-        title    = "Methane Yield (g/kg Dry Matter)",
-        sparkobj = NULL,
-        subtitle = tagList(),
-        info     = " ",
-        icon     = " ",
-        width    = 4,
-        color    = "white",
-        href     = NULL
-      )
-
-    })
-
-    output$methane_intensity <- bs4Dash::renderValueBox({
-
-      value_box_spark(
-        value    = round(methane_yield_and_intens()$methane_intens, 1),
-        title    = "Methane Intensity (g/kg Milk)",
-        sparkobj = NULL,
-        subtitle = tagList(),
-        info     = " ",
-        icon     = " ",
-        width    = 4,
-        color    = "white",
-        href     = NULL
-      )
-
-    })
-
 
 
 # -------------------------------------------------------------------------
@@ -477,16 +450,18 @@ mod_dashboard_server <- function(id,
         title = list(text = "CO2eq/kgMilk"),
         type = "indicator",
         mode = "gauge+number+delta",
-        delta = list(reference = 1),
+        delta = list(reference = 0.99),
         gauge = list(
           axis = list(range = list(NULL, 2)),
+          bar = list(color = "darkblue"),
           steps = list(
-            list(range = c(0, 1), color = "lightgray"),
-            list(range = c(1, 1.8), color = "orange")),
+            list(range = c(0, 0.76),   color = "lightgreen"),
+            list(range = c(0.76, 1.37), color = "orange"),
+            list(range = c(1.37, 2), color = "red")),
           threshold = list(
-            line = list(color = "red", width = 6),
+            line = list(color = "black", width = 6),
             thickness = 0.75,
-            value = 1.8))) %>%
+            value = 0.99))) %>%
         plotly::config(displayModeBar = FALSE) %>%
         plotly::layout(showlegend = FALSE)
 
@@ -538,7 +513,9 @@ mod_dashboard_server <- function(id,
                       textinfo = 'label+percent') %>%
         plotly::add_pie(hole = 0.55) %>%
         plotly::config(displayModeBar = FALSE) %>%
-        plotly::layout(showlegend = FALSE)
+        plotly::layout(showlegend = FALSE,
+                       annotations = list(text = ~ paste(round(total_co2e_q_emitted() / 1000, 1), "ton./year", sep = "<br>"),
+                                          "showarrow"  = FALSE, font = list(size = 25)))
 
     })
 

@@ -37,12 +37,14 @@ mod_miscellaneous_ui <- function(id){
         status = "teal",
         collapsible = TRUE,
         fluidRow(
-          column(4,
-                 numericInput(ns("gasoline"),    label = "Gasoline Consumption (L/day):", value = 5, min = 0, max = 1000)),
-          column(4,
-                 numericInput(ns("natural_gas"), label = "Natural Gas Consumption (L/day):", value = 5, min = 0, max = 1000)),
-          column(4,
-                 numericInput(ns("diesel"),      label = "Diesel Consumption (L/day):",      value = 5, min = 0, max = 1000)))))
+          column(3,
+                 numericInput(ns("gasoline"),    label = "Gasoline Consumption (L/year):",       value = 5, min = 0, max = 1000)),
+          column(3,
+                 numericInput(ns("natural_gas"), label = "Natural Gas Consumption (L/year):",     value = 5, min = 0, max = 1000)),
+          column(3,
+                 numericInput(ns("diesel"),      label = "Diesel Consumption (L/year):",          value = 5, min = 0, max = 1000)),
+          column(3,
+                 numericInput(ns("electricity"), label = "Electricity Consumption (kWh/year):",   value = 5, min = 0, max = 1000)))))
 
   )
 }
@@ -68,23 +70,23 @@ mod_miscellaneous_server <- function(id,
       dry_cows <- animal_data$total_animals[3]
       heifers <- animal_data$total_animals[4]
 
-      #dmi_milking_cows <- 28.5
+      # dmi_milking_cows <- 28.5
       dmi_milking_cows <- animal_data %>%
         dplyr::filter(Categories == "Cow") %>%
         dplyr::pull("dmi_kg")
 
-      #dmi_dry_cows <- 12
+      # dmi_dry_cows <- 12
       dmi_dry_cows <- animal_data %>%
         dplyr::filter(Categories == "Dry") %>%
         dplyr::pull("dmi_kg")
 
-      #dmi_heifers <- 7.7
+      # dmi_heifers <- 7.7
       dmi_heifers <- animal_data %>%
         dplyr::filter(Categories == "Hei") %>%
         dplyr::pull("dmi_kg")
 
 
-      #my_lactating <- input$milk_yield
+      # my_lactating <- input$milk_yield
       my_lactating <- animal_data %>%
         dplyr::filter(Categories == "Cow") %>%
         dplyr::pull("milk_yield_kg_fpc")
@@ -128,14 +130,15 @@ mod_miscellaneous_server <- function(id,
 
       tabela <- tibble::tibble(
 
-        gasoline_co2eq = gasoline_co2eq(input$gasoline),
+        gasoline_co2eq    = gasoline_co2eq(input$gasoline),
         natural_gas_co2eq = natural_gas_co2eq(input$natural_gas),
-        diesel_co2eq = diesel_co2eq(input$diesel)
+        diesel_co2eq      = diesel_co2eq(input$diesel),
+        electricity_co2eq = electricity_co2eq(input$electricity)
       )
 
       tabela %>%
         dplyr::summarise(
-          total_co2_eq_fuel = gasoline_co2eq + natural_gas_co2eq + diesel_co2eq
+          total_co2_eq_fuel = gasoline_co2eq + natural_gas_co2eq + diesel_co2eq + electricity_co2eq
         ) %>%
         dplyr::pull(total_co2_eq_fuel)
 
@@ -148,9 +151,10 @@ mod_miscellaneous_server <- function(id,
     fuel_inputs <- reactive({
 
       df <- tibble::tibble(
-        "Gasoline (l/year)"    = input$gasoline,
-        "Natural Gas (l/year)" = input$natural_gas,
-        "Diesel (l/year)"      = input$diesel
+        "Gasoline (l/year)"      = input$gasoline,
+        "Natural Gas (l/year)"   = input$natural_gas,
+        "Diesel (l/year)"        = input$diesel,
+        "Electricity (kWh/year)" = input$electricity
       )
 
       df

@@ -15,12 +15,15 @@ mod_fuel_combustion_ui <- function(id){
 
     fluidPage(
 
-      column(4,
-             numericInput(ns("gasoline"), label = "Gasoline Consumption (L/day):", value = 5, min = 0, max = 1000)),
-      column(4,
-             numericInput(ns("natural_gas"), label = "Natural Gas Consumption (L/day):", value = 5, min = 0, max = 1000)),
-      column(4,
-             numericInput(ns("diesel"), label = "Diesel Consumption (L/day):", value = 5, min = 0, max = 1000))
+      column(3,
+             numericInput(ns("gasoline"),    label = "Gasoline Consumption (L/year):",         value = 5, min = 0, max = 1000)),
+      column(3,
+             numericInput(ns("natural_gas"), label = "Natural Gas Consumption (L/year):",      value = 5, min = 0, max = 1000)),
+      column(3,
+             numericInput(ns("diesel"),      label = "Diesel Consumption (L/year):",           value = 5, min = 0, max = 1000)),
+      column(3,
+             numericInput(ns("electricity"), label = "Electricity Consumption (kWh/year):",    value = 5, min = 0, max = 1000))
+
     ),
 
     tableOutput(ns("tabela"))
@@ -39,9 +42,10 @@ mod_fuel_combustion_server <- function(id){
 
       tabela <- tibble::tibble(
 
-        gasoline_co2eq = gasoline_co2eq(input$gasoline),
+        gasoline_co2eq    = gasoline_co2eq(input$gasoline),
         natural_gas_co2eq = natural_gas_co2eq(input$natural_gas),
-        diesel_co2eq = diesel_co2eq(input$diesel)
+        diesel_co2eq      = diesel_co2eq(input$diesel),
+        electricity_co2eq = electricity_co2eq(input$electricity)
       )
 
       tabela

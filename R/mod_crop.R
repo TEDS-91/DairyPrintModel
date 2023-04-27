@@ -9,6 +9,7 @@
 #' @importFrom shiny NS tagList
 mod_crop_ui <- function(id){
   ns <- NS(id)
+
   tagList(
 
     fluidRow(
@@ -24,7 +25,7 @@ mod_crop_ui <- function(id){
                selectInput(ns("number_crops"), label = "Homegrown Crops:", choices = seq(1, 10, 1), selected = 4))),
       fluidRow(
         column(12,
-               uiOutput(ns("crop_types")))))),
+               uiOutput(ns("crop_types"))))),
 
     bs4Dash::bs4Card(
       width = 12,
@@ -37,14 +38,22 @@ mod_crop_ui <- function(id){
         bs4Dash::valueBoxOutput(ns("lime_urea_co2")),
         bs4Dash::valueBoxOutput(ns("fert_nh3")),
         bs4Dash::valueBoxOutput(ns("total_nitrous_oxide")),
-        bs4Dash::valueBoxOutput(ns("ch4_field")),
-        tableOutput(ns("teste"))
-      )#,
+        bs4Dash::valueBoxOutput(ns("ch4_field"))
+      )),
 
-    #textOutput(ns("df"))
+    bs4Dash::box(
+      width = 12,
+      title = "Manure applied",
+      elevation = 2,
+      solidHeader = TRUE,
+      status = "teal",
+      collapsed = FALSE,
+      fluidRow(
+        textOutput(ns("manure_spreaded"))
+      ))
+
 
     )
-
 
   )
 }
@@ -100,7 +109,23 @@ mod_crop_server <- function(id,
 # Nitrogen from manure ----------------------------------------------------
 # -------------------------------------------------------------------------
 
-    # recalculate this - all logic is not correct!
+    # correcting for the area available
+
+    total_area <- reactive({
+
+      sum(valores()$manure_pct)
+
+    })
+
+    output$manure_spreaded <- renderText({
+
+      dplyr::if_else(total_area() < 100, paste("Total manure spreaded is lower than 100%. The N, P, and K in the manure is considered exported."),
+                     paste("Total manure spreaded is", total_area(), "%."
+                     ))
+
+    })
+
+
 
     nitrogen_from_manure <- reactive({
 
@@ -109,6 +134,8 @@ mod_crop_server <- function(id,
       tan_losses <- dplyr::if_else(manure_application_method() == "Broadcast spreading", 0.99,
                                    dplyr::if_else(manure_application_method() == "Irrigation", 0.90, 1))
 
+
+      print(paste("The total area is (%):", total_area()))
 
       if( manure_management() == "Daily Hauling") {
 
@@ -121,8 +148,8 @@ mod_crop_server <- function(id,
             total_tan_field      = total_tan_kg - loss_animal_kg
           ) %>%
           dplyr::summarise(
-            totalN   = sum(total_nitrogen_field),
-            totalTAN = sum(total_tan_field)
+            totalN   = sum(total_nitrogen_field) * total_area() / 100,
+            totalTAN = sum(total_tan_field) * total_area() / 100
           ) %>%
           dplyr::mutate(
             nh3_application_method = totalTAN - (totalTAN * tan_losses),
@@ -147,8 +174,8 @@ mod_crop_server <- function(id,
             storage_loss = sum(total_storage_N_loss),
             loss_animal_kg = sum(loss_animal_kg),
 
-            totalN   = sum(total_nitrogen_field),
-            totalTAN = sum(total_tan_field)
+            totalN   = sum(total_nitrogen_field) * total_area() / 100,
+            totalTAN = sum(total_tan_field) * total_area() / 100
           ) %>%
           dplyr::mutate(
             nh3_application_method = totalTAN - (totalTAN * tan_losses),
@@ -172,7 +199,7 @@ mod_crop_server <- function(id,
 
     valores <- reactive({
 
-      req(input[[paste0(input$number_crops,"_crop_type")]])
+      req(input[[paste0(input$number_crops, "_crop_type")]])
 
       crop_values <- function(input_id) {
 
@@ -277,15 +304,6 @@ mod_crop_server <- function(id,
       #print(paste("Leached", n_leached))
 
       (nitrogen_from_manure()$totalTAN * ((20 + 5 * manure_data()$manure_dm[1]) * (7 / 7.3)) * 17 / 14) / 100
-
-    })
-
-
-    output$teste <- renderTable({
-
-      nitrogen_from_manure()
-
-      #paste("The nh3 emission from manure field app is ", nh3_from_manure_application())
 
     })
 
@@ -404,7 +422,7 @@ mod_crop_server <- function(id,
         subtitle = tagList(),
         info     = " ",
         icon     = " ",
-        width    = 4,
+        width    = 6,
         color    = "white",
         href     = NULL
       )
@@ -423,7 +441,7 @@ mod_crop_server <- function(id,
         subtitle = tagList(),
         info     = " ",
         icon     = " ",
-        width    = 4,
+        width    = 6,
         color    = "white",
         href     = NULL
       )

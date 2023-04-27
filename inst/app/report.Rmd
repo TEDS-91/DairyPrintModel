@@ -100,6 +100,13 @@ pre { /* Code block - determines code spacing between lines */
   }
 </style>
 
+<div class="alert alert-info" <strong> Disclaimer: </strong> DairyPrint model is a high-level, simple, minimalistic, user-friendly,
+                               still powerful, and scientifically sound whole-farm decision support
+                               model to assess economic and environmental tradeoffs of dairy farming
+                               for strategic nutrient management decisions. For more information, access: 
+                               <a href="https://andysci.wisc.edu/directory/victor-cabrera/">linkToPaper</a>.
+</div>
+
 ## **1. Farm Inputs:**
 
 ## {.tabset}

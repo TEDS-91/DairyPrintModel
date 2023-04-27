@@ -131,8 +131,9 @@ mod_manure_ghg_emissions_server <- function(id,
 # Methane emissions from manure storage -----------------------------------
 # -------------------------------------------------------------------------
 
-
      manure_dm <- reactive({
+
+       req(type_manure())
 
        type_manure <- type_manure()
 
