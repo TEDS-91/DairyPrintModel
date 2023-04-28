@@ -283,6 +283,8 @@ mod_dashboard_server <- function(id,
 
     output$total_methane <- bs4Dash::renderValueBox({
 
+      req(total_methane_emmited())
+
       value_box_spark(
         value    = round(total_methane_emmited() / 1000, 2),
         title    = "Total Methane (Ton./year)",
@@ -299,6 +301,8 @@ mod_dashboard_server <- function(id,
 
     output$total_n2o <- bs4Dash::renderValueBox({
 
+      req(total_n2o_emmited())
+
       value_box_spark(
         value    = round(total_n2o_emmited() / 1000, 2),
         title    = "Total Nitrous Oxide (Ton./year)",
@@ -314,6 +318,8 @@ mod_dashboard_server <- function(id,
     })
 
     output$total_co2 <- bs4Dash::renderValueBox({
+
+      req(total_co2_emmited())
 
       value_box_spark(
         value    = round(total_co2_emmited() / 1000, 2),
@@ -337,6 +343,8 @@ mod_dashboard_server <- function(id,
 
 
     output$bar_co2_eq <- plotly::renderPlotly({
+
+      req(herd_methane())
 
       df <- tibble::tibble(
         Source = "Co2 eq.",
@@ -432,6 +440,8 @@ mod_dashboard_server <- function(id,
 
     output$milk_income <- bs4Dash::renderValueBox({
 
+      req(economics())
+
       value_box_spark(
         value    = round(economics()$`Total Milk Income ($/cow)`, 2),
         title    = "Milk Income ($/cow)",
@@ -447,6 +457,8 @@ mod_dashboard_server <- function(id,
     })
 
     output$feed_cost <- bs4Dash::renderValueBox({
+
+      req(economics())
 
       value_box_spark(
         value    = round(economics()$`Feed Cost ($/cow)`, 2),
@@ -464,6 +476,8 @@ mod_dashboard_server <- function(id,
 
     output$iofc_lac <- bs4Dash::renderValueBox({
 
+      req(economics())
+
       value_box_spark(
         value    = round(economics()$`Income Over Feed Cost Lac ($/cow)`, 2),
         title    = "IOFC Lactating Cows ($/cow)",
@@ -479,6 +493,8 @@ mod_dashboard_server <- function(id,
     })
 
     output$iofc_lac_dry <- bs4Dash::renderValueBox({
+
+      req(economics())
 
       value_box_spark(
         value    = round(economics()$`Income Over Feed Cost Lac + Dry ($/cow)`, 2),
@@ -496,6 +512,8 @@ mod_dashboard_server <- function(id,
 
     output$iofc_dry <- bs4Dash::renderValueBox({
 
+      req(economics())
+
       value_box_spark(
         value    = round(economics()$`Income Over feed Cost Dry ($/cow)`, 2),
         title    = "IOFC Dry Cows ($/cow)",
@@ -511,6 +529,8 @@ mod_dashboard_server <- function(id,
     })
 
     output$feed_cost_milk <- bs4Dash::renderValueBox({
+
+      req(economics())
 
       value_box_spark(
         value    = round(economics()$`Feed Cost per Kg Milk ($)`, 2),
@@ -532,6 +552,8 @@ mod_dashboard_server <- function(id,
 
     output$co2eq <- bs4Dash::renderValueBox({
 
+      req(total_co2e_q_emitted())
+
       value_box_spark(
         value    = round(total_co2e_q_emitted() / 1000, 1),
         title    = "Total Carbon Eq. (ton./year)",
@@ -548,6 +570,8 @@ mod_dashboard_server <- function(id,
 
     output$co2eq_milk <- bs4Dash::renderValueBox({
 
+      req(total_co2e_q_emitted())
+
       value_box_spark(
         value    = round(total_co2e_q_emitted() / milk_yield_fpc(), 3),
         title    = "Carbon Eq. per kg Milk",
@@ -563,6 +587,8 @@ mod_dashboard_server <- function(id,
     })
 
     output$gauge_co2_eq <- plotly::renderPlotly({
+
+      req(total_co2e_q_emitted())
 
       fig <- plotly::plot_ly(
         domain = list(x = c(0, 1), y = c(0, 1)),
@@ -591,6 +617,8 @@ mod_dashboard_server <- function(id,
 
     output$pie_co2_eq <- plotly::renderPlotly({
 
+      req(herd_methane())
+
       herd <- herd_methane() * 28
 
       fac <- fac_methane() * 28 + fac_ammonia() / 100 / 0.82 * 264
@@ -615,6 +643,8 @@ mod_dashboard_server <- function(id,
     })
 
     output$pie_co2_eq2 <- plotly::renderPlotly({
+
+      req(fac_methane())
 
       methane <- round(herd_methane() * 28 + storage_methane() * 28 + fac_methane() * 28 + total_ch4() * 28, 1)
 
@@ -664,27 +694,6 @@ mod_dashboard_server <- function(id,
       data
 
     })
-
-
-    output$methane_table <- DT::renderDataTable({
-
-      DT::datatable(methane_table(),
-                    rownames= FALSE,
-                    options = list(dom = 't',
-                                   initComplete = DT::JS(
-                                     "function(settings, json) {",
-                                     "$(this.api().table().header()).css({'background-color': '#EEEEEE', 'color': 'black'});",
-                                     "}"))) %>%
-        DT::formatStyle(
-          'Methane (%)',
-          background = DT::styleColorBar(methane_table()$`Methane (%)`, "#3c8dbc"),
-          backgroundSize = '100% 90%',
-          backgroundRepeat = 'no-repeat',
-          backgroundPosition = 'center'
-        )
-
-    })
-
 
 # -------------------------------------------------------------------------
 # Nutrient balances

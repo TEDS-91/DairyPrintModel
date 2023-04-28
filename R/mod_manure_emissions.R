@@ -896,6 +896,8 @@ mod_manure_ghg_emissions_server <- function(id,
 
     output$herd_methane <- bs4Dash::renderValueBox({
 
+      req(summarized_data())
+
       value_box_spark(
         value    = round(summarized_data()[["total_ch4_herd"]] / 1000, 2),
         title    = "Total Herd Methane Emissions (Ton./year)",
@@ -912,6 +914,8 @@ mod_manure_ghg_emissions_server <- function(id,
 
     output$facilitie_methane <- bs4Dash::renderValueBox({
 
+      req(summarized_data())
+
       value_box_spark(
         value    = round(summarized_data()[["total_ch4_fac"]] / 1000, 2),
         title    = "Total Barn Methane Emissions (Ton./year)",
@@ -927,6 +931,8 @@ mod_manure_ghg_emissions_server <- function(id,
     })
 
     output$manure_storage_methane <- bs4Dash::renderValueBox({
+
+      req(summarized_data())
 
       value_box_spark(
         value    = round(sum(summarized_data()[["total_ch4_storage"]] / 1000, na.rm = TRUE), 2),
@@ -1297,6 +1303,8 @@ mod_manure_ghg_emissions_server <- function(id,
 
     output$barn_nh3 <- bs4Dash::renderValueBox({
 
+      req(barn_nh3())
+
       value_box_spark(
         value    = round(barn_nh3() / 0.82 / 1000, 2),
         title    = "Barn Ammonia Emissions (Ton./year)",
@@ -1312,6 +1320,8 @@ mod_manure_ghg_emissions_server <- function(id,
     })
 
     output$storage_nh3 <- bs4Dash::renderValueBox({
+
+      req(storage_nh3())
 
       value_box_spark(
         value    = round(storage_nh3() / 0.82 / 1000, 2),
@@ -1329,7 +1339,7 @@ mod_manure_ghg_emissions_server <- function(id,
 
     output$total_n2o <- bs4Dash::renderValueBox({
 
-      # round(((storage_nh3() + barn_nh3()) / 100 / 0.64 + n2o_from_storage()) / 1000, 2),
+      req(barn_nh3())
 
       value_box_spark(
         value    = round(((storage_nh3() + barn_nh3()) / 100 / 0.64 + n2o_from_storage()) / 1000, 2),
@@ -1348,6 +1358,8 @@ mod_manure_ghg_emissions_server <- function(id,
     # nitrogen curves
 
     output$barn_nh3_chart <- plotly::renderPlotly({
+
+      req(emissions())
 
       emissions <- nh3_emissions() %>%
         tibble::as_tibble() %>%
@@ -1399,6 +1411,8 @@ mod_manure_ghg_emissions_server <- function(id,
       })
 
     output$storage_nh3_chart <- plotly::renderPlotly({
+
+      req(storage())
 
       emissions <- storage() %>%
         tibble::as_tibble() %>%
