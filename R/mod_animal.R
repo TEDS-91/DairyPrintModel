@@ -143,15 +143,23 @@ mod_animal_ui <- function(id){
                   title = "Number of Animals by Category",
                   collapsible = FALSE,
                   elevation = 1,
-                  width = 6,
+                  width = 12,
                   solidHeader = TRUE,
                   fluidRow(
-                    reactable::reactableOutput(ns("herd_inventory")))),
+
+                    list(
+                      "number_lac",
+                      "number_dry",
+                      "number_hei",
+                      "number_cal"
+                    ) %>%
+                      purrr::map(\(x) bs4Dash::valueBoxOutput(ns(x), width = 3)))),
+
                 bs4Dash::box(
                   title = "Herd Stability",
                   collapsible = FALSE,
                   #elevation = 1,
-                  width = 6,
+                  width = 12,
                   #solidHeader = TRUE,
                   fluidRow(
                     textOutput(ns("herd_message"))))
@@ -204,7 +212,7 @@ mod_animal_ui <- function(id){
                   "methane_yield",
                   "methane_intensity"
                 ) %>%
-                  purrr::map(\(x) bs4Dash::valueBoxOutput(ns(x))),
+                  purrr::map(\(x) bs4Dash::valueBoxOutput(ns(x), width = 3)),
 
                 # Plots
                 bs4Dash::bs4Card(
@@ -829,41 +837,76 @@ mod_animal_server <- function(id){
 # Herd Inventory ----------------------------------------------------------
 # -------------------------------------------------------------------------
 
-    # Table with Herd inventory
+    # lactating cows
 
-    output$herd_inventory <- reactable::renderReactable({
+    output$number_lac <- bs4Dash::renderValueBox({
 
-      df_sum()[1:2] %>%
-        dplyr::mutate(
-          total_animals = as.integer(total_animals)
-        ) %>%
-        tidyr::pivot_wider(
-          names_from = c("Categories"),
-          values_from = c("total_animals")
-        ) %>%
-        dplyr::rename(
-          "Calves" = "Cal",
-          "Milking Cows" = "Cow",
-          "Dry Cows" = "Dry",
-          "Heifers" = "Hei"
-        ) %>%
-        dplyr::relocate(Calves, .after = "Heifers") %>%
-        reactable::reactable(
-          defaultColDef = reactable::colDef(
-            header = function(value) gsub(".", " ", value, fixed = TRUE),
-            cell = function(value) format(value, nsmall = 1),
-            align = "center",
-            minWidth = 145,
-            headerStyle = list(background = "#f7f7f8")
-          ),
-          columns = list(
-            Species = reactable::colDef(minWidth = 300)  # overrides the default
-          ),
-          bordered = TRUE,
-          highlight = TRUE
-        )
-
+      value_box_spark(
+        value    = round(df_sum()$total_animals[2], 2),
+        title    = "Lactating cows",
+        sparkobj = NULL,
+        subtitle = tagList(),
+        info     = " ",
+        icon     = " ",
+        width    = 1,
+        color    = "white",
+        href     = NULL
+      )
     })
+
+    # dry cows
+
+    output$number_dry <- bs4Dash::renderValueBox({
+
+      value_box_spark(
+        value    = round(df_sum()$total_animals[3], 2),
+        title    = "Dry cows",
+        sparkobj = NULL,
+        subtitle = tagList(),
+        info     = " ",
+        icon     = " ",
+        width    = 1,
+        color    = "white",
+        href     = NULL
+      )
+    })
+
+    # heifers
+
+    output$number_hei <- bs4Dash::renderValueBox({
+
+      value_box_spark(
+        value    = round(df_sum()$total_animals[4], 2),
+        title    = "Heifers",
+        sparkobj = NULL,
+        subtitle = tagList(),
+        info     = " ",
+        icon     = " ",
+        width    = 1,
+        color    = "white",
+        href     = NULL
+      )
+    })
+
+    # calves
+
+    output$number_cal <- bs4Dash::renderValueBox({
+
+      value_box_spark(
+        value    = round(df_sum()$total_animals[1], 2),
+        title    = "Calves",
+        sparkobj = NULL,
+        subtitle = tagList(),
+        info     = " ",
+        icon     = " ",
+        width    = 1,
+        color    = "white",
+        href     = NULL
+      )
+    })
+
+
+
 
     # Message about Herd stability
 

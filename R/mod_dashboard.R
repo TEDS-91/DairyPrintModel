@@ -22,9 +22,12 @@ mod_dashboard_ui <- function(id){
       footer = "Note: The total carbon dioxide equivalents were calculated considering global warming potential of 28 and 264 for methane and nitrous oxide, respectively (Myhre ey al., 2013).",
       fluidRow(
         #bs4Dash::valueBoxOutput(ns("co2eq")),
-        bs4Dash::valueBoxOutput(ns("total_methane")),
-        bs4Dash::valueBoxOutput(ns("total_n2o")),
-        bs4Dash::valueBoxOutput(ns("total_co2"))
+        list(
+          "total_methane",
+          "total_n2o",
+          "total_co2"
+        ) %>%
+          purrr::map(\(x) bs4Dash::valueBoxOutput(ns(x)))
       ),
       fluidRow(
         bs4Dash::bs4Card(
@@ -123,7 +126,16 @@ mod_dashboard_ui <- function(id){
         collapsible = TRUE,
         maximizable = TRUE,
         fluidRow(
-          reactable::reactableOutput(ns("tabela"))),
+          list(
+            "milk_income",
+            "feed_cost",
+            "iofc_lac",
+            "iofc_lac_dry",
+            "iofc_dry",
+            "feed_cost_milk"
+          ) %>%
+            purrr::map(\(x) bs4Dash::valueBoxOutput(ns(x)))
+          ),
 
 
         column(offset = 10,
@@ -390,28 +402,103 @@ mod_dashboard_server <- function(id,
 
     })
 
-    output$tabela <- reactable::renderReactable({
+    # Economic Cards
 
-      economics <- tibble::as_tibble(economics()) %>%
-        reactable::reactable(
-          defaultColDef = reactable::colDef(
-            header = function(value) gsub(".", " ", value, fixed = TRUE),
-            cell = function(value) format(value, nsmall = 1),
-            align = "center",
-            minWidth = 200,
-            headerStyle = list(background = "#f7f7f8")
-          ),
-          columns = list(
-            Species = reactable::colDef(minWidth = 300)  # overrides the default
-          ),
-          bordered = TRUE,
-          highlight = TRUE
-        )
+    output$milk_income <- bs4Dash::renderValueBox({
 
-      economics
+      value_box_spark(
+        value    = round(economics()$`Total Milk Income ($/cow)`, 2),
+        title    = "Milk Income ($/cow)",
+        sparkobj = NULL,
+        subtitle = tagList(),
+        info     = " ",
+        icon     = " ",
+        width    = 4,
+        color    = "white",
+        href     = NULL
+      )
 
     })
 
+    output$feed_cost <- bs4Dash::renderValueBox({
+
+      value_box_spark(
+        value    = round(economics()$`Feed Cost ($/cow)`, 2),
+        title    = "Feed Cost ($/cow)",
+        sparkobj = NULL,
+        subtitle = tagList(),
+        info     = " ",
+        icon     = " ",
+        width    = 4,
+        color    = "white",
+        href     = NULL
+      )
+
+    })
+
+    output$iofc_lac <- bs4Dash::renderValueBox({
+
+      value_box_spark(
+        value    = round(economics()$`Income Over Feed Cost Lac ($/cow)`, 2),
+        title    = "IOFC Lactating Cows ($/cow)",
+        sparkobj = NULL,
+        subtitle = tagList(),
+        info     = " ",
+        icon     = " ",
+        width    = 4,
+        color    = "white",
+        href     = NULL
+      )
+
+    })
+
+    output$iofc_lac_dry <- bs4Dash::renderValueBox({
+
+      value_box_spark(
+        value    = round(economics()$`Income Over Feed Cost Lac + Dry ($/cow)`, 2),
+        title    = "IOFC Lactating and Dry Cows ($/cow)",
+        sparkobj = NULL,
+        subtitle = tagList(),
+        info     = " ",
+        icon     = " ",
+        width    = 4,
+        color    = "white",
+        href     = NULL
+      )
+
+    })
+
+    output$iofc_dry <- bs4Dash::renderValueBox({
+
+      value_box_spark(
+        value    = round(economics()$`Income Over feed Cost Dry ($/cow)`, 2),
+        title    = "IOFC Dry Cows ($/cow)",
+        sparkobj = NULL,
+        subtitle = tagList(),
+        info     = " ",
+        icon     = " ",
+        width    = 4,
+        color    = "white",
+        href     = NULL
+      )
+
+    })
+
+    output$feed_cost_milk <- bs4Dash::renderValueBox({
+
+      value_box_spark(
+        value    = round(economics()$`Feed Cost per Kg Milk ($)`, 2),
+        title    = "Feed Cost per Kg Milk ($)",
+        sparkobj = NULL,
+        subtitle = tagList(),
+        info     = " ",
+        icon     = " ",
+        width    = 4,
+        color    = "white",
+        href     = NULL
+      )
+
+    })
 
 # -------------------------------------------------------------------------
 # Environmental outcomes --------------------------------------------------

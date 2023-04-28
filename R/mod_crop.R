@@ -35,10 +35,14 @@ mod_crop_ui <- function(id){
       status = "teal",
       collapsed = FALSE,
       fluidRow(
-        bs4Dash::valueBoxOutput(ns("lime_urea_co2")),
-        bs4Dash::valueBoxOutput(ns("fert_nh3")),
-        bs4Dash::valueBoxOutput(ns("total_nitrous_oxide")),
-        bs4Dash::valueBoxOutput(ns("ch4_field"))
+
+        list(
+          "lime_urea_co2",
+          "fert_nh3",
+          "total_nitrous_oxide",
+          "ch4_field"
+        ) %>%
+          purrr::map(\(x) bs4Dash::valueBoxOutput(ns(x), width = 3))
       )),
 
     bs4Dash::box(
@@ -416,7 +420,7 @@ mod_crop_server <- function(id,
 
       value_box_spark(
         value    = round(ch4_field_kg() / 1000, 2),
-        title    = "Total CH4 emitted from Field (Ton./year)",
+        title    = "CH4 emitted (Ton./year)",
         sparkobj = NULL,
         subtitle = tagList(),
         info     = " ",
@@ -434,7 +438,7 @@ mod_crop_server <- function(id,
 
       value_box_spark(
         value    = round(total_co2() / 1000, 1),
-        title    = "Total CO2 Emissions from Lime and Urea (Ton./year)",
+        title    = "CO2 emitted from Lime and Urea (Ton./year)",
         sparkobj = NULL,
         subtitle = tagList(),
         info     = " ",
@@ -452,7 +456,7 @@ mod_crop_server <- function(id,
 
       value_box_spark(
         value    = round(total_nh3() / 0.82 / 1000, 1),
-        title    = "Total Ammonia emissions from N Fertizers and Manure (Ton./year)",
+        title    = "NH3 emitted from N (Ton./year)",
         sparkobj = NULL,
         subtitle = tagList(),
         info     = " ",
@@ -470,7 +474,7 @@ mod_crop_server <- function(id,
 
       value_box_spark(
         value    = round(total_n2o() / 1000, 1),
-        title    = "Total Nitrous Oxide emissions from N Fertizers and Manure (Ton./year)",
+        title    = "N2O emitted from N (Ton./year)",
         sparkobj = NULL,
         subtitle = tagList(),
         info     = " ",
