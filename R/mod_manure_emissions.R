@@ -155,6 +155,8 @@ mod_manure_ghg_emissions_server <- function(id,
 
     emissions <- reactive({
 
+      req(animal_data())
+
       animal_data <- animal_data()
 
       county <- county()
@@ -854,6 +856,8 @@ mod_manure_ghg_emissions_server <- function(id,
 
     summarized_data <- reactive({
 
+      req(animal_data())
+
       emissions() %>%
         dplyr::filter(year_day > 365) %>%
         dplyr::summarise(
@@ -1090,6 +1094,8 @@ mod_manure_ghg_emissions_server <- function(id,
 
     nh3_emissions <- reactive({
 
+      req(animal_data())
+
       # Barn NH3 emissions
 
       manure_density <- manure_density(manure_dm())
@@ -1115,6 +1121,8 @@ mod_manure_ghg_emissions_server <- function(id,
     # Ammonia emissions
 
     storage <- reactive({
+
+      req(animal_data())
 
       mineralization_pct <- dplyr::if_else(empty_time() == "Fall" | empty_time() == "Spring", 0.25, 0.12)
 
