@@ -45,7 +45,7 @@ mod_manure_ghg_emissions_ui <- function(id){
             "storage_nh3",
             "total_n2o"
           ) %>%
-            purrr::map(\(x) bs4Dash::valueBoxOutput(ns(x))),
+            purrr::map(\(x) bs4Dash::valueBoxOutput(ns(x), width = 3)),
 
           br(),
 

@@ -60,15 +60,6 @@ mod_dashboard_ui <- function(id){
           fluidRow(
             plotly::plotlyOutput(ns("pie_co2_eq2"))
           )),
-
-        # bs4Dash::bs4Card(
-        #   title = "Carbon dioxide equivalents by type of GHG",
-        #   width = 4,
-        #   footer = NULL,
-        #   fluidRow(
-        #     formattable::formattableOutput(ns("co2eq_table"))
-        #   ))
-
       )
       ),
 
@@ -115,7 +106,42 @@ mod_dashboard_ui <- function(id){
         collapsible = TRUE,
         maximizable = TRUE,
         fluidRow(
-          reactable::reactableOutput(ns("tabela2")))),
+          bs4Dash::bs4Card(
+            title = "Nitrogen",
+            elevation = 1,
+            width = 4,
+            solidHeader = TRUE,
+            status = "white",
+            collapsible = TRUE,
+            maximizable = FALSE,
+            fluidRow(
+          plotly::plotlyOutput(ns("water_nitrogen")))),
+
+          bs4Dash::bs4Card(
+            title = "Phosphorous",
+            elevation = 1,
+            width = 4,
+            solidHeader = TRUE,
+            status = "white",
+            collapsible = TRUE,
+            maximizable = FALSE,
+            fluidRow(
+              plotly::plotlyOutput(ns("water_phosphorous")))),
+
+          bs4Dash::bs4Card(
+            title = "Potassium",
+            elevation = 1,
+            width = 4,
+            solidHeader = TRUE,
+            status = "white",
+            collapsible = TRUE,
+            maximizable = FALSE,
+            fluidRow(
+              plotly::plotlyOutput(ns("water_potassium")))),
+
+
+
+          )),
 
       bs4Dash::bs4Card(
         title = "Economic Analysis",
@@ -658,6 +684,95 @@ mod_dashboard_server <- function(id,
         )
 
     })
+
+
+# -------------------------------------------------------------------------
+# Nutrient balances
+# -------------------------------------------------------------------------
+
+    # Nitrogen
+
+    output$water_nitrogen <- plotly::renderPlotly({
+
+      x = c(100,    20,           -5,         -30,    -20,       -15,        50)
+      y = c("Diet", "fertilizers", "Animals", "Milk", "Ammonia", "Leaching", "N balance")
+
+      measure = c("input", "input", "output", "output", "output", "output", "total")
+
+      data = data.frame(x, y = factor(y, levels = y), measure)
+
+      fig <- plotly::plot_ly(data, x = ~x,
+                             y = ~y,
+                             measure = ~measure,
+                             text = ~ x,
+                             type = "waterfall",
+                             orientation = "h",
+                             connector = list(mode = "between", line = list(width = 4, color = "rgb(0, 0, 0)", dash = 0)))
+      fig <- fig %>%
+        plotly::layout(#title = "Profit and loss statement 2018<br>waterfall chart displaying positive and negative",
+               xaxis = list(title = "N (Ton./year)", tickfont = "16", ticks = "outside"),
+               yaxis = list(title = "", type = "category", autorange = "reversed"),
+               xaxis = list(title = "", type = "linear"),
+               #margin = c(l = 150),
+               showlegend = FALSE) %>%
+        plotly::config(displayModeBar = FALSE)
+
+      })
+
+    output$water_phosphorous <- plotly::renderPlotly({
+
+      x = c(100,    20,           -5,         -30,    -20,       -15,        50)
+      y = c("Diet", "fertilizers", "Animals", "Milk", "Ammonia", "Leaching", "N balance")
+
+      measure = c("input", "input", "output", "output", "output", "output", "total")
+
+      data = data.frame(x, y = factor(y, levels = y), measure)
+
+      fig <- plotly::plot_ly(data, x = ~x,
+                             y = ~y,
+                             measure = ~measure,
+                             text = ~ x,
+                             type = "waterfall",
+                             orientation = "h",
+                             connector = list(mode = "between", line = list(width = 4, color = "rgb(0, 0, 0)", dash = 0)))
+      fig <- fig %>%
+        plotly::layout(#title = "Profit and loss statement 2018<br>waterfall chart displaying positive and negative",
+          xaxis = list(title = "Phosphorous (Ton./year)", tickfont = "16", ticks = "outside"),
+          yaxis = list(title = "", type = "category", autorange = "reversed"),
+          xaxis = list(title = "", type = "linear"),
+          #margin = c(l = 150),
+          showlegend = FALSE) %>%
+        plotly::config(displayModeBar = FALSE)
+
+    })
+
+    output$water_potassium <- plotly::renderPlotly({
+
+      x = c(100,    20,           -5,         -30,    -20,       -15,        50)
+      y = c("Diet", "fertilizers", "Animals", "Milk", "Ammonia", "Leaching", "N balance")
+
+      measure = c("input", "input", "output", "output", "output", "output", "total")
+
+      data = data.frame(x, y = factor(y, levels = y), measure)
+
+      fig <- plotly::plot_ly(data, x = ~x,
+                             y = ~y,
+                             measure = ~measure,
+                             text = ~ x,
+                             type = "waterfall",
+                             orientation = "h",
+                             connector = list(mode = "between", line = list(width = 4, color = "rgb(0, 0, 0)", dash = 0)))
+      fig <- fig %>%
+        plotly::layout(#title = "Profit and loss statement 2018<br>waterfall chart displaying positive and negative",
+          xaxis = list(title = "Potassium (Ton./year)", tickfont = "16", ticks = "outside"),
+          yaxis = list(title = "", type = "category", autorange = "reversed"),
+          xaxis = list(title = "", type = "linear"),
+          #margin = c(l = 150),
+          showlegend = FALSE) %>%
+        plotly::config(displayModeBar = FALSE)
+
+    })
+
 
 
 # -------------------------------------------------------------------------
