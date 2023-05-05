@@ -22,6 +22,7 @@ mod_animal_ui <- function(id){
 # -------------------------------------------------------------------------
       #h1("Herd calibration"),
 
+
       fluidRow(
         bs4Dash::bs4Card(
           title = "Herd Management",
@@ -91,32 +92,11 @@ mod_animal_ui <- function(id){
                                                "no" = "no"),
                                 selected = "no")),
             column(3,
-                   uiOutput(ns("nut_aditive"))))))
+                   uiOutput(ns("nut_aditive"))))))),
 
-      # fluidRow(
-      #   h5(strong(uiOutput(ns("status2"))))
-      # )
-      ),
-
-      # code for the report
-
-      # fluidRow(
-      #   bs4Dash::box(
-      #     width = 12,
-      #     collapsible = FALSE,
-      #     fluidRow(
-      # column(offset = 1,
-      #            1,
-      #            downloadButton(ns("rmd_report"),
-      #                           "Report.html",
-      #                           style = "color: #fff; background-color: #007582; border-color: #007582; height:40px; width:160px"))))),
-
-    #textOutput(ns("lambda")), <i class="glyphicon glyphicon-repeat"></i>
-
-      #fluidRow(
         bs4Dash::bs4Card(
           title = p("Herd Dashboard",
-                    actionButton(ns("button"), "Run!", icon("repeat", lib = "glyphicon"),
+                    actionButton(ns("button"), "Run!", tags$i(fontawesome::fa("person-running")),
                                  class = "btn-xs",
                                  style = "position: absolute; right: 120px;
                                           color: #fff; background-color: #20C997; padding:4px; font-size:100%;
@@ -274,7 +254,49 @@ mod_animal_server <- function(id){
   moduleServer( id, function(input, output, session){
     ns <- session$ns
 
-    # Methane nutritional aditive to reduce emissions
+# -------------------------------------------------------------------------
+# User's feedback to inappropriate inputs
+# -------------------------------------------------------------------------
+
+     user_feedback <- function(input_id, decimal) {
+
+       observeEvent(input[[input_id]], {
+
+         req(input[[input_id]])
+
+         if (input[[input_id]] < 0 & is.integer(input[[input_id]]) == TRUE & decimal == FALSE) {
+
+           shinyFeedback::showFeedbackWarning(inputId = input_id, text = "Can't be negative")
+
+         } else if (input[[input_id]] < 0 | is.integer(input[[input_id]]) == FALSE & decimal == FALSE) {
+
+           shinyFeedback::showFeedbackWarning(inputId = input_id, text = "Can't be negative or decimal")
+
+         } else {
+
+           shinyFeedback::hideFeedback(input_id)
+
+         }
+       }
+     )
+   }
+
+    tibble::tribble(
+      ~input_id,                        ~decimal,
+      "animal_n_cows",                  FALSE,
+      "animal_cow_calving_int",         FALSE,
+      "animal_cow_rep_rate",            TRUE,
+      "animal_time_first_calv",         FALSE,
+      "animal_calves_heifers_cul",      TRUE,
+      "animal_heifer_calf_born",        TRUE,
+      "animal_average_milk_yield",      TRUE,
+      "animal_mature_weight",           TRUE
+    ) %>%
+      purrr::pmap(user_feedback)
+
+# -------------------------------------------------------------------------
+
+    # Methane nutritional additive to reduce emissions
 
     output$nut_aditive <- renderUI({
 
@@ -288,9 +310,6 @@ mod_animal_server <- function(id){
 
     })
 
-
-    # testing fading
-    status <- reactiveVal()
 
     herd_matrix <- reactive({
 

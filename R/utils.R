@@ -46,7 +46,6 @@ empty_day <- function(empty_time) {
 #'
 unnused_summary <- function() {
   list(
-  here::here(),
   htmltools::h1()
   )
 }

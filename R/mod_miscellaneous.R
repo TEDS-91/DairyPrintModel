@@ -30,7 +30,7 @@ mod_miscellaneous_ui <- function(id){
                  numericInput(ns("milk_price"),       label = "Milk Price ($/cwt):",     value = 21)))),
 
       bs4Dash::bs4Card(
-        title = "Fuel Combustion",
+        title = "Fuel Consumption",
         elevation = 1,
         width = 6,
         solidHeader = TRUE,

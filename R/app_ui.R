@@ -22,39 +22,39 @@ app_ui <- function(request) {
 
         bs4Dash::sidebarUserPanel(
           image = "www/DIH_logo.png",
-          name = "DairyPrint"
+          name  = "DairyPrint"
         ),
         bs4Dash::bs4SidebarMenu(
 
           bs4Dash::bs4SidebarMenuItem(
             "Herd Calibration",
             tabName = "herd_calibration",
-            icon = icon("wrench", lib = "glyphicon")
+            icon    = tags$i(fontawesome::fa("cow"))
           ),
           bs4Dash::bs4SidebarMenuItem(
             "Manure Handling",
             tabName = "manure",
-            icon = icon("option-horizontal", lib = "glyphicon")
+            icon    = tags$i(fontawesome::fa("poop"))
           ),
           bs4Dash::bs4SidebarMenuItem(
             "Crops",
             tabName = "crop",
-            icon = icon("leaf", lib = "glyphicon")
+            icon    = tags$i(fontawesome::fa("wheat-awn"))
           ),
           bs4Dash::bs4SidebarMenuItem(
             "Miscellaneous",
             tabName = "miscellaneous",
-            icon = icon("usd", lib = "glyphicon")
+            icon    = icon("usd", lib = "glyphicon")
           ),
           bs4Dash::bs4SidebarMenuItem(
             "Dashboard",
             tabName = "dashboard",
-            icon = icon("stats", lib = "glyphicon")
+            icon    = tags$i(fontawesome::fa("gauge"))
           ),
           bs4Dash::bs4SidebarMenuItem(
             "About DairyPrint Model",
             tabName = "info",
-            icon = icon("info-sign", lib = "glyphicon")
+            icon    = icon("info-sign", lib = "glyphicon")
           ),
 
         fluidRow(

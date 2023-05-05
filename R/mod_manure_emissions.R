@@ -12,6 +12,11 @@ mod_manure_ghg_emissions_ui <- function(id){
   tagList(
 
 
+    # tags$style(type="text/css",
+    #            ".shiny-output-error { visibility: hidden; }",
+    #            ".shiny-output-error:before { visibility: hidden; }"
+    # ),
+
       bs4Dash::bs4Card(
         title = "Manure Handling and Management",
         elevation = 2,
@@ -97,7 +102,11 @@ mod_manure_ghg_emissions_ui <- function(id){
                   title = "Methane",
                   width = 6,
                   footer = NULL,
-                plotly::plotlyOutput(ns("pie_chart")))
+                plotly::plotlyOutput(ns("pie_chart")),
+
+                tableOutput(ns('show_inputs'))
+
+                )
               ))
             )
           ))),
@@ -127,6 +136,8 @@ mod_manure_ghg_emissions_server <- function(id,
 
      output$sls <- renderUI({
 
+       req(c(manure_management(), type_manure()))
+
        fluidRow(column(12,
                        manure_manag_ui(manure_managment = manure_management(), type_manure = type_manure())))
 
@@ -138,48 +149,52 @@ mod_manure_ghg_emissions_server <- function(id,
 
      manure_dm <- reactive({
 
-       req(type_manure())
+       type_manure <- ifelse(is.null(type_manure()), "Slurry", type_manure())
 
-       type_manure <- type_manure()
-
-       manure_dm <- dplyr::if_else(type_manure == "Semi-solid", 13,
-                                   dplyr::if_else(type_manure == "Slurry", 8,
-                                                  dplyr::if_else(type_manure == "Solid", 20, 5)))
+       manure_dm <- ifelse(type_manure == "Semi-solid", 13,
+                                   ifelse(type_manure == "Slurry", 8,
+                                                  ifelse(type_manure == "Solid", 20, 5)))
        manure_dm
 
      })
-
-
 
     # all logic without connect with the animal part
 
     emissions <- reactive({
 
-      req(animal_data())
+# -------------------------------------------------------------------------
+# conditioning the inputs to NULL values. This is necessary because they
+# depend on inputs from other parts oh the App - they are not direct inputs
+# from this module. Otherwise the function 'req()' would work.
+# -------------------------------------------------------------------------
 
       animal_data <- animal_data()
 
-      county <- county()
+      county <- ifelse(is.null(county()), "Dane", county())
 
-      crust <- dplyr::if_else(manure_management() == "Biodigester + Solid-liquid Separator" | manure_management() == "Biodigester" , "no", crust())
+      manure_management <- ifelse(is.null(manure_management()), "Pond or Tank Storage", manure_management())
 
-      facilitie <- facilitie()
+      crust <- ifelse(manure_management == "Biodigester + Solid-liquid Separator" | manure_management == "Biodigester", "no",
+                      ifelse(manure_management == "Pond or Tank Storage", "no", crust()))
 
-      bedding <- bedding()
+      facilitie <- ifelse(is.null(facilitie()), "freestall", facilitie())
+
+      bedding <- ifelse(is.null(bedding()), "Sawdust", bedding())
 
       biodigester <- biodigester()
 
-      biodigester_ef <- biodigester_ef()
+      biodigester_ef <- ifelse(is.null(biodigester_ef()), 25, biodigester_ef())
 
-      type_manure <- type_manure()
+      type_manure <- ifelse(is.null(type_manure()), "Slurry", type_manure())
 
       solid_liquid <- solid_liquid()
 
-      enclosed_manure <- enclosed_manure()
+      enclosed_manure <- ifelse(is.null(enclosed_manure()), "no", enclosed_manure())
 
-      empty_time <- empty_time()
+      empty_time <- ifelse(is.null(empty_time()), "Fall and Spring", empty_time())
 
-      manure_management <- manure_management()
+
+# -------------------------------------------------------------------------
 
       # animal prmts - they will come from the animal
 
@@ -245,6 +260,8 @@ mod_manure_ghg_emissions_server <- function(id,
 
       yday <- seq(1, 730, 1)
 
+      req(county())
+
       temp_c <- rep( wisconsin_weather_data %>%
                       dplyr::filter(county == county()) %>%
                       dplyr::pull(aver_tempC), 2)
@@ -256,21 +273,21 @@ mod_manure_ghg_emissions_server <- function(id,
         ) %>%
         dplyr::pull(total_ch4_kg)
 
-      area_exposed_m2 <- dplyr::if_else(facilitie == "freestall", milking_cows * 3.5 + dry_cows * 3.5 + heifers * 2,
+      area_exposed_m2 <- ifelse(facilitie == "freestall", milking_cows * 3.5 + dry_cows * 3.5 + heifers * 2,
                                         milking_cows * 1.2 + dry_cows * 1.2 + heifers * 1)
 
       barn_ch4_emissions_kg <- barn_ch4_emission_floor(temp_c = temp_c, manure_area = area_exposed_m2)
 
 
       # determining bedding quantity
-      bedding_quantity_kg <- dplyr::if_else(bedding == "Sawdust", 2 * (milking_cows + dry_cows + heifers),
-                                            dplyr::if_else(bedding == "Sand", 1.5 * (milking_cows + dry_cows + heifers),
+      bedding_quantity_kg <- ifelse(bedding == "Sawdust", 2 * (milking_cows + dry_cows + heifers),
+                                            ifelse(bedding == "Sand", 1.5 * (milking_cows + dry_cows + heifers),
                                             3 * (milking_cows + dry_cows + heifers)))
 
       bedding_ts_kg <- bedding_quantity_kg * 0.9
 
-      bedding_vs_kg <- dplyr::if_else(bedding == "Sawdust", bedding_ts_kg * 0.8,
-                                      dplyr::if_else(bedding == "Sand", bedding_ts_kg * 0,
+      bedding_vs_kg <- ifelse(bedding == "Sawdust", bedding_ts_kg * 0.8,
+                                      ifelse(bedding == "Sand", bedding_ts_kg * 0,
                                                      bedding_ts_kg * 0.8))
 
       total_mass_managed_kg <- total_manure_kg + bedding_quantity_kg
@@ -279,7 +296,7 @@ mod_manure_ghg_emissions_server <- function(id,
 
       total_vs_managed_kg <- total_vs_manure_kg + bedding_vs_kg
 
-      total_mass_managed_corSS_kg <- dplyr::if_else(bedding == "Sand", total_mass_managed_kg - 1.5 * (milking_cows + dry_cows + heifers),
+      total_mass_managed_corSS_kg <- ifelse(bedding == "Sand", total_mass_managed_kg - 1.5 * (milking_cows + dry_cows + heifers),
                                                     total_mass_managed_kg)
 
       if (manure_management == "Daily Hauling") {
@@ -339,7 +356,7 @@ mod_manure_ghg_emissions_server <- function(id,
 
           total_manure_manag_kg <- total_mass_managed_kg + ifelse(h2o_to_add > 0, h2o_to_add, 0)
 
-          vs_solid_loaded_kg_day <- dplyr::if_else(empty_day == 1, 0, total_vs_managed_kg)
+          vs_solid_loaded_kg_day <- ifelse(empty_day == 1, 0, total_vs_managed_kg)
 
           total_ch4_kg <- manure_ch4_emission_solid(volatile_solids = vs_solid_loaded_kg_day, temp_c = temp_c)
 
@@ -377,7 +394,7 @@ mod_manure_ghg_emissions_server <- function(id,
 
           total_manure_manag_kg <- total_mass_managed_kg + ifelse(h2o_to_add > 0, h2o_to_add, 0)
 
-          vs_liq_loaded_kg_day <- dplyr::if_else(empty_day == 1, 0, total_vs_managed_kg)
+          vs_liq_loaded_kg_day <- ifelse(empty_day == 1, 0, total_vs_managed_kg)
 
           #print(vs_liq_loaded_kg_day)
 
@@ -428,20 +445,20 @@ mod_manure_ghg_emissions_server <- function(id,
                                                                      temp_c                = temp_c[1],
                                                                      enclosed              = enclosed_manure)
 
-            co2_liq_emission_kg[1] <- dplyr::if_else(enclosed_manure == "no", 0, ch4_liq_emission_kg_day[1] * 2.75)
+            co2_liq_emission_kg[1] <- ifelse(enclosed_manure == "no", 0, ch4_liq_emission_kg_day[1] * 2.75)
 
             # calculations for the rest of the vectors
 
-            vs_liq_loaded_cum_kg[i] <- dplyr::if_else(empty_days[i] == 0, vs_liq_loaded_kg_day[i] + vs_liq_loaded_cum_kg[i - 1],
+            vs_liq_loaded_cum_kg[i] <- ifelse(empty_days[i] == 0, vs_liq_loaded_kg_day[i] + vs_liq_loaded_cum_kg[i - 1],
                                                       (remaining_vs_tank_pct / 100 * tank_capacity))
 
             vs_liq_loss_kg_day[i] <- ch4_liq_emission_kg_day[i - 1] * 3
 
-            vs_liq_loss_cum_kg[i] <- dplyr::if_else(vs_liq_loaded_cum_kg[i] <= (remaining_vs_tank_pct / 100 * tank_capacity), 0, vs_liq_loss_kg_day[i] + vs_liq_loss_cum_kg[i - 1])
+            vs_liq_loss_cum_kg[i] <- ifelse(vs_liq_loaded_cum_kg[i] <= (remaining_vs_tank_pct / 100 * tank_capacity), 0, vs_liq_loss_kg_day[i] + vs_liq_loss_cum_kg[i - 1])
 
-            vs_liq_total_cum_kg[i] <- dplyr::if_else(vs_liq_loaded_cum_kg[i] <= (remaining_vs_tank_pct / 100 * tank_capacity), vs_liq_loaded_cum_kg[i], vs_liq_loaded_cum_kg[i] - vs_liq_loss_cum_kg[i - 1])
+            vs_liq_total_cum_kg[i] <- ifelse(vs_liq_loaded_cum_kg[i] <= (remaining_vs_tank_pct / 100 * tank_capacity), vs_liq_loaded_cum_kg[i], vs_liq_loaded_cum_kg[i] - vs_liq_loss_cum_kg[i - 1])
 
-            vs_liq_deg[i] <- dplyr::if_else(vs_liq_loaded_cum_kg[i] <= (remaining_vs_tank_pct / 100 * tank_capacity), (vs_liq_loaded_cum_kg[i] * (B_o / ch4_pot) - 0) / vs_liq_total_cum_kg[i],
+            vs_liq_deg[i] <- ifelse(vs_liq_loaded_cum_kg[i] <= (remaining_vs_tank_pct / 100 * tank_capacity), (vs_liq_loaded_cum_kg[i] * (B_o / ch4_pot) - 0) / vs_liq_total_cum_kg[i],
                                             (vs_liq_loaded_cum_kg[i] * (B_o / ch4_pot) - vs_liq_loss_cum_kg[i]) / vs_liq_total_cum_kg[i])
 
             vs_liq_ndeg[i] <- 1 - vs_liq_deg[i]
@@ -452,7 +469,7 @@ mod_manure_ghg_emissions_server <- function(id,
                                                                      temp_c                = temp_c[i],
                                                                      enclosed              = enclosed_manure)
 
-            co2_liq_emission_kg[i] <- dplyr::if_else(enclosed_manure == "no", 0, ch4_liq_emission_kg_day[i] * 2.75)
+            co2_liq_emission_kg[i] <- ifelse(enclosed_manure == "no", 0, ch4_liq_emission_kg_day[i] * 2.75)
 
           }
 
@@ -508,7 +525,7 @@ mod_manure_ghg_emissions_server <- function(id,
 
 
 
-        total_mass_managed_corSS_kg <- total_mass_managed_kg #dplyr::if_else( bedding == "Sand", total_mass_managed_kg - 1.5 * (milking_cows + dry_cows + heifers),
+        total_mass_managed_corSS_kg <- total_mass_managed_kg #ifelse( bedding == "Sand", total_mass_managed_kg - 1.5 * (milking_cows + dry_cows + heifers),
         #total_mass_managed_kg)
 
         biod_ch4_yield_kg <- biodigester_ch4_yield(volatile_solids = total_vs_managed_kg, biodigester_efficiency = biodigester_ef)
@@ -547,15 +564,15 @@ mod_manure_ghg_emissions_server <- function(id,
 
         # no solids
 
-        #vs_solid_loaded_kg <- digested_vs_kg#dplyr::if_else(empty_day == 0, manure_vs_solids_after_sep_kg,
-        #dplyr::if_else(type_manure == "solid" & empty_days == 0, digested_vs_kg, 0))
+        #vs_solid_loaded_kg <- digested_vs_kg#ifelse(empty_day == 0, manure_vs_solids_after_sep_kg,
+        #ifelse(type_manure == "solid" & empty_days == 0, digested_vs_kg, 0))
 
         #ch4_emissions_solid_storage_kg <- manure_ch4_emission_solid(volatile_solids = vs_solid_loaded_kg, temp_c = temp_c)
 
         # liquid storage
 
-        vs_liq_loaded_kg_day <- digested_vs_kg #dplyr::if_else(solid_liquid == "yes", manure_vs_liquids_after_sep_kg,
-        #dplyr::if_else(type_manure == "Slurry", digested_vs_kg, 0))
+        vs_liq_loaded_kg_day <- digested_vs_kg #ifelse(solid_liquid == "yes", manure_vs_liquids_after_sep_kg,
+        #ifelse(type_manure == "Slurry", digested_vs_kg, 0))
 
         #vs_liq_loaded_kg_day <- rep(vs_liq_loaded_kg_day, 730)
 
@@ -599,21 +616,21 @@ mod_manure_ghg_emissions_server <- function(id,
                                                                    temp_c                = temp_c[1],
                                                                    enclosed              = enclosed_manure)
 
-          co2_liq_emission_kg[1] <- dplyr::if_else(enclosed_manure == "no", 0, ch4_liq_emission_kg_day[1] * 2.75)
+          co2_liq_emission_kg[1] <- ifelse(enclosed_manure == "no", 0, ch4_liq_emission_kg_day[1] * 2.75)
 
           # calculations for the rest of the vectors
 
           # cuidado empty days --> empty_day
-          vs_liq_loaded_cum_kg[i] <- dplyr::if_else(empty_day[i] == 0, vs_liq_loaded_kg_day[i] + vs_liq_loaded_cum_kg[i - 1],
+          vs_liq_loaded_cum_kg[i] <- ifelse(empty_day[i] == 0, vs_liq_loaded_kg_day[i] + vs_liq_loaded_cum_kg[i - 1],
                                                     (remaining_vs_tank_pct / 100 * tank_capacity))
 
           vs_liq_loss_kg_day[i] <- ch4_liq_emission_kg_day[i - 1] * 3
 
-          vs_liq_loss_cum_kg[i] <- dplyr::if_else(vs_liq_loaded_cum_kg[i] <= (remaining_vs_tank_pct / 100 * tank_capacity), 0, vs_liq_loss_kg_day[i] + vs_liq_loss_cum_kg[i - 1])
+          vs_liq_loss_cum_kg[i] <- ifelse(vs_liq_loaded_cum_kg[i] <= (remaining_vs_tank_pct / 100 * tank_capacity), 0, vs_liq_loss_kg_day[i] + vs_liq_loss_cum_kg[i - 1])
 
-          vs_liq_total_cum_kg[i] <- dplyr::if_else(vs_liq_loaded_cum_kg[i] <= (remaining_vs_tank_pct / 100 * tank_capacity), vs_liq_loaded_cum_kg[i], vs_liq_loaded_cum_kg[i] - vs_liq_loss_cum_kg[i - 1])
+          vs_liq_total_cum_kg[i] <- ifelse(vs_liq_loaded_cum_kg[i] <= (remaining_vs_tank_pct / 100 * tank_capacity), vs_liq_loaded_cum_kg[i], vs_liq_loaded_cum_kg[i] - vs_liq_loss_cum_kg[i - 1])
 
-          vs_liq_deg[i] <- dplyr::if_else(vs_liq_loaded_cum_kg[i] <= (remaining_vs_tank_pct / 100 * tank_capacity), (vs_liq_loaded_cum_kg[i] * (B_o / ch4_pot) - 0) / vs_liq_total_cum_kg[i],
+          vs_liq_deg[i] <- ifelse(vs_liq_loaded_cum_kg[i] <= (remaining_vs_tank_pct / 100 * tank_capacity), (vs_liq_loaded_cum_kg[i] * (B_o / ch4_pot) - 0) / vs_liq_total_cum_kg[i],
                                           (vs_liq_loaded_cum_kg[i] * (B_o / ch4_pot) - vs_liq_loss_cum_kg[i]) / vs_liq_total_cum_kg[i])
 
           vs_liq_ndeg[i] <- 1 - vs_liq_deg[i]
@@ -624,7 +641,7 @@ mod_manure_ghg_emissions_server <- function(id,
                                                                    temp_c                = temp_c[i],
                                                                    enclosed              = enclosed_manure)
 
-          co2_liq_emission_kg[i] <- dplyr::if_else(enclosed_manure == "no", 0, ch4_liq_emission_kg_day[i] * 2.75)
+          co2_liq_emission_kg[i] <- ifelse(enclosed_manure == "no", 0, ch4_liq_emission_kg_day[i] * 2.75)
 
         }
 
@@ -678,7 +695,7 @@ mod_manure_ghg_emissions_server <- function(id,
         total_vs_managed_kg <- vs_solid_loaded_kg_day
 
 
-        total_mass_managed_corSS_kg <- total_mass_managed_kg #dplyr::if_else( bedding == "Sand", total_mass_managed_kg - 1.5 * (milking_cows + dry_cows + heifers),
+        total_mass_managed_corSS_kg <- total_mass_managed_kg #ifelse( bedding == "Sand", total_mass_managed_kg - 1.5 * (milking_cows + dry_cows + heifers),
         #total_mass_managed_kg)
 
         biod_ch4_yield_kg <- biodigester_ch4_yield(volatile_solids = total_vs_managed_kg, biodigester_efficiency = biodigester_ef)
@@ -702,38 +719,38 @@ mod_manure_ghg_emissions_server <- function(id,
         digested_vs_kg <- total_vs_managed_kg - biod_ch4_yield_kg - biod_co2_yield_kg
 
         # it's already yes
-        manure_solids_after_sep_pct <- 10.5 #dplyr::if_else(solid_liquid == "no", 0, 10.5)
+        manure_solids_after_sep_pct <- 10.5 #ifelse(solid_liquid == "no", 0, 10.5)
 
         manure_solids_after_sep_kg <- manure_solids_after_sep_pct / 100 * total_mass_digested_kg
 
-        manure_liquids_after_sep_pct <- 89.5#dplyr::if_else(solid_liquid == "no", 0, 89.5)
+        manure_liquids_after_sep_pct <- 89.5#ifelse(solid_liquid == "no", 0, 89.5)
 
         manure_liquids_after_sep_kg <- manure_liquids_after_sep_pct / 100 * total_mass_digested_kg
 
-        manure_ts_solids_after_sep_pct <- 42#dplyr::if_else(solid_liquid == "no", 0, 42)
+        manure_ts_solids_after_sep_pct <- 42#ifelse(solid_liquid == "no", 0, 42)
 
         manure_ts_solids_after_sep_kg <- manure_ts_solids_after_sep_pct / 100 * digested_ts_kg
 
-        manure_ts_liquids_after_sep_pct <- 58#dplyr::if_else(solid_liquid == "no", 0, 58)
+        manure_ts_liquids_after_sep_pct <- 58#ifelse(solid_liquid == "no", 0, 58)
 
         manure_ts_liquids_after_sep_kg <- manure_ts_liquids_after_sep_pct / 100 * digested_ts_kg
 
-        manure_vs_solids_after_sep_pct <- 47#dplyr::if_else(solid_liquid == "no", 0, 47)
+        manure_vs_solids_after_sep_pct <- 47#ifelse(solid_liquid == "no", 0, 47)
 
         manure_vs_solids_after_sep_kg <- manure_vs_solids_after_sep_pct / 100 * digested_vs_kg
 
-        manure_vs_liquids_after_sep_pct <- 53#dplyr::if_else(solid_liquid == "no", 0, 53)
+        manure_vs_liquids_after_sep_pct <- 53#ifelse(solid_liquid == "no", 0, 53)
 
         manure_vs_liquids_after_sep_kg <- manure_vs_liquids_after_sep_pct / 100 * digested_vs_kg
 
 
-        ts_solids_final_after_sep_pct <- manure_ts_solids_after_sep_kg / manure_solids_after_sep_kg * 100#dplyr::if_else(solid_liquid == "no", 0, manure_ts_solids_after_sep_kg / manure_solids_after_sep_kg * 100)
+        ts_solids_final_after_sep_pct <- manure_ts_solids_after_sep_kg / manure_solids_after_sep_kg * 100#ifelse(solid_liquid == "no", 0, manure_ts_solids_after_sep_kg / manure_solids_after_sep_kg * 100)
 
-        ts_liquids_final_after_sep_pct <- manure_ts_liquids_after_sep_kg / manure_liquids_after_sep_kg * 100#dplyr::if_else(solid_liquid == "no", 0, manure_ts_liquids_after_sep_kg / manure_liquids_after_sep_kg * 100)
+        ts_liquids_final_after_sep_pct <- manure_ts_liquids_after_sep_kg / manure_liquids_after_sep_kg * 100#ifelse(solid_liquid == "no", 0, manure_ts_liquids_after_sep_kg / manure_liquids_after_sep_kg * 100)
 
-        vs_solids_final_after_sep_pct <- manure_vs_solids_after_sep_kg / manure_solids_after_sep_kg * 100#dplyr::if_else(solid_liquid == "no", 0, manure_vs_solids_after_sep_kg / manure_solids_after_sep_kg * 100)
+        vs_solids_final_after_sep_pct <- manure_vs_solids_after_sep_kg / manure_solids_after_sep_kg * 100#ifelse(solid_liquid == "no", 0, manure_vs_solids_after_sep_kg / manure_solids_after_sep_kg * 100)
 
-        vs_liquids_final_after_sep_pct <- manure_vs_liquids_after_sep_kg / manure_liquids_after_sep_kg * 100#dplyr::if_else(solid_liquid == "no", 0, manure_vs_liquids_after_sep_kg / manure_liquids_after_sep_kg * 100)
+        vs_liquids_final_after_sep_pct <- manure_vs_liquids_after_sep_kg / manure_liquids_after_sep_kg * 100#ifelse(solid_liquid == "no", 0, manure_vs_liquids_after_sep_kg / manure_liquids_after_sep_kg * 100)
 
         # solid storage
 
@@ -746,15 +763,15 @@ mod_manure_ghg_emissions_server <- function(id,
 
         enclosed_manure <- "no"
 
-        vs_solid_loaded_kg <- manure_vs_solids_after_sep_kg#dplyr::if_else(empty_day == 0, manure_vs_solids_after_sep_kg,
-        #dplyr::if_else(type_manure == "solid" & empty_days == 0, digested_vs_kg, 0))
+        vs_solid_loaded_kg <- manure_vs_solids_after_sep_kg#ifelse(empty_day == 0, manure_vs_solids_after_sep_kg,
+        #ifelse(type_manure == "solid" & empty_days == 0, digested_vs_kg, 0))
 
         ch4_emissions_solid_storage_kg <- manure_ch4_emission_solid(volatile_solids = vs_solid_loaded_kg, temp_c = temp_c)
 
         # liquid storage
 
-        vs_liq_loaded_kg_day <- manure_vs_liquids_after_sep_kg #dplyr::if_else(solid_liquid == "yes", manure_vs_liquids_after_sep_kg,
-        #dplyr::if_else(type_manure == "Slurry", digested_vs_kg, 0))
+        vs_liq_loaded_kg_day <- manure_vs_liquids_after_sep_kg #ifelse(solid_liquid == "yes", manure_vs_liquids_after_sep_kg,
+        #ifelse(type_manure == "Slurry", digested_vs_kg, 0))
 
         #vs_liq_loaded_kg_day <- rep(vs_liq_loaded_kg_day, 730)
 
@@ -798,21 +815,21 @@ mod_manure_ghg_emissions_server <- function(id,
                                                                    temp_c                = temp_c[1],
                                                                    enclosed              = enclosed_manure)
 
-          co2_liq_emission_kg[1] <- dplyr::if_else(enclosed_manure == "no", 0, ch4_liq_emission_kg_day[1] * 2.75)
+          co2_liq_emission_kg[1] <- ifelse(enclosed_manure == "no", 0, ch4_liq_emission_kg_day[1] * 2.75)
 
           # calculations for the rest of the vectors
 
           # cuidado empty days --> empty_day
-          vs_liq_loaded_cum_kg[i] <- dplyr::if_else(empty_day[i] == 0, vs_liq_loaded_kg_day[i] + vs_liq_loaded_cum_kg[i - 1],
+          vs_liq_loaded_cum_kg[i] <- ifelse(empty_day[i] == 0, vs_liq_loaded_kg_day[i] + vs_liq_loaded_cum_kg[i - 1],
                                                     (remaining_vs_tank_pct / 100 * tank_capacity))
 
           vs_liq_loss_kg_day[i] <- ch4_liq_emission_kg_day[i - 1] * 3
 
-          vs_liq_loss_cum_kg[i] <- dplyr::if_else(vs_liq_loaded_cum_kg[i] <= (remaining_vs_tank_pct / 100 * tank_capacity), 0, vs_liq_loss_kg_day[i] + vs_liq_loss_cum_kg[i - 1])
+          vs_liq_loss_cum_kg[i] <- ifelse(vs_liq_loaded_cum_kg[i] <= (remaining_vs_tank_pct / 100 * tank_capacity), 0, vs_liq_loss_kg_day[i] + vs_liq_loss_cum_kg[i - 1])
 
-          vs_liq_total_cum_kg[i] <- dplyr::if_else(vs_liq_loaded_cum_kg[i] <= (remaining_vs_tank_pct / 100 * tank_capacity), vs_liq_loaded_cum_kg[i], vs_liq_loaded_cum_kg[i] - vs_liq_loss_cum_kg[i - 1])
+          vs_liq_total_cum_kg[i] <- ifelse(vs_liq_loaded_cum_kg[i] <= (remaining_vs_tank_pct / 100 * tank_capacity), vs_liq_loaded_cum_kg[i], vs_liq_loaded_cum_kg[i] - vs_liq_loss_cum_kg[i - 1])
 
-          vs_liq_deg[i] <- dplyr::if_else(vs_liq_loaded_cum_kg[i] <= (remaining_vs_tank_pct / 100 * tank_capacity), (vs_liq_loaded_cum_kg[i] * (B_o / ch4_pot) - 0) / vs_liq_total_cum_kg[i],
+          vs_liq_deg[i] <- ifelse(vs_liq_loaded_cum_kg[i] <= (remaining_vs_tank_pct / 100 * tank_capacity), (vs_liq_loaded_cum_kg[i] * (B_o / ch4_pot) - 0) / vs_liq_total_cum_kg[i],
                                           (vs_liq_loaded_cum_kg[i] * (B_o / ch4_pot) - vs_liq_loss_cum_kg[i]) / vs_liq_total_cum_kg[i])
 
           vs_liq_ndeg[i] <- 1 - vs_liq_deg[i]
@@ -823,7 +840,7 @@ mod_manure_ghg_emissions_server <- function(id,
                                                                    temp_c                = temp_c[i],
                                                                    enclosed              = enclosed_manure)
 
-          co2_liq_emission_kg[i] <- dplyr::if_else(enclosed_manure == "no", 0, ch4_liq_emission_kg_day[i] * 2.75)
+          co2_liq_emission_kg[i] <- ifelse(enclosed_manure == "no", 0, ch4_liq_emission_kg_day[i] * 2.75)
 
         }
 
@@ -856,8 +873,6 @@ mod_manure_ghg_emissions_server <- function(id,
 
     summarized_data <- reactive({
 
-      req(animal_data())
-
       emissions() %>%
         dplyr::filter(year_day > 365) %>%
         dplyr::summarise(
@@ -880,8 +895,10 @@ mod_manure_ghg_emissions_server <- function(id,
 
     output$total_manure_managed <- bs4Dash::renderValueBox({
 
+      total_manure <- ifelse(is.null(emissions()$total_manure_manag_kg[1]) | is.na(emissions()$total_manure_manag_kg[1]), 29, emissions()$total_manure_manag_kg[1])
+
       value_box_spark(
-        value    = round(emissions()$total_manure_manag_kg[1] / 1000, 2),
+        value    = round(total_manure / 1000, 2),
         title    = "Total Manure Produced Daily (Ton.)",
         sparkobj = NULL,
         subtitle = tagList(),
@@ -900,8 +917,6 @@ mod_manure_ghg_emissions_server <- function(id,
 
     output$herd_methane <- bs4Dash::renderValueBox({
 
-      req(summarized_data())
-
       value_box_spark(
         value    = round(summarized_data()[["total_ch4_herd"]] / 1000, 2),
         title    = "Total Herd Methane Emissions (Ton./year)",
@@ -918,8 +933,6 @@ mod_manure_ghg_emissions_server <- function(id,
 
     output$facilitie_methane <- bs4Dash::renderValueBox({
 
-      req(summarized_data())
-
       value_box_spark(
         value    = round(summarized_data()[["total_ch4_fac"]] / 1000, 2),
         title    = "Total Barn Methane Emissions (Ton./year)",
@@ -935,8 +948,6 @@ mod_manure_ghg_emissions_server <- function(id,
     })
 
     output$manure_storage_methane <- bs4Dash::renderValueBox({
-
-      req(summarized_data())
 
       value_box_spark(
         value    = round(sum(summarized_data()[["total_ch4_storage"]] / 1000, na.rm = TRUE), 2),
@@ -1094,8 +1105,6 @@ mod_manure_ghg_emissions_server <- function(id,
 
     nh3_emissions <- reactive({
 
-      req(animal_data())
-
       # Barn NH3 emissions
 
       manure_density <- manure_density(manure_dm())
@@ -1122,16 +1131,31 @@ mod_manure_ghg_emissions_server <- function(id,
 
     storage <- reactive({
 
-      req(animal_data())
+# -------------------------------------------------------------------------
+# conditioning the inputs to NULL values. This is necessary because they
+# depend on inputs from other parts oh the App - they are not direct inputs
+# from this module. Otherwise the function 'req()' would work.
+# -------------------------------------------------------------------------
 
-      mineralization_pct <- dplyr::if_else(empty_time() == "Fall" | empty_time() == "Spring", 0.25, 0.12)
+      empty_time <- ifelse(is.null(empty_time()), "Fall and Spring", empty_time())
+
+      manure_management <- ifelse(is.null(manure_management()), "Pond or Tank Storage", manure_management())
+
+      type_manure <- ifelse(is.null(type_manure()), "Slurry", type_manure())
+
+      mineralization_pct <- ifelse(empty_time == "Fall" | empty_time == "Spring", 0.25, 0.12)
+
+      crust <- ifelse(manure_management == "Biodigester + Solid-liquid Separator" | manure_management == "Biodigester", "no",
+                      ifelse(manure_management == "Pond or Tank Storage", "no", crust()))
+
+# -------------------------------------------------------------------------
 
       teste <- nh3_emissions() %>%
         dplyr::mutate(
 
           mineralization_pct = mineralization_pct,
 
-          n_mineralized_feces = dplyr::if_else(manure_management == "Biodigester" | manure_management == "Biodigester + Solid-liquid Separator",
+          n_mineralized_feces = ifelse(manure_management == "Biodigester" | manure_management == "Biodigester + Solid-liquid Separator",
                                                mineralization_pct * fecal_n_kg + 0.16 * fecal_n_kg, mineralization_pct * fecal_n_kg),
 
           remaining_tan_kg = total_tan_kg - loss_animal_kg + n_mineralized_feces,
@@ -1152,7 +1176,7 @@ mod_manure_ghg_emissions_server <- function(id,
 
       tank_cap <- 365 * volume_diario
 
-      empty_days <- empty_day(empty_time = empty_time())
+      empty_days <- empty_day(empty_time = empty_time)
 
       for (i in 2:length(empty_days)) {
 
@@ -1199,34 +1223,32 @@ mod_manure_ghg_emissions_server <- function(id,
 
       acumulado_manure
 
+
        temp_c <- rep( wisconsin_weather_data %>%
                        dplyr::filter(county == county()) %>%
                        dplyr::pull(aver_tempC), 2)
 
       # r for storage
-      #
 
-       crust <- dplyr::if_else(manure_management() == "Biodigester + Solid-liquid Separator" | manure_management() == "Biodigester" , "no", crust())
+       if (crust == "no" & type_manure == "Slurry") {
 
-       if (crust == "no" & type_manure() == "Slurry") { #TODO
+         r_storage <- 19
 
-         r_storage <- 19#resistence_nh3(hsc = 19, temp_c = temp_c)
+       } else if (crust == "yes" & type_manure == "Slurry") {
 
-       } else if (crust == "yes" & type_manure() == "Slurry") {
+         r_storage <- 75
 
-         r_storage <- 75#resistence_nh3(hsc = 75, temp_c = temp_c)
+       } else if (crust == "yes" & type_manure == "Liquid") {
 
-       } else if (crust == "yes" & type_manure() == "Liquid") {
+         r_storage <- 75
 
-         r_storage <- 75 #resistence_nh3(hsc = 75, temp_c = temp_c)
+       } else if (crust == "no" & type_manure == "Liquid") {
 
-       } else if (crust == "no" & type_manure() == "Liquid") {
-
-         r_storage <- 19 #resistence_nh3(hsc = 19, temp_c = temp_c)
+         r_storage <- 19
 
        } else {
 
-         r_storage <- 10#resistence_nh3(hsc = 10, temp_c = temp_c)
+         r_storage <- 10
 
        }
 
@@ -1236,7 +1258,7 @@ mod_manure_ghg_emissions_server <- function(id,
 
       Q_storage <- eq_coeff(temp_c = temp_c, pH = ph_storage)
 
-      storage_area <- manure_storage_area()
+      storage_area <- ifelse(is.null(manure_storage_area()), 1360, manure_storage_area())
 
       gamma_densi <- 1000
 
@@ -1257,7 +1279,7 @@ mod_manure_ghg_emissions_server <- function(id,
           Q_storage = Q_storage,
           storage_N_loss_m2 = storage_N_loss_m2,
           cum_tan_kg = cumsum(remaining_tan_kg),
-          total_storage_N_loss = ifelse(manure_management() == "Daily Hauling", 0, storage_N_loss_m2 * manure_storage_area())
+          total_storage_N_loss = ifelse(manure_management == "Daily Hauling", 0, storage_N_loss_m2 * storage_area)
         )
 
     })
@@ -1311,8 +1333,6 @@ mod_manure_ghg_emissions_server <- function(id,
 
     output$barn_nh3 <- bs4Dash::renderValueBox({
 
-      req(barn_nh3())
-
       value_box_spark(
         value    = round(barn_nh3() / 0.82 / 1000, 2),
         title    = "Barn Ammonia Emissions (Ton./year)",
@@ -1329,8 +1349,6 @@ mod_manure_ghg_emissions_server <- function(id,
 
     output$storage_nh3 <- bs4Dash::renderValueBox({
 
-      req(storage_nh3())
-
       value_box_spark(
         value    = round(storage_nh3() / 0.82 / 1000, 2),
         title    = "Storage Ammonia Emissions (Ton./year)",
@@ -1346,8 +1364,6 @@ mod_manure_ghg_emissions_server <- function(id,
     })
 
     output$total_n2o <- bs4Dash::renderValueBox({
-
-      req(barn_nh3())
 
       value_box_spark(
         value    = round(((storage_nh3() + barn_nh3()) / 100 / 0.64 + n2o_from_storage()) / 1000, 2),
@@ -1366,8 +1382,6 @@ mod_manure_ghg_emissions_server <- function(id,
     # nitrogen curves
 
     output$barn_nh3_chart <- plotly::renderPlotly({
-
-      req(emissions())
 
       emissions <- nh3_emissions() %>%
         tibble::as_tibble() %>%
@@ -1419,8 +1433,6 @@ mod_manure_ghg_emissions_server <- function(id,
       })
 
     output$storage_nh3_chart <- plotly::renderPlotly({
-
-      req(storage())
 
       emissions <- storage() %>%
         tibble::as_tibble() %>%

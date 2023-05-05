@@ -32,7 +32,7 @@ lactating_dry_matter_intake <- function(days_milk, body_weight, milk_yield) {
 #'
 heifer_dry_matter_intake <- function(mature_body_weight, body_weight) {
 
-  heifer_dry_matter_intake <- 0.022 * mature_body_weight * (1 - exp(-1.54 *( body_weight / mature_body_weight)))
+  heifer_dry_matter_intake <- 0.022 * mature_body_weight * (1 - exp(-1.54 * ( body_weight / mature_body_weight)))
 
   return(heifer_dry_matter_intake)
 

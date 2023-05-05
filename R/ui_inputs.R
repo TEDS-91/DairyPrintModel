@@ -90,7 +90,7 @@ manure_manag_ui <- function(manure_managment, type_manure) {
         column(3,
                numericInput("biod_ef",        label = "Biodigester Efficiency:",  value = 25)),
         column(3,
-               numericInput("storage_area",   label = "Manure Storage Area:",     value = 1360)),
+               numericInput("storage_area",   label = "Manure Storage Area (m2):", value = 1360)),
         column(3,
                selectInput("empty",           label = "Emptying Time:",           choices = c("Fall", "Spring", "Fall and Spring"), selected = "Fall and Spring")),
         column(3,
@@ -104,7 +104,7 @@ manure_manag_ui <- function(manure_managment, type_manure) {
         column(3,
                numericInput("biod_ef",        label = "Biodigester Efficiency:",  value = 25)),
         column(3,
-               numericInput("storage_area",   label = "Manure Storage Area:",     value = 1360)),
+               numericInput("storage_area",   label = "Manure Storage Area (m2):", value = 1360)),
         column(3,
                selectInput("empty",           label = "Emptying Time:",           choices = c("Fall",
                                                                                               "Spring",
@@ -126,7 +126,7 @@ manure_manag_ui <- function(manure_managment, type_manure) {
                                                                                                 "Spring",
                                                                                                 "Fall and Spring"), selected = "Fall and Spring")),
           column(3,
-                 numericInput("storage_area",   label = "Manure Storage Area:",     value = 1360)),
+                 numericInput("storage_area",   label = "Manure Storage Area (m2):", value = 1360)),
           column(3,
                  selectInput("crust",           label = "Crust Formation:",         choices = c("yes", "no"), selected = "no")),
           column(3,
@@ -167,6 +167,8 @@ manure_manag_ui <- function(manure_managment, type_manure) {
 animal_ui_prms <- function(prm) {
 
   animal_ui_prms <- list(
+
+    shinyFeedback::useShinyFeedback(),
 
       column(3,
              numericInput(paste0(prm, "_n_cows"),               label = "Total Cows:",                value = 150, min = 0,  max = 30000)),
