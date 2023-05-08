@@ -208,6 +208,8 @@ mod_dashboard_server <- function(id,
                                  total_nh3,
                                  total_n2o,
                                  total_ch4,
+                                 n_fixed,
+                                 n_leached,
                                  direct_n2o_storage){
   moduleServer( id, function(input, output, session){
     ns <- session$ns
@@ -215,13 +217,17 @@ mod_dashboard_server <- function(id,
     output$tabela_teste <- renderTable({
       #nh3_emissions()
       #animal_data()
-      print(co2_eq_fuel_col_spread())
+     # print(co2_eq_fuel_col_spread())
      #c(herd_methane(), fac_methane(), storage_methane(), fac_ammonia()/0.82, storage_ammonia() / 0.82, total_co2(), total_nh3() / 0.82, total_n2o())
 
+
+      print(paste("fixad pode ser", n_fixed() ))
 
     })
 
     milk_yield_fpc <- reactive({
+
+      print(paste("fixad pode ser", n_fixed() ))
 
       animal_data() %>%
         dplyr::filter(Categories == "Cow") %>%
@@ -283,8 +289,6 @@ mod_dashboard_server <- function(id,
 
     output$total_methane <- bs4Dash::renderValueBox({
 
-      req(total_methane_emmited())
-
       value_box_spark(
         value    = round(total_methane_emmited() / 1000, 2),
         title    = "Total Methane (Ton./year)",
@@ -301,8 +305,6 @@ mod_dashboard_server <- function(id,
 
     output$total_n2o <- bs4Dash::renderValueBox({
 
-      req(total_n2o_emmited())
-
       value_box_spark(
         value    = round(total_n2o_emmited() / 1000, 2),
         title    = "Total Nitrous Oxide (Ton./year)",
@@ -318,8 +320,6 @@ mod_dashboard_server <- function(id,
     })
 
     output$total_co2 <- bs4Dash::renderValueBox({
-
-      req(total_co2_emmited())
 
       value_box_spark(
         value    = round(total_co2_emmited() / 1000, 2),
@@ -343,8 +343,6 @@ mod_dashboard_server <- function(id,
 
 
     output$bar_co2_eq <- plotly::renderPlotly({
-
-      req(herd_methane())
 
       df <- tibble::tibble(
         Source = "Co2 eq.",
@@ -440,8 +438,6 @@ mod_dashboard_server <- function(id,
 
     output$milk_income <- bs4Dash::renderValueBox({
 
-      req(economics())
-
       value_box_spark(
         value    = round(economics()$`Total Milk Income ($/cow)`, 2),
         title    = "Milk Income ($/cow)",
@@ -457,8 +453,6 @@ mod_dashboard_server <- function(id,
     })
 
     output$feed_cost <- bs4Dash::renderValueBox({
-
-      req(economics())
 
       value_box_spark(
         value    = round(economics()$`Feed Cost ($/cow)`, 2),
@@ -476,8 +470,6 @@ mod_dashboard_server <- function(id,
 
     output$iofc_lac <- bs4Dash::renderValueBox({
 
-      req(economics())
-
       value_box_spark(
         value    = round(economics()$`Income Over Feed Cost Lac ($/cow)`, 2),
         title    = "IOFC Lactating Cows ($/cow)",
@@ -493,8 +485,6 @@ mod_dashboard_server <- function(id,
     })
 
     output$iofc_lac_dry <- bs4Dash::renderValueBox({
-
-      req(economics())
 
       value_box_spark(
         value    = round(economics()$`Income Over Feed Cost Lac + Dry ($/cow)`, 2),
@@ -512,8 +502,6 @@ mod_dashboard_server <- function(id,
 
     output$iofc_dry <- bs4Dash::renderValueBox({
 
-      req(economics())
-
       value_box_spark(
         value    = round(economics()$`Income Over feed Cost Dry ($/cow)`, 2),
         title    = "IOFC Dry Cows ($/cow)",
@@ -529,8 +517,6 @@ mod_dashboard_server <- function(id,
     })
 
     output$feed_cost_milk <- bs4Dash::renderValueBox({
-
-      req(economics())
 
       value_box_spark(
         value    = round(economics()$`Feed Cost per Kg Milk ($)`, 2),
@@ -569,8 +555,6 @@ mod_dashboard_server <- function(id,
     })
 
     output$co2eq_milk <- bs4Dash::renderValueBox({
-
-      req(total_co2e_q_emitted())
 
       value_box_spark(
         value    = round(total_co2e_q_emitted() / milk_yield_fpc(), 3),
@@ -616,8 +600,6 @@ mod_dashboard_server <- function(id,
     })
 
     output$pie_co2_eq <- plotly::renderPlotly({
-
-      req(herd_methane())
 
       herd <- herd_methane() * 28
 
@@ -699,14 +681,75 @@ mod_dashboard_server <- function(id,
 # Nutrient balances
 # -------------------------------------------------------------------------
 
+    nitrogen_from_diet <- reactive({
+
+      animal_data() %>%
+        dplyr::mutate(
+          total_n_ingested_g = total_animals * total_n_ingested_g  * 365
+        ) %>%
+        dplyr::summarise(
+          total_n_ingested_ton = sum(total_n_ingested_g) / 1000000
+        ) %>%
+        dplyr::pull(total_n_ingested_ton) %>%
+        round(3)
+
+    })
+
+    nitrogen_from_milk <- reactive({
+
+      round(milk_yield_fpc() * 3.3 / 100 / 1000 / 6.25, 3)
+
+    })
+
+    nitrogen_from_culled_cows <- reactive({
+
+      round(herd_inputs()$`Cow Culling Rate (%)` * herd_inputs()$`Total Cows` / 100 * adult_cows_body_composition(body_weight = herd_inputs()$`Mature Body Weight (kg)`, BCS = herd_inputs()$`BCS at Culling`)$nitrogen_kg / 1000, 3)
+
+    })
+
+
+    nitrogen_from_barn <- reactive({
+
+      round(fac_ammonia() / 1000, 3)
+
+      #(fac_ammonia() / 100 / 0.82) + direct_n2o_storage() + (storage_ammonia() / 100 / 0.82) + total_n2o() + sum(animal_data()$total_n2o_kg)
+
+    })
+
+    nitrogen_from_manure_storage <- reactive({
+
+      round((direct_n2o_storage() * 0.64 + storage_ammonia()) / 1000, 3)
+
+    })
+
+    nitrogen_from_fertilizers <- reactive({
+
+
+      crop_inputs() %>%
+        dplyr::mutate(
+          total_n_kg = total_n_applied * area
+        ) %>%
+        dplyr::summarise(
+          total_n_ton = sum(total_n_kg) / 1000
+        ) %>%
+        dplyr::pull(total_n_ton) %>%
+        round(3)
+
+    })
+
+
     # Nitrogen
 
     output$water_nitrogen <- plotly::renderPlotly({
 
-      x = c(100,    20,           -5,         -30,    -20,       -15,        50)
-      y = c("Diet", "fertilizers", "Animals", "Milk", "Ammonia", "Leaching", "N balance")
+      fixado <- ifelse(is.null(n_fixed()), 0, n_fixed())
 
-      measure = c("input", "input", "output", "output", "output", "output", "total")
+      balance <- round(nitrogen_from_diet() + nitrogen_from_fertilizers() - nitrogen_from_barn() - nitrogen_from_manure_storage() - nitrogen_from_culled_cows() - nitrogen_from_milk() - (n_leached() / 0.0075 / 1000), 3)
+
+      x = c(nitrogen_from_diet(),   nitrogen_from_fertilizers(), -nitrogen_from_barn(), -nitrogen_from_manure_storage(),  -nitrogen_from_culled_cows(),       -nitrogen_from_milk(),          fixado, -round(n_leached() / 0.0075 / 1000, 3),  balance)
+      y = c("Diet",                               "Fertilizers", "barn",                               "Manure Storage",  "Culled Animals",                  "Milk Sold",                     "Legumes",           "Leached", "N balance")
+
+      measure = c("input",          "input",                     "output",                                     "output",   "output",                         "output",                         "input",             "output", "total")
 
       data = data.frame(x, y = factor(y, levels = y), measure)
 

@@ -22,40 +22,39 @@ app_ui <- function(request) {
 
         bs4Dash::sidebarUserPanel(
           image = "www/DIH_logo.png",
-          name  = "DairyPrint"
-        ),
+          name  = "DairyPrint Model"),
+
         bs4Dash::bs4SidebarMenu(
 
           bs4Dash::bs4SidebarMenuItem(
             "Herd Calibration",
             tabName = "herd_calibration",
-            icon    = tags$i(fontawesome::fa("cow"))
-          ),
+            icon    = tags$i(fontawesome::fa("cow"))),
+
           bs4Dash::bs4SidebarMenuItem(
             "Manure Handling",
             tabName = "manure",
-            icon    = tags$i(fontawesome::fa("poop"))
-          ),
+            icon    = tags$i(fontawesome::fa("poop"))),
+
           bs4Dash::bs4SidebarMenuItem(
             "Crops",
             tabName = "crop",
-            icon    = tags$i(fontawesome::fa("wheat-awn"))
-          ),
+            icon    = tags$i(fontawesome::fa("wheat-awn"))),
+
           bs4Dash::bs4SidebarMenuItem(
             "Miscellaneous",
             tabName = "miscellaneous",
-            icon    = icon("usd", lib = "glyphicon")
-          ),
+            icon    = icon("usd", lib = "glyphicon")),
+
           bs4Dash::bs4SidebarMenuItem(
             "Dashboard",
             tabName = "dashboard",
-            icon    = tags$i(fontawesome::fa("gauge"))
-          ),
+            icon    = tags$i(fontawesome::fa("gauge"))),
+
           bs4Dash::bs4SidebarMenuItem(
             "About DairyPrint Model",
             tabName = "info",
-            icon    = icon("info-sign", lib = "glyphicon")
-          ),
+            icon    = icon("info-sign", lib = "glyphicon")),
 
         fluidRow(
           column(offset = 1,
@@ -84,28 +83,29 @@ app_ui <- function(request) {
 
       bs4Dash::bs4DashBody(
         bs4Dash::bs4TabItems(
+
           bs4Dash::bs4TabItem(
             tabName = "herd_calibration",
-            mod_animal_ui("animal")
-          ),
+            mod_animal_ui("animal")),
+
           bs4Dash::bs4TabItem(
             tabName = "manure",
             #mod_nh3_emissions_ui("nh3_emissions"),
-            mod_manure_ghg_emissions_ui("ch4_emissions")
-          ),
+            mod_manure_ghg_emissions_ui("ch4_emissions")),
+
           bs4Dash::bs4TabItem(
             tabName = "crop",
             mod_purchased_feeds_ui("purchased_feeds_1"),
-            mod_crop_ui("crop")
-          ),
+            mod_crop_ui("crop")),
+
           bs4Dash::bs4TabItem(
             tabName = "miscellaneous",
-            mod_miscellaneous_ui("miscellaneous")
-          ),
+            mod_miscellaneous_ui("miscellaneous")),
+
           bs4Dash::bs4TabItem(
             tabName = "dashboard",
-            mod_dashboard_ui("dashboard")
-          ),
+            mod_dashboard_ui("dashboard")),
+
           bs4Dash::bs4TabItem(
             tabName = "info",
             mod_info_ui("info_1")

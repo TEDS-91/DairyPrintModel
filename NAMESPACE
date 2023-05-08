@@ -3,6 +3,7 @@
 export("%>%")
 export(Fvfa_conc)
 export(Fvfa_init_conc)
+export(adult_cows_body_composition)
 export(animal_co2_emissions)
 export(animal_n2o_emissions)
 export(average_milk_protein)

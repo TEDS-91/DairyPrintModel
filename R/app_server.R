@@ -133,6 +133,8 @@ app_server <- function(input, output, session) {
                        total_nh3          = ghg_crop[["total_nh3"]],
                        total_n2o          = ghg_crop[["total_n2o"]],
                        total_ch4          = ghg_crop[["total_ch4"]],
+                       n_fixed            = ghg_crop[["n_fixed"]],
+                       n_leached          = ghg_crop[["n_leached"]],
                        direct_n2o_storage = ghg_emissions[["direct_storage_n2o"]])
 
   mod_info_server("info_1")

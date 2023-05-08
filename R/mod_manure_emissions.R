@@ -11,12 +11,6 @@ mod_manure_ghg_emissions_ui <- function(id){
   ns <- NS(id)
   tagList(
 
-
-    # tags$style(type="text/css",
-    #            ".shiny-output-error { visibility: hidden; }",
-    #            ".shiny-output-error:before { visibility: hidden; }"
-    # ),
-
       bs4Dash::bs4Card(
         title = "Manure Handling and Management",
         elevation = 2,
@@ -28,7 +22,6 @@ mod_manure_ghg_emissions_ui <- function(id){
           manure_ui_prms(),
           uiOutput(ns("sls")))
         ),
-
 
     fluidRow(
       bs4Dash::bs4Card(
@@ -72,10 +65,7 @@ mod_manure_ghg_emissions_ui <- function(id){
                   title = "Manure Storage",
                   width = 6,
                   footer = NULL,
-                  #tableOutput(ns("teste2")),
-                  plotly::plotlyOutput(ns("storage_ch4_chart")))
-
-              )),
+                  plotly::plotlyOutput(ns("storage_ch4_chart"))))),
 
             tabPanel(
               title = "Ammonia Emissions",
@@ -85,32 +75,33 @@ mod_manure_ghg_emissions_ui <- function(id){
                   width = 6,
                   footer = NULL,
                   plotly::plotlyOutput(ns("barn_nh3_chart")),
-                  tableOutput(ns("ammonia_teste"))
-
-                  ),
+                  tableOutput(ns("ammonia_teste"))),
                 bs4Dash::bs4Card(
                   title = "Sorage",
                   width = 6,
                   footer = NULL,
-                  plotly::plotlyOutput(ns("storage_nh3_chart")))
+                  plotly::plotlyOutput(ns("storage_nh3_chart"))))),
 
-                )),
             tabPanel(
-              title = "Distribution of Emissions",
+              title = "Weather Data",
               fluidRow(
                 bs4Dash::bs4Card(
-                  title = "Methane",
-                  width = 6,
-                  footer = NULL,
-                plotly::plotlyOutput(ns("pie_chart")),
+                  title = "Temperature (C) and precipitation (mm).",
+                  width = 12,
+                  footer = "Weather data is a summary of temperature (mean, minimum, and maximum; C) and
+                            precipitation (mm) values from year 2001 to 2021. Data were obtained from
+                            the Daymet website.",
+                plotly::plotlyOutput(ns("weather_chart")),
 
                 tableOutput(ns('show_inputs'))
 
                 )
-              ))
+              )
             )
-          ))),
-
+          )
+        )
+      )
+    )
   )
 }
 
@@ -1016,8 +1007,9 @@ mod_manure_ghg_emissions_server <- function(id,
                yaxis = list(
                  zerolinecolor = '#ffff',
                  zerolinewidth = 2,
-                 gridcolor     = 'ffff')
-        ) %>%
+                 gridcolor     = 'ffff',
+                 range = c(0, 5)
+        )) %>%
         plotly::layout(legend = list(itemsizing = 'constant'))
 
     })
@@ -1074,28 +1066,6 @@ mod_manure_ghg_emissions_server <- function(id,
                          gridcolor = 'ffff')
         ) %>%
         plotly::layout(legend = list(itemsizing = 'constant'))
-
-    })
-
-    # Manure sources
-
-    output$pie_chart <- plotly::renderPlotly({
-
-      herd <- summarized_data()[1]$total_ch4_herd
-
-      fac <- summarized_data()[2]$total_ch4_fac
-
-      storage <- summarized_data()[3]$total_ch4_storage
-
-      values = c(herd, fac, storage)
-
-      labels = c("Herd", "Barn", "Manure Storage")
-
-      plotly::plot_ly(type = 'pie',
-                      labels = labels,
-                      values = values,
-              textinfo = 'label+percent',
-              insidetextorientation = 'radial')
 
     })
 
@@ -1483,6 +1453,81 @@ mod_manure_ghg_emissions_server <- function(id,
         ) %>%
         plotly::layout(legend = list(itemsizing = 'constant'))
 
+
+    })
+
+
+# -------------------------------------------------------------------------
+# Weather data plot
+# -------------------------------------------------------------------------
+
+    output$weather_chart <- plotly::renderPlotly({
+
+      weather <- wisconsin_weather_data %>%
+        dplyr::filter(county == county())
+
+      # Mean temperature
+
+      fig <- weather %>%
+        plotly::plot_ly(x    = ~ yday,
+                        y    = ~ round(aver_tempC, 1),
+                        name = "Mean Temper. (C)",
+                        type = "scatter",
+                        mode = "lines+markers") %>%
+        plotly::config(displayModeBar = FALSE)
+
+      # Min temperature
+
+      fig <- fig %>%
+        plotly::add_trace(x     = ~yday,
+                          y     = ~round(min_tempC, 1),
+                          name  = "Min. Temper. (C)",
+                          yaxis = "y1",
+                          mode  = "lines+markers",
+                          type  = "scatter")
+      #  Max temperature
+
+      fig <- fig %>%
+        plotly::add_trace(x     = ~yday,
+                          y     = ~round(max_tempC, 1),
+                          name  = "Max. Temper. (C)",
+                          yaxis = "y1",
+                          mode  = "lines+markers",
+                          type  = "scatter")
+      # Precipitation
+
+      ay <- list(
+        tickfont   = list(color = "black"),
+        overlaying = "y",
+        side       = "right",
+        title      = "Precip. (mm)")
+
+      fig <- fig %>%
+        plotly::add_trace(x     = ~yday,
+                          y     = ~round(precip_mm, 1),
+                          name  = "Precip. (mm)",
+                          yaxis = "y2",
+                          mode  = "lines+markers",
+                          type  = "scatter")
+
+      fig <- fig %>%
+        plotly::layout(
+          title  = " ",
+          yaxis2 = ay,
+          xaxis  = list(title = "Year Days"),
+          yaxis  = list(title = "Average Temperature (C)")
+        ) %>%
+        plotly::layout(plot_bgcolor = 'white',
+                       xaxis = list(
+                         zerolinecolor = '#ffff',
+                         zerolinewidth = 2,
+                         gridcolor = 'ffff'),
+                       yaxis = list(
+                         zerolinecolor = '#ffff',
+                         zerolinewidth = 2,
+                         gridcolor = 'ffff')
+        ) %>%
+        plotly::layout(legend = list(itemsizing = 'constant'))
 
     })
 

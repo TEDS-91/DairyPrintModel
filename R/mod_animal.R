@@ -171,12 +171,12 @@ mod_animal_ui <- function(id){
                   title = "Milk Yield",
                   width = 6,
                   footer = "Milk yield calculated according to the Wood's model (1967).",
-                  plotly::plotlyOutput(ns("lactation_curves_plotly"))),
+                  shinycustomloader::withLoader(plotly::plotlyOutput(ns("lactation_curves_plotly")), type = "html", loader = "loader1")),
                 bs4Dash::bs4Card(
                   title = "Dry Matter Intake",
                   width = 6,
                   footer = "Dry matter intake calculated according to the NRC (2001) equation.",
-                  plotly::plotlyOutput(ns("dmi_curves_plotly")))
+                  shinycustomloader::withLoader(plotly::plotlyOutput(ns("dmi_curves_plotly")), type = "html", loader = "loader1") )
                 )),
             tabPanel(
               title = "Manure Excretion and GHG Emissions",
@@ -199,12 +199,12 @@ mod_animal_ui <- function(id){
                   title = "Manure Excretion",
                   width = 6,
                   footer = NULL,
-                  plotly::plotlyOutput(ns("manure_curves_plotly"))),
+                  shinycustomloader::withLoader(plotly::plotlyOutput(ns("manure_curves_plotly")), type = "html", loader = "loader1")),
                 bs4Dash::bs4Card(
                   title = "Methane Emissions",
                   width = 6,
                   footer = NULL,
-                  plotly::plotlyOutput(ns("methane_curves_plotly"))))),
+                  shinycustomloader::withLoader(plotly::plotlyOutput(ns("methane_curves_plotly")), type = "html", loader = "loader1")))),
             tabPanel(
               title = "Nutrient Excretion",
               fluidRow(
@@ -227,17 +227,17 @@ mod_animal_ui <- function(id){
                   title = "Nitrogen",
                   width = 4,
                   footer = NULL,
-                  plotly::plotlyOutput(ns("nit_curves_plotly"))),
+                  shinycustomloader::withLoader(plotly::plotlyOutput(ns("nit_curves_plotly")), type = "html", loader = "loader1")),
                 bs4Dash::bs4Card(
                   title = "Phosphorous",
                   width = 4,
                   footer = NULL,
-                  plotly::plotlyOutput(ns("pho_curves_plotly"))),
+                  shinycustomloader::withLoader(plotly::plotlyOutput(ns("pho_curves_plotly")), type = "html", loader = "loader1")),
                 bs4Dash::bs4Card(
                   title = "Potassium",
                   width = 4,
                   footer = NULL,
-                  plotly::plotlyOutput(ns("pot_curves_plotly")))
+                  shinycustomloader::withLoader(plotly::plotlyOutput(ns("pot_curves_plotly")), type = "html", loader = "loader1"))
                 )
               )
             )
@@ -839,6 +839,7 @@ mod_animal_server <- function(id){
           total_fecal_n_escreted_g = sum(NumberAnimals * fecal_nitrogen_excreted_d),
           # correct the names below
           # TODO
+          total_n_ingested_g       = stats::weighted.mean(total_nitrogen_ingested_g, NumberAnimals),
           total_n_excreted_g       = stats::weighted.mean(total_nitrogen_excreted_g, NumberAnimals),
           total_p_excreted_g       = stats::weighted.mean(total_phosphorus_excretion_g, NumberAnimals),
           total_k_excreted_g       = stats::weighted.mean(total_potassium_excretion_g, NumberAnimals),
@@ -1620,10 +1621,12 @@ mod_animal_server <- function(id){
         "Total Cows"                = input$animal_n_cows,
         "Calving Interval (mo)"     = input$animal_cow_calving_int,
         "Cow Culling Rate (%)"      = input$animal_cow_rep_rate,
+        "BCS at Culling"            = input$animal_bcs,
         "Age at First Calving (mo)" = input$animal_time_first_calv,
         "Heifers Culling Rate (%)"  = input$animal_calves_heifers_cul,
         "Milk Yield (kg/day)"       = input$animal_average_milk_yield,
-        "Milking Frequency"         = input$animal_milk_freq
+        "Milking Frequency"         = input$animal_milk_freq,
+        "Mature Body Weight (kg)"   = input$animal_mature_weight
       )
 
       df
@@ -1661,12 +1664,12 @@ mod_animal_server <- function(id){
 
     return(
       list(
-        df = reactive(df_sum()),
-        milk_intake = reactive(milk_supply()),
+        df = reactive( df_sum() ),
+        milk_intake = reactive( milk_supply() ),
 
-        herd_inputs = reactive(herd_inputs()),
-        diet_inputs = reactive(diet_inputs()),
-        raw_animal_df = reactive({ df() })
+        herd_inputs = reactive( herd_inputs() ),
+        diet_inputs = reactive( diet_inputs() ),
+        raw_animal_df = reactive( df() )
 
       )
     )

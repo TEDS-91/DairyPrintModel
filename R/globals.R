@@ -144,7 +144,12 @@ utils::globalVariables(
     "total_tan_field",
     "water_intake_l_animal",
     "total_co2_eq_fuel",
-    "total_n_fert"
+    "total_n_fert",
+    "n_fixed_kg",
+    "total_n_ingested_g",
+    "total_n_ingested_ton",
+    "total_n_kg",
+    "total_n_ton"
 
 
   )

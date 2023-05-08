@@ -280,12 +280,27 @@ mod_crop_server <- function(id,
         )
 
 
+    })
+
+    # n fixed
+
+    nitrogen_fixed <- reactive({
+
+      crop_calculations() %>%
+        dplyr::mutate(
+          n_fixed_kg = total_n_fixed * yield
+        ) %>%
+        dplyr::summarise(
+          n_fixed_ton = sum(n_fixed_kg) / 1000
+        )
 
     })
 
     # Nitrogen leached calculation - 30% of the N applied in fields is leached in WI - IPCC 2006!
 
     n_leached <- reactive({
+
+      print(paste("fixado e", nitrogen_fixed()))
 
       leached_from_fert <- valores() %>%
         dplyr::mutate(
@@ -497,7 +512,9 @@ mod_crop_server <- function(id,
         total_co2   = reactive(total_co2()),
         total_nh3   = reactive(total_nh3()),
         total_n2o   = reactive(total_n2o()),
-        total_ch4   = reactive(ch4_field_kg())
+        total_ch4   = reactive(ch4_field_kg()),
+        n_fixed     = reactive( nitrogen_fixed() ),
+        n_leached   = reactive( n_leached() )
       )
     )
 

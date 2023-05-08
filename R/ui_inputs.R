@@ -44,7 +44,7 @@ manure_ui_prms <- function() {
   manure_ui_prms <- list(
 
       column(2,
-             selectInput("county",          label = "County:",                   choices = unique(wisconsin_weather_data$county), selected = "Dane")),
+             selectInput("county",          label = "WI County/US state:",       choices = unique(wisconsin_weather_data$county), selected = "Dane")),
 
       column(2,
              selectInput("facilitie",       label = "Facility:",                 choices = c("freestall",
@@ -176,6 +176,8 @@ animal_ui_prms <- function(prm) {
              numericInput(paste0(prm, "_cow_calving_int"),      label = "Calving Interval (mo):",     value = 15, min = 12, max = 20)),
       column(3,
              numericInput(paste0(prm, "_cow_rep_rate"),         label = "Cow Culling Rate (%):",      value = 35,  min = 20, max = 50)),
+      column(3,
+             numericInput(paste0(prm, "_bcs"),                  label = "BCS at Culling:",            value = 3.5, min = 1, max = 5)),
       column(3,
              numericInput(paste0(prm, "_time_first_calv"),      label = "First Calving (mo):",        value = 24, min = 0, max = 36)),
       column(3,
