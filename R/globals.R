@@ -149,8 +149,21 @@ utils::globalVariables(
     "total_n_ingested_g",
     "total_n_ingested_ton",
     "total_n_kg",
-    "total_n_ton"
+    "total_n_ton",
 
+    "DM",
+    "col_name",
+    "cp_content",
+    "k_content",
+    "p_content",
+    "total_k_ton",
+    "total_p_ton",
+    "var_name",
+    "phosphate_applied",
+    "potash_applied",
+    "precip_mm",
+    "total_k_fert_ton",
+    "total_p_fert_ton"
 
   )
 )

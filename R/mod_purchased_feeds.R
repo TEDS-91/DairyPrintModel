@@ -32,12 +32,9 @@ mod_purchased_feeds_ui <- function(id){
 
       fluidRow(
         column(12,
-               uiOutput(ns("textbox_ui")))#,
-       #tableOutput(ns("teste"))
+               uiOutput(ns("textbox_ui"))),
+       tableOutput(ns("teste"))
        )))
-
-
-
 
   )
 }
@@ -54,18 +51,24 @@ mod_purchased_feeds_server <- function(id){
       # carbon footprint
 
       carbon_footprint <- tibble::tribble(
-        ~"feeds",                   ~"carbon_foot",
-        "Corn",                      0.37,
-        "Corn Silage",               0.15,
-        "Alfalfa hay",               0.18,
-        "Soybean/canola meal",       0.50,
-        "Corn gluten feed",          0.30,
-        "Protein mix",               0.50,
-        "General by product feed",   0.20,
-        "Distillers's grain",        0.60,
-        "Fat",                       1.52,
-        "Mineral and Vitamins",      1.62,
-        "Milk replacer",             12.10
+        ~"feeds",                   ~"carbon_foot",   ~"DM",    ~"cp_content",   ~"Qnt",  ~"k_content", ~"p_content",    ~"source - co2eq",
+        "Corn grain",                0.37,              88.1,    9.4,              350,            0.42,       0.30,      "Rotz et al. (2021)",
+        "Distillers's grain",        0.60,              90.2,   29.7,               74,            1.10,       0.83,      "Rotz et al. (2021)",
+        "Soybean meal",              0.50,              89.6,   46.3,              106,            2.12,       0.66,      "Rotz et al. (2021)",
+        "Canola meal",               0.50,              90.3,   37.8,               58,            1.41,       1.10,      "Rotz et al. (2021)",
+        "Grass hay",                 0.15,              88.1,   10.6,              148,            2.01,       0.23,      "Rotz et al. (2019)",
+        "Fat",                       1.52,              99.8,   0,                 37,                0,          0,      "Rotz et al. (2021)",
+        "Mineral and vitamins",      1.62,              99.0,   0,                 23,                0,          0,      "Rotz et al. (2021)",
+        "Corn silage",               0.15,              35.1,    8.8,              1125,           0.50,       0.10,      "Rotz et al. (2021)",
+        "Alfalfa hay",               0.18,              90.3,    19.2,             245,            2.37,       0.28,      "Rotz et al. (2021)",
+        "Cotton seed meal",         0.517,              90.5,    44.9,             0,              1.13,       0.60,      "Ecoinvent",
+        "Alfalfa grass silage",     0.364,              39.1,    20.0,             0,              2.01,       0.23,      "Ecoinvent",
+        "Corn gluten feed",          0.30,              86.4,    65.0,             0,              1.46,       1.00,      "Rotz et al. (2021)",
+        "Protein mix",               0.50,              5,      5,                 0,                 0,          0,      "Rotz et al. (2021)",
+        "General by product feed",   0.20,              5,      5,                 0,                 0,          0,      "Rotz et al. (2021)",
+        "Milk replacer",            12.10,             90.0,   25.0,               0,                 0,          0,      "Rotz et al. (2021)",
+        "Urea",                      1.72,             99,     281.25,             0,                 0,          0,      "Ecoinvent"
+
       )
     })
 
@@ -75,8 +78,10 @@ mod_purchased_feeds_server <- function(id){
 
     })
 
+    qnt_list <- reactive(carbon_footprint()$Qnt)
+
     # Track the number of input boxes to render
-    counter <- reactiveValues(n = 2)
+    counter <- reactiveValues(n = 7)
 
     # Track all user inputs
     AllInputs <- reactive({
@@ -84,8 +89,11 @@ mod_purchased_feeds_server <- function(id){
     })
 
     observeEvent(input$add_btn, {counter$n <- counter$n + 1})
+
     observeEvent(input$rm_btn, {
+
       if (counter$n > 0) counter$n <- counter$n - 1
+
     })
 
     output$counter <- renderPrint(print(counter$n))
@@ -100,14 +108,11 @@ mod_purchased_feeds_server <- function(id){
 
       print(vector_crops[!vector_crops %in% evens(vector_crops)])
 
-      #dois <- evens(vector_crops)
-
       if (n > 0) {
         isolate({
           list(
             fluidRow(
-          #lapply(um, function(i) {
-            #list(
+
             column(6,
               purrr::map(vector_crops[!vector_crops %in% evens(vector_crops)],
                          ~bs4Dash::bs4Card(width = 12,
@@ -125,16 +130,9 @@ mod_purchased_feeds_server <- function(id){
                 column(6,
                        numericInput(inputId = ns(paste0("qnt_", .x)),
                                     label   = paste0("Quantity  (ton./year)"),
-                                    value   = 15))))
-
-
-            #)
-
-          #}
+                                    value   = qnt_list()[[.x]]))))
           )),
 
-          #lapply(dois, function(i) {
-            #list(
           column(6,
           purrr::map(evens(vector_crops),
                      ~bs4Dash::bs4Card(width = 12,
@@ -152,21 +150,13 @@ mod_purchased_feeds_server <- function(id){
                 column(6,
                        numericInput(inputId = ns(paste0("qnt_", .x)),
                                     label   = paste0("Quantity  (ton./year)"),
-                                    value   = 15))))
-              #)
-
-         # }
+                                    value   = qnt_list()[[.x]]))))
+            )
           )
-
-          )
-
-          )
-          )
-
-
-
-        })
-      }
+        )
+      )
+    })
+  }
 
     })
 
@@ -197,41 +187,83 @@ mod_purchased_feeds_server <- function(id){
 
       purchased_feeds() %>%
          dplyr::mutate(
-           CO2eq = carbon_foot * Qntdds * 1000
+           CO2eq = carbon_foot * Qntdds * 1000 * DM / 100
           ) %>%
          dplyr::summarise(total = sum(CO2eq)) %>%
          dplyr::pull(total)
+    })
 
+# -------------------------------------------------------------------------
+# Nutrient import calculations from purchased feeds -----------------------
+# -------------------------------------------------------------------------
+
+    # Nitrogen
+
+    n_from_purchased_feeds <- reactive({
+
+      purchased_feeds() %>%
+        dplyr::mutate(
+          total_n_ton = (cp_content / 100 * Qntdds * DM / 100 / 6.25)
+        ) %>%
+        dplyr::summarise(total = sum(total_n_ton)) %>%
+        dplyr::pull(total)
 
     })
+
+    # Phosphorous
+
+    p_from_purchased_feeds <- reactive({
+
+      purchased_feeds() %>%
+        dplyr::mutate(
+          total_p_ton = (p_content / 100 * Qntdds * DM / 100)
+        ) %>%
+        dplyr::summarise(total = sum(total_p_ton)) %>%
+        dplyr::pull(total)
+
+    })
+
+    # Potassium
+
+    k_from_purchased_feeds <- reactive({
+
+      purchased_feeds() %>%
+        dplyr::mutate(
+          total_k_ton = (k_content / 100 * Qntdds * DM / 100)
+        ) %>%
+        dplyr::summarise(total = sum(total_k_ton)) %>%
+        dplyr::pull(total)
+
+    })
+
+# -------------------------------------------------------------------------
 
     output$teste <- renderTable({
 
-       CO2eq_calculations()
+      print(paste(
+        "Nitrogenio: " , n_from_purchased_feeds(),
+        "Fosforo:" , p_from_purchased_feeds(),
+        "Potassio:", k_from_purchased_feeds()
+      ))
+
+       #CO2eq_calculations()
 
     })
-
 
 # -------------------------------------------------------------------------
 # Outputs from this module to populate others -----------------------------
 # -------------------------------------------------------------------------
 
-
-
-
     return(
       list(
-        teste           = reactive({ CO2eq_calculations() }),
-        purchased_feeds = reactive({ purchased_feeds() })
+        teste             = reactive( CO2eq_calculations() ),
+        purchased_feeds   = reactive( purchased_feeds() ),
+        n_purchased_feeds = reactive( n_from_purchased_feeds() ),
+        k_purchased_feeds = reactive( k_from_purchased_feeds() ),
+        p_purchased_feeds = reactive( p_from_purchased_feeds() )
       )
     )
 
   })
 
 }
-
-## To be copied in the UI
-# mod_purchased_feeds_ui("purchased_feeds_1")
-
-## To be copied in the server
-# mod_purchased_feeds_server("purchased_feeds_1")

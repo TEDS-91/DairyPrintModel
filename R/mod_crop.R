@@ -22,7 +22,7 @@ mod_crop_ui <- function(id){
       collapsed = FALSE,
       fluidRow(
         column(3,
-               selectInput(ns("number_crops"), label = "Homegrown Crops:", choices = seq(1, 10, 1), selected = 4))),
+               selectInput(ns("number_crops"), label = "Homegrown Crops:", choices = seq(1, 10, 1), selected = 2))),
       fluidRow(
         column(12,
                uiOutput(ns("crop_types"))))),
@@ -55,10 +55,7 @@ mod_crop_ui <- function(id){
       fluidRow(
         textOutput(ns("manure_spreaded"))
       ))
-
-
     )
-
   )
 }
 
@@ -67,10 +64,14 @@ mod_crop_ui <- function(id){
 #' @noRd
 mod_crop_server <- function(id,
                             animal_data,
+                            phosphorous_from_manure,
+                            potassium_from_manure,
                             type_manure,
                             manure_management,
                             manure_application_method,
                             manure_data,
+                            manure_inputs,
+                            county,
                             co2eq_purchased){
   moduleServer( id, function(input, output, session){
     ns <- session$ns
@@ -94,7 +95,7 @@ mod_crop_server <- function(id,
                                             solidHeader = TRUE,
                                             status = "teal",
                                             collapsed = FALSE,
-                                            crop_ui_prms(ns(.x))))),
+                                            crop_ui_prms(ns(.x), crop_id = "Corn silage (ton)", area = 80, yield = 19, manure = 80, n = 60, p = 20)))),
         column(6,
                purrr::map(evens(vector_crops),
                           ~bs4Dash::bs4Card(width = 12,
@@ -103,7 +104,7 @@ mod_crop_server <- function(id,
                                             solidHeader = TRUE,
                                             status = "teal",
                                             collapsed = FALSE,
-                                            crop_ui_prms(ns(.x)))))
+                                            crop_ui_prms(ns(.x), crop_id = "Alfalfa silage (ton)", area = 30, yield = 9, manure = 20, n = 0, p = 20))))
       )
 
     })
@@ -129,18 +130,17 @@ mod_crop_server <- function(id,
     })
 
 
-
     nitrogen_from_manure <- reactive({
 
       # correcting the TAN losses for the type of application method
 
-      tan_losses <- dplyr::if_else(manure_application_method() == "Broadcast spreading", 0.99,
-                                   dplyr::if_else(manure_application_method() == "Irrigation", 0.90, 1))
+      tan_losses <- dplyr::if_else(manure_inputs()$`Application Method` == "Broadcast spreading", 0.99,
+                                   dplyr::if_else(manure_inputs()$`Application Method` == "Irrigation", 0.90, 1))
 
 
       print(paste("The total area is (%):", total_area()))
 
-      if( manure_management() == "Daily Hauling") {
+      if( manure_inputs()$`Manure Management` == "Daily Hauling") {
 
         # total nitrogen applied in to the field - daily hauling
 
@@ -190,7 +190,6 @@ mod_crop_server <- function(id,
 
     })
 
-
     output$df <- renderPrint({
 
      #print( co2eq_purchased() )
@@ -239,7 +238,6 @@ mod_crop_server <- function(id,
                         "Sorghum grain (bu)",
                         "Oat grain (bu)")
 
-
       crop_nutrient_removal_n_fix <- tibble::tribble(
         ~crop,                  ~n_removal,  ~p_removal, ~k_removal, ~nitrogen_fix,
         "Corn silage (ton)",     4.4,         1.41,        3.31,     0,
@@ -262,69 +260,133 @@ mod_crop_server <- function(id,
           co2_urea         = urea_decomposition_co2(urea_applied = (urea_pct_applied / 100 * total_n_applied)) * area,
           nh3_n_fertilizer = fertilizer_nh3(nitrogen_applied = total_n_applied) * area,
           # calculating the total nitrous oxide from fert application after leaching
-          nitrous_oxide    = fert_manure_nitrous_oxide(nitrogen_applied = total_n_applied * 0.7) * area # TODO! missing manure N
+          nitrous_oxide    = fert_manure_nitrous_oxide(nitrogen_applied = total_n_applied * 0.7) * area
         )
-
-
 
       print(valores)
 
       valores %>%
         dplyr::inner_join(crop_nutrient_removal_n_fix, by = c("crop_type" = "crop")) %>%
         dplyr::mutate(
-          total_n_removal = n_removal * yield,
-          total_p_removal = p_removal * yield / 2.29,
-          total_k_removal = k_removal * yield / 1.21,
-          total_n_fixed   = nitrogen_fix * yield,
+          total_n_removal = n_removal * yield * area,
+          total_p_removal = p_removal * yield / 2.29 * area,
+          total_k_removal = k_removal * yield / 1.21 * area,
+          total_n_fixed   = nitrogen_fix * yield * area,
           crop_n_balance  = total_n_applied - total_n_removal + total_n_fixed
         )
-
-
     })
 
-    # n fixed
+    # Nitrogen fixed
 
     nitrogen_fixed <- reactive({
 
       crop_calculations() %>%
-        dplyr::mutate(
-          n_fixed_kg = total_n_fixed * yield
-        ) %>%
         dplyr::summarise(
-          n_fixed_ton = sum(n_fixed_kg) / 1000
+          n_fixed_ton = sum(total_n_fixed) / 1000
         )
+    })
 
+    # Nitrogen extracted from crops
+
+    nitrogen_extracted_crops <- reactive({
+
+      crop_calculations() %>%
+        dplyr::summarise(
+          n_extracted_ton = sum(total_n_removal) / 1000
+        )
     })
 
     # Nitrogen leached calculation - 30% of the N applied in fields is leached in WI - IPCC 2006!
 
     n_leached <- reactive({
 
-      print(paste("fixado e", nitrogen_fixed()))
+      print(paste("Rea total", typeof(sum(valores()$area) )))
 
       leached_from_fert <- valores() %>%
         dplyr::mutate(
-          total_n_fert = total_n_applied * area * 0.7
+          total_n_fert = total_n_applied * area * 0.3
         ) %>%
         dplyr::pull(total_n_fert) %>%
         sum()
 
-      leached_from_manure <- nitrogen_from_manure()$totalN * 0.7
+      leached_from_manure <- nitrogen_from_manure()$totalN * 0.3
 
       (leached_from_fert + leached_from_manure) * 0.0075
 
-
     })
-
 
     nh3_from_manure_application <- reactive({
 
       #print(paste("Leached", n_leached))
+      #
+      print(paste("potash applied ", k_from_fertilizers()))
+
+      print(paste("Total nitrogen from manure:", nitrogen_from_manure()$totalTAN))
+
+      print(paste("Total Nh3 from app:", (nitrogen_from_manure()$totalTAN * ((20 + 5 * manure_data()$manure_dm[1]) * (7 / 7.3)) * 17 / 14) / 100   ))
 
       (nitrogen_from_manure()$totalTAN * ((20 + 5 * manure_data()$manure_dm[1]) * (7 / 7.3)) * 17 / 14) / 100
 
     })
 
+    # Potassium
+
+    k_from_fertilizers <- reactive({
+
+      k_from_fertilizers <- valores() %>%
+        dplyr::mutate(
+          total_k_fert_ton = potash_applied * area / 1000
+        ) %>%
+        dplyr::pull(total_k_fert_ton) %>%
+        sum() * 0.8301 # converting from k20 (potash) to K
+
+      round(k_from_fertilizers, 1)
+
+    })
+
+    # Phosphorous
+
+    p_from_fertilizers <- reactive({
+
+      p_from_fertilizers <- valores() %>%
+        dplyr::mutate(
+          total_p_fert_ton = phosphate_applied * area / 1000
+        ) %>%
+        dplyr::pull(total_p_fert_ton) %>%
+        sum() * 0.4365 # converting from p2o5 (phosphate) to P
+
+      round(p_from_fertilizers, 1)
+
+    })
+
+    p_losses <- reactive({
+
+      # p from manure + p from fertilizers
+
+      p_applied <- (phosphorous_from_manure() + p_from_fertilizers()) * 1000
+
+      # yearly rainfall
+
+      rain_fall <- wisconsin_weather_data %>%
+        dplyr::filter(county == county()) %>%
+        dplyr::pull(precip_mm) %>%
+        sum()
+
+      p_losses <- phosphorous_loss(p_applied = p_applied, rain_fall = rain_fall)
+
+      p_losses
+
+    })
+
+    k_losses <- reactive({
+
+      # considering 5% of losses - according to IFSM (2015)
+
+      k_losses <- (potassium_from_manure() + k_from_fertilizers()) * 0.05
+
+      k_losses
+
+    })
 
 # -------------------------------------------------------------------------
 # Methane calculations from field application -----------------------------
@@ -342,13 +404,13 @@ mod_crop_server <- function(id,
 
       # Total annual emissions
 
-      if(manure_application_method() != "Injected") {
+      if(manure_inputs()$`Application Method` != "Injected") {
 
         # the models to predict ch4 from field application were developed for slurry and liquid manure
         # solid and semi-solid manure will be considered 0
         # For injected manure, the emissions will be considered 0
 
-        if (type_manure() == "Slurry" | type_manure() == "Liquid") {
+        if (manure_inputs()$`Manure Type` == "Slurry" | manure_inputs()$`Manure Type` == "Liquid") {
 
           Fvfa_conc(Fvfa_ini = Fvfa_ini) %>%
             purrr::map_dbl(manure_application_ch4_emission, area_crop = total_area) %>%
@@ -394,6 +456,8 @@ mod_crop_server <- function(id,
           total_nh3 = sum(nh3_n_fertilizer)
         ) %>%
         dplyr::pull(total_nh3)
+
+      print(paste("nh3_from_manure_application e neg", nh3_from_manure_application()))
 
       total_nh3 + nh3_from_manure_application() + nitrogen_from_manure()$nh3_application_method
 
@@ -501,23 +565,25 @@ mod_crop_server <- function(id,
 
     })
 
-
 # -------------------------------------------------------------------------
 # Outputs from this module to populate others -----------------------------
 # -------------------------------------------------------------------------
 
     return(
       list(
-        crop_inputs = reactive(valores()),
-        total_co2   = reactive(total_co2()),
-        total_nh3   = reactive(total_nh3()),
-        total_n2o   = reactive(total_n2o()),
-        total_ch4   = reactive(ch4_field_kg()),
-        n_fixed     = reactive( nitrogen_fixed() ),
-        n_leached   = reactive( n_leached() )
+        crop_inputs        = reactive( valores() ),
+        total_co2          = reactive( total_co2() ),
+        total_nh3          = reactive( total_nh3() ),
+        total_n2o          = reactive( total_n2o() ),
+        total_ch4          = reactive( ch4_field_kg() ),
+        n_extracted_crops  = reactive( nitrogen_extracted_crops() ),
+        n_fixed            = reactive( nitrogen_fixed() ),
+        n_leached          = reactive( n_leached() ),
+        k_from_fertilizers = reactive( k_from_fertilizers() ),
+        p_from_fertilizers = reactive( p_from_fertilizers() ),
+        p_losses           = reactive( p_losses() ),
+        k_losses           = reactive( k_losses() )
       )
     )
-
-
   })
 }

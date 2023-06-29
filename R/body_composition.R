@@ -47,3 +47,7 @@ adult_cows_body_composition <- function(body_weight, BCS) {
   return(body_composition)
 
 }
+
+
+
+

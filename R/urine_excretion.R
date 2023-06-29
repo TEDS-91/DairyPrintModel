@@ -17,3 +17,20 @@ lactating_urine_excretion <- function(dry_matter_intake, crude_protein, milk_pro
   return(lactating_urine_excretion)
 
 }
+
+#' Estimates the urine excretion for dry cows and heifers.
+#'
+#' @param k_intake Potassium intake (g/d)
+#'
+#' @return Urine excretion (l/d).
+#' @export
+#'
+#' @examples
+#' dry_and_heifer_urine_excretion(k_intake = 200)
+dry_and_heifer_urine_excretion <- function(k_intake) {
+
+  urine_excretion <- 2.7 + 0.053 * k_intake
+
+  return(urine_excretion)
+
+}

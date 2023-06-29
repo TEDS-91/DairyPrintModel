@@ -8,11 +8,22 @@ app_ui <- function(request) {
   tagList(
     # Leave this function for adding external resources
 
+    #shiny.telemetry::use_telemetry(), # 2. Add necessary Javascript to Shiny
+
     golem_add_external_resources(),
+
+    tags$style("
+              body {
+    -moz-transform: scale(0.95, 0.95); /* Moz-browsers */
+    zoom: 0.95; /* Other non-webkit browsers */
+    zoom: 95%; /* Webkit browsers */
+}
+              "),
 
     # Your application UI logic
 
     bs4Dash::bs4DashPage(
+
       fullscreen = TRUE,
 
       bs4Dash::bs4DashNavbar(
@@ -37,7 +48,7 @@ app_ui <- function(request) {
             icon    = tags$i(fontawesome::fa("poop"))),
 
           bs4Dash::bs4SidebarMenuItem(
-            "Crops",
+            "Purc. Feeds and Crops",
             tabName = "crop",
             icon    = tags$i(fontawesome::fa("wheat-awn"))),
 
@@ -86,7 +97,23 @@ app_ui <- function(request) {
 
           bs4Dash::bs4TabItem(
             tabName = "herd_calibration",
-            mod_animal_ui("animal")),
+            mod_animal_ui("animal")
+
+            # modalDialog(
+            #   h5("To run the model, first you have to calibrate it according to your own farm inputs."),
+            #
+            #   h5("After filling up all inputs in the herd calibration page, you're ready to run the model:
+            #
+            #      just hit 'Run!' and have fun!"),
+            #
+            #   h5("The other tabs will respond imediately after input changes without the need to hit any button."),
+            #   title = "Fisrt-steps with DairyPrint Model:",
+            #   size = "m",
+            #   easyClose = FALSE
+            # )
+
+
+            ),
 
           bs4Dash::bs4TabItem(
             tabName = "manure",

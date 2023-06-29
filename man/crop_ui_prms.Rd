@@ -4,10 +4,22 @@
 \alias{crop_ui_prms}
 \title{Crop UI parameters.}
 \usage{
-crop_ui_prms(id)
+crop_ui_prms(id, crop_id, yield, area, manure, n, p)
 }
 \arguments{
 \item{id}{Crop id.}
+
+\item{crop_id}{Crop name.}
+
+\item{yield}{Crop yield.}
+
+\item{area}{Crop area.}
+
+\item{manure}{Proportion of manure.}
+
+\item{n}{Nitrogen applied.}
+
+\item{p}{Phosphorous applied.}
 }
 \value{
 Crop UI components.

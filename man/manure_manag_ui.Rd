@@ -4,9 +4,11 @@
 \alias{manure_manag_ui}
 \title{Manure management parameters used over the application by other modules.}
 \usage{
-manure_manag_ui(manure_managment, type_manure)
+manure_manag_ui(prm, manure_managment, type_manure)
 }
 \arguments{
+\item{prm}{General parameter.}
+
 \item{manure_managment}{Type of manure management.}
 
 \item{type_manure}{Type of manure (solid, semi-solid, slurry or liquid).}

@@ -22,7 +22,6 @@ mod_animal_ui <- function(id){
 # -------------------------------------------------------------------------
       #h1("Herd calibration"),
 
-
       fluidRow(
         bs4Dash::bs4Card(
           title = "Herd Management",
@@ -87,7 +86,7 @@ mod_animal_ui <- function(id){
           collapsible = TRUE,
           fluidRow(
             column(6,
-                   radioButtons(ns("radio"), label = "Nutritional strategy for reducing enteric methane?",
+                   radioButtons(ns("radio"), label = "Nutritional strategy for enteric methane mitigation?",
                                 choices = list("yes" = "yes",
                                                "no" = "no"),
                                 selected = "no")),
@@ -172,11 +171,23 @@ mod_animal_ui <- function(id){
                   width = 6,
                   footer = "Milk yield calculated according to the Wood's model (1967).",
                   shinycustomloader::withLoader(plotly::plotlyOutput(ns("lactation_curves_plotly")), type = "html", loader = "loader1")),
+
                 bs4Dash::bs4Card(
                   title = "Dry Matter Intake",
                   width = 6,
                   footer = "Dry matter intake calculated according to the NRC (2001) equation.",
-                  shinycustomloader::withLoader(plotly::plotlyOutput(ns("dmi_curves_plotly")), type = "html", loader = "loader1") )
+                  shinycustomloader::withLoader(plotly::plotlyOutput(ns("dmi_curves_plotly")), type = "html", loader = "loader1")),
+
+                bs4Dash::bs4Card(
+                  title = "Other",
+                  width = 12,
+                  footer = " ",
+                  selectInput(ns("other"), "Variable:", choices = c("Body Weight (kg)"          = "mean_body_weight_kg",
+                                                                    "Feed Effficiency (kg/kg)"  = "feed_efficiency",
+                                                                    "Water Intake (L/day)"      = "water_intake_l_animal",
+                                                                    "Methane Intensity (g/kg)"  = "methane_intensity",
+                                                                    "Methane Yield (g/kg)"      = "methane_yield")),
+                  shinycustomloader::withLoader(plotly::plotlyOutput(ns("other_curves_plotly")), type = "html", loader = "loader1"))
                 )),
             tabPanel(
               title = "Manure Excretion and GHG Emissions",
@@ -258,21 +269,17 @@ mod_animal_server <- function(id){
 # User's feedback to inappropriate inputs
 # -------------------------------------------------------------------------
 
-     user_feedback <- function(input_id, decimal) {
+     user_feedback <- function(input_id) {
 
        observeEvent(input[[input_id]], {
 
          req(input[[input_id]])
 
-         if (input[[input_id]] < 0 & is.integer(input[[input_id]]) == TRUE & decimal == FALSE) {
+         if (input[[input_id]] < 0 ) {
 
            shinyFeedback::showFeedbackWarning(inputId = input_id, text = "Can't be negative")
 
-         } else if (input[[input_id]] < 0 | is.integer(input[[input_id]]) == FALSE & decimal == FALSE) {
-
-           shinyFeedback::showFeedbackWarning(inputId = input_id, text = "Can't be negative or decimal")
-
-         } else {
+          } else {
 
            shinyFeedback::hideFeedback(input_id)
 
@@ -281,18 +288,16 @@ mod_animal_server <- function(id){
      )
    }
 
-    tibble::tribble(
-      ~input_id,                        ~decimal,
-      "animal_n_cows",                  FALSE,
-      "animal_cow_calving_int",         FALSE,
-      "animal_cow_rep_rate",            TRUE,
-      "animal_time_first_calv",         FALSE,
-      "animal_calves_heifers_cul",      TRUE,
-      "animal_heifer_calf_born",        TRUE,
-      "animal_average_milk_yield",      TRUE,
-      "animal_mature_weight",           TRUE
+    list(
+      "animal_n_cows",
+      "animal_cow_rep_rate",
+      "animal_bcs",
+      "animal_calves_heifers_cul",
+      "animal_heifer_calf_born",
+      "animal_average_milk_yield",
+      "animal_mature_weight"
     ) %>%
-      purrr::pmap(user_feedback)
+      purrr::map(user_feedback)
 
 # -------------------------------------------------------------------------
 
@@ -300,25 +305,47 @@ mod_animal_server <- function(id){
 
     output$nut_aditive <- renderUI({
 
-      if(input$radio == "yes") {
+      # Only show this panel if yes is selected
 
-        numericInput(ns("methane_red"), label = "Expected reduction (%): ", value = 0, min = 0, max = 100)
+      conditionalPanel(
 
-      } else {
-        NULL
-      }
+        condition = paste0("input['", ns("radio"), "'] == 'yes' "),
 
-    })
+        selectInput(ns("is_nop"), label = "Is 3-NOP (3-nitrooxypropanol)?", choices = c("yes", "no"), selected = "no"),
 
+        conditionalPanel(
+
+          condition = paste0("input['", ns("is_nop"), "'] == 'yes' "),
+
+          numericInput(ns("nop_dose"), label = "Dose (mg/cow/day): ", value = 70, min = 0, max = 100)
+
+        ),
+        conditionalPanel(
+
+          condition = paste0("input['", ns("is_nop"), "'] == 'no' "),
+
+          numericInput(ns("methane_red"), label = "Expected reduction (%): ", value = 6, min = 0, max = 100)
+
+        ),
+        conditionalPanel(
+
+          condition = paste0("input['", ns("radio"), "'] == 'no' "),
+
+          NULL
+       )
+     )
+  })
+
+# -------------------------------------------------------------------------
 
     herd_matrix <- reactive({
 
-      herd_matrix <- herd_projection(time_first_calv    = input$animal_time_first_calv,
+      herd_matrix <- herd_projection(time_first_calv    = as.numeric(input$animal_time_first_calv),
                                      heifer_calf_born   = input$animal_heifer_calf_born,
                                      stillbirth_rate    = 3, # Fixed value
                                      calves_heifers_cul = input$animal_calves_heifers_cul,
                                      cow_rep_rate       = input$animal_cow_rep_rate,
-                                     cow_calving_int    = input$animal_cow_calving_int,
+                                     cow_calving_int    = as.numeric(input$animal_cow_calving_int),
                                      n_adult_cows       = input$animal_n_cows,
                                      months_to_project  = 2)
 
@@ -326,9 +353,9 @@ mod_animal_server <- function(id){
 
     lambda_milk_calc <- eventReactive(input$button, {
 
-      age_first_calv <- input$animal_time_first_calv
+      age_first_calv <- as.numeric(input$animal_time_first_calv)
 
-      cow_calving_int <- input$animal_cow_calving_int
+      cow_calving_int <- as.numeric(input$animal_cow_calving_int)
 
       n_cows <- input$animal_n_cows
 
@@ -341,7 +368,7 @@ mod_animal_server <- function(id){
                                             milk_freq              = input$animal_milk_freq,
                                             prop_primiparous       = prop_primiparous * 100,
                                             prop_secondiparous     = prop_secondiparous * 100,
-                                            cow_calving_interval   = input$animal_cow_calving_int) - 0.02
+                                            cow_calving_interval   = as.numeric(input$animal_cow_calving_int)) - 0.02
       lambda_milk_calc
 
       })
@@ -349,9 +376,9 @@ mod_animal_server <- function(id){
 
     lambda_milk_prot_calc <- eventReactive(input$button, {
 
-      age_first_calv <- input$animal_time_first_calv
+      age_first_calv <- as.numeric(input$animal_time_first_calv)
 
-      cow_calving_int <- input$animal_cow_calving_int
+      cow_calving_int <- as.numeric(input$animal_cow_calving_int)
 
       n_cows <- input$animal_n_cows
 
@@ -361,21 +388,13 @@ mod_animal_server <- function(id){
 
 
       lambda_milk_prot_calc <- lambda_milk_prot(obs_average_milk_prot = input$calf_protein,
-                                             prop_primiparous       = prop_primiparous * 100,
-                                             prop_secondiparous     = prop_secondiparous * 100,
-                                             cow_calving_interval   = input$animal_cow_calving_int)
+                                                prop_primiparous       = prop_primiparous * 100,
+                                                prop_secondiparous     = prop_secondiparous * 100,
+                                                cow_calving_interval   = as.numeric(input$animal_cow_calving_int))
 
       lambda_milk_prot_calc
 
     })
-
-
-    #output$lambda <- renderPrint({
-
-      #paste("the lambda value is:", lambda_milk_prot_calc())
-
-    #})
-
 
     df <- eventReactive(input$button, {
 
@@ -424,7 +443,6 @@ mod_animal_server <- function(id){
       forage_intake_2 <- 0.25
       forage_p <- 0.5
       forage_k <- 1
-      methane_aditive <- ifelse(input$radio == "no", 0, input$methane_red)
 
       dmi_dry <- 0.02
 
@@ -448,6 +466,16 @@ mod_animal_server <- function(id){
       diet_nda_dry <- input$diet_dry_adf
       diet_p_dry   <- input$diet_dry_p
       diet_k_dry   <- input$diet_dry_k
+
+# -------------------------------------------------------------------------
+      # Methane reductions due to feed additive
+# -------------------------------------------------------------------------
+
+      methane_red <- dplyr::if_else(input$is_nop == "yes", -enteric_ch4_reduction_3nop(input$nop_dose, diet_ndf_lac, diet_ee_lac), input$methane_red)
+
+      methane_aditive <- ifelse(input$radio == "no", 0, methane_red)
+
+# -------------------------------------------------------------------------
 
       ##################################################################################################################
 
@@ -473,7 +501,7 @@ mod_animal_server <- function(id){
                                           heifer_body_weight,
                                           birth_weight       = birth_weight_kg,
                                           weaning_weight     = weaning_weight_kg,
-                                          age_first_calving  = input$animal_time_first_calv,
+                                          age_first_calving  = as.numeric(input$animal_time_first_calv),
                                           mature_body_weight = mature_body_weight,
                                           type               = "mean"),
                            dplyr::if_else(Categories == "Cal",
@@ -488,7 +516,7 @@ mod_animal_server <- function(id){
                                           heifer_body_weight,
                                           birth_weight       = birth_weight_kg,
                                           weaning_weight     = weaning_weight_kg,
-                                          age_first_calving  = input$animal_time_first_calv,
+                                          age_first_calving  = as.numeric(input$animal_time_first_calv),
                                           mature_body_weight = mature_body_weight,
                                           type               = "final"),
                            dplyr::if_else(Categories == "Cal",
@@ -719,12 +747,12 @@ mod_animal_server <- function(id){
               # urine calculations
 
               total_urine_excretion_kg = dplyr::if_else(Categories == "Hei",
-                                                        7,#0.025*mean_body_weight_kg,#lactating_urine_excretion(dry_matter_intake_kg_animal, diet_cp_hei, 0),
+                                                        dry_and_heifer_urine_excretion((dry_matter_intake_kg_animal * 1000) * (diet_k_hei / 100)),
                                                          dplyr::if_else(Categories == "Dry",
-                                                                        17,#0.025*mean_body_weight_kg,#lactating_urine_excretion(dry_matter_intake_kg_animal, diet_cp_dry, 0),
+                                                                        dry_and_heifer_urine_excretion((dry_matter_intake_kg_animal * 1000) * (diet_k_dry / 100)),
                                                                         dplyr::if_else(Categories == "Cow",
                                                                                        lactating_urine_excretion(dry_matter_intake_kg_animal, diet_cp_lac, milk_protein),
-                                                                                       0))), #TODO
+                                                                                       0))),
 
               total_nitrogen_ingested_g = dplyr::if_else(Categories == "Hei",
                                                   (dry_matter_intake_kg_animal * 1000) * (diet_cp_hei / 100) / 6.25,
@@ -811,9 +839,7 @@ mod_animal_server <- function(id){
             dplyr::ungroup()
 
 
-        }
-
-      )
+        })
 
     })
 
@@ -860,6 +886,10 @@ mod_animal_server <- function(id){
     # lactating cows
 
     output$number_lac <- bs4Dash::renderValueBox({
+
+      #df_sum()$total_animals *
+
+      print(paste("Total P", (df_sum()$total_animals * df_sum()$total_p_excreted_g) %>% sum() * 365 / 1000000))
 
       value_box_spark(
         value    = round(df_sum()$total_animals[2], 2),
@@ -925,9 +955,6 @@ mod_animal_server <- function(id){
       )
     })
 
-
-
-
     # Message about Herd stability
 
     message <- eventReactive(input$button, {
@@ -969,7 +996,7 @@ mod_animal_server <- function(id){
                        input$animal_calves_heifers_cul,
                        input$animal_average_milk_yield,
                        input$animal_cow_rep_rate,
-                       input$animal_cow_calving_int,
+                       as.numeric(input$animal_cow_calving_int),
                        input$animal_milk_freq,
                        input$animal_n_cows,
                        input$animal_mature_weight,
@@ -1003,12 +1030,10 @@ mod_animal_server <- function(id){
                        input$diet_dry_k,
                        input$radio,
                        input$methane_red
-
-
                        )},
                  {showNotification("The model hasn't yet ran or you've changed some input!
                                    Please remember to click Run again!",
-                                   duration = 10,
+                                   duration = 2,
                                    type = "error")
 
                    })
@@ -1208,6 +1233,35 @@ mod_animal_server <- function(id){
                         type = "scatter",
                         mode = "lines+markers") %>%
         plotly::layout(yaxis = list(title = "Dry Matter Intake (kg/day)"),
+                       xaxis = list(title = "Months in Lactation")) %>%
+        plotly::config(displayModeBar = FALSE)
+
+    })
+
+    output$other_curves_plotly <- plotly::renderPlotly({
+
+     df <-  df() %>%
+        dplyr::filter(Categories == "Cow" & MonthSimulated == 1 & Phase %in% c("Lac1", "Lac2", "Lac3")) %>%
+        dplyr::mutate(
+          Phase = dplyr::if_else(Phase == "Lac1", "Primip", dplyr::if_else(Phase == "Lac2", "Second", "Multi"))
+        )
+
+     var_names <- tibble::tibble(
+       var_name = c("mean_body_weight_kg", "feed_efficiency",          "water_intake_l_animal", "methane_intensity",        "methane_yield"),
+       col_name = c("Body Weight (kg)",    "Feed Effficiency (kg/kg)", "Water Intake (L/day)",  "Methane Intensity (g/kg)", "Methane Yield (g/kg)")
+     )
+
+     y_name <- var_names %>%
+       dplyr::filter(var_name == input$other) %>%
+       dplyr::pull(col_name)
+
+        plotly::plot_ly(
+                        x = ~ df$Month,
+                        y = ~ df[[input$other]],
+                        color = ~ df$Phase,
+                        type = "scatter",
+                        mode = "lines+markers") %>%
+        plotly::layout(yaxis = list(title = y_name),
                        xaxis = list(title = "Months in Lactation")) %>%
         plotly::config(displayModeBar = FALSE)
 
@@ -1619,10 +1673,10 @@ mod_animal_server <- function(id){
 
       df <- tibble::tibble(
         "Total Cows"                = input$animal_n_cows,
-        "Calving Interval (mo)"     = input$animal_cow_calving_int,
+        "Calving Interval (mo)"     = as.numeric(input$animal_cow_calving_int),
         "Cow Culling Rate (%)"      = input$animal_cow_rep_rate,
         "BCS at Culling"            = input$animal_bcs,
-        "Age at First Calving (mo)" = input$animal_time_first_calv,
+        "Age at First Calving (mo)" = as.numeric(input$animal_time_first_calv),
         "Heifers Culling Rate (%)"  = input$animal_calves_heifers_cul,
         "Milk Yield (kg/day)"       = input$animal_average_milk_yield,
         "Milking Frequency"         = input$animal_milk_freq,
@@ -1654,22 +1708,45 @@ mod_animal_server <- function(id){
 # Outputs from this module to populate others -----------------------------
 # -------------------------------------------------------------------------
 
-    milk_supply <- reactive({
+    # milk_supply <- reactive({
+    #
+    #   milk_supply <- input$calf_milk_sup
+    #
+    #   milk_supply
+    #
+    #   })
+    #
+    # farm_area <- reactive({
+    #
+    #   farm_area <- input$animal_farm_area
+    #
+    #   farm_area
+    #
+    # })
 
-      milk_supply <- input$calf_milk_sup
+    phosphorous_from_manure <- reactive({
 
-      milk_supply
+      (df_sum()$total_animals * df_sum()$total_p_excreted_g) %>% sum() * 365 / 1000000
 
-      })
+    })
+
+    potassium_from_manure <- reactive({
+
+      (df_sum()$total_animals * df_sum()$total_k_excreted_g) %>% sum() * 365 / 1000000
+
+    })
 
     return(
       list(
-        df = reactive( df_sum() ),
-        milk_intake = reactive( milk_supply() ),
+        df                      = reactive( df_sum() ),
+        milk_intake             = reactive( input$calf_milk_sup ),
 
-        herd_inputs = reactive( herd_inputs() ),
-        diet_inputs = reactive( diet_inputs() ),
-        raw_animal_df = reactive( df() )
+        herd_inputs             = reactive( herd_inputs() ),
+        diet_inputs             = reactive( diet_inputs() ),
+        raw_animal_df           = reactive( df() ),
+        phosphorous_from_manure = reactive( phosphorous_from_manure() ),
+        potassium_from_manure   = reactive( potassium_from_manure() ),
+        farm_area               = reactive( input$animal_farm_area )
 
       )
     )

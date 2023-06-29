@@ -23,6 +23,6 @@ Data retrieved from \href{https://daymet.ornl.gov/}{Daymet website}.
 wisconsin_weather_data
 }
 \description{
-This dataset contains weather information summarized for each county in Wisconsin since 1990 to 2021.
+This dataset contains weather information summarized for each county in Wisconsin since 2021 to 2022.
 }
 \keyword{datasets}

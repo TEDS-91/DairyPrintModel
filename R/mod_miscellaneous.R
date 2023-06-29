@@ -58,7 +58,41 @@ mod_miscellaneous_server <- function(id,
   moduleServer( id, function(input, output, session){
     ns <- session$ns
 
+
+# -------------------------------------------------------------------------
+# User's feedback to inappropriate inputs
+# -------------------------------------------------------------------------
+
+    user_feedback <- function(input_id) {
+
+      observeEvent(input[[input_id]], {
+
+        req(input[[input_id]])
+
+        if (input[[input_id]] < 0 | is.null(input[[input_id]]) | !isTruthy(input[[input_id]])) {
+
+          shinyFeedback::showFeedbackWarning(inputId = input_id, text = "Can't be negative or null")
+
+        } else {
+
+          shinyFeedback::hideFeedback(input_id)
+
+        }
+      }
+      )
+    }
+
+    list(
+      "gasoline",
+      "natural_gas",
+      "diesel",
+      "electricity"
+    ) %>%
+      purrr::map(user_feedback)
+
     economics <- reactive({
+
+      print(paste("O verdadeiro e:", isTruthy(input[["gasoline"]]) ))
 
       animal_data <- animal_data()
 

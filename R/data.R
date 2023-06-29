@@ -1,6 +1,6 @@
 #' Winsconsin county weather dataset.
 #'
-#' This dataset contains weather information summarized for each county in Wisconsin since 1990 to 2021.
+#' This dataset contains weather information summarized for each county in Wisconsin since 2021 to 2022.
 #'
 #' @format Dataset with 26280 rows and 6 columns:
 #' \describe{

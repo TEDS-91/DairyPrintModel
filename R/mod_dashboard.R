@@ -21,14 +21,12 @@ mod_dashboard_ui <- function(id){
       maximizable = TRUE,
       footer = "Note: The total carbon dioxide equivalents were calculated considering global warming potential of 28 and 264 for methane and nitrous oxide, respectively (Myhre ey al., 2013).",
       fluidRow(
-        #bs4Dash::valueBoxOutput(ns("co2eq")),
         list(
           "total_methane",
           "total_n2o",
-          "total_co2"
-        ) %>%
-          purrr::map(\(x) bs4Dash::valueBoxOutput(ns(x)))
-      ),
+          "total_co2") %>%
+          purrr::map(\(x) bs4Dash::valueBoxOutput(ns(x)))),
+
       fluidRow(
         bs4Dash::bs4Card(
           title = "Carbon dioxide eq. by kg of Milk",
@@ -58,45 +56,11 @@ mod_dashboard_ui <- function(id){
           width = 3,
           footer = NULL,
           fluidRow(
-            plotly::plotlyOutput(ns("pie_co2_eq2"))
-          )),
-      )
+            plotly::plotlyOutput(ns("pie_co2_eq2")))))
+
       ),
 
-    # fluidRow(
-    #
-    #   column(offset = 10,
-    #          1,
-    #          downloadButton(ns("rmd_report"),
-    #                         "Report.html",
-    #                         style = "color: #fff; background-color: #007582; border-color: #007582; height:50px; width:140px"))
-    #
-    #
-    # ),
-
-    #tableOutput(ns("tabela_teste")),
-
     fluidRow(
-
-      # bs4Dash::bs4Card(
-      #   title = "Herd Outcomes",
-      #   elevation = 1,
-      #   width = 12,
-      #   solidHeader = TRUE,
-      #   status = "teal",
-      #   collapsible = TRUE,
-      #   maximizable = TRUE,
-      #   fluidRow(
-      #     bs4Dash::bs4Card(
-      #       title = "Methane",
-      #       width = 6,
-      #       footer = NULL,
-      #       fluidRow(
-      #         DT::dataTableOutput(ns("methane_table"))
-      #         #plotly::plotlyOutput(ns("pie_co2_eq2"))
-      #       ))
-      #   )),
-
       bs4Dash::bs4Card(
         title = "Nutrient Balances",
         elevation = 1,
@@ -114,8 +78,13 @@ mod_dashboard_ui <- function(id){
             status = "white",
             collapsible = TRUE,
             maximizable = FALSE,
+            footer = "Feasible N balance: 0-0.00785 kg/kg milk and 0-117.7 kg/ha.",
             fluidRow(
-          plotly::plotlyOutput(ns("water_nitrogen")))),
+          plotly::plotlyOutput(ns("water_nitrogen"))),
+          hr(),
+          fluidRow(
+            bs4Dash::valueBoxOutput(ns("n_per_kg_milk"), width = 6),
+            bs4Dash::valueBoxOutput(ns("n_per_hect"), width = 6))),
 
           bs4Dash::bs4Card(
             title = "Phosphorous",
@@ -125,8 +94,13 @@ mod_dashboard_ui <- function(id){
             status = "white",
             collapsible = TRUE,
             maximizable = FALSE,
+            footer = "Feasible P balance: 0-0.00098 kg/kg milk and 0-13.5 kg/ha.",
             fluidRow(
-              plotly::plotlyOutput(ns("water_phosphorous")))),
+              plotly::plotlyOutput(ns("water_phosphorous"))),
+            hr(),
+            fluidRow(
+              bs4Dash::valueBoxOutput(ns("p_per_kg_milk"), width = 6),
+              bs4Dash::valueBoxOutput(ns("p_per_hect"), width = 6))),
 
           bs4Dash::bs4Card(
             title = "Potassium",
@@ -136,12 +110,13 @@ mod_dashboard_ui <- function(id){
             status = "white",
             collapsible = TRUE,
             maximizable = FALSE,
+            footer = "Feasible K balance: 0-0.00268 kg/kg milk and 0-41.5 kg/ha.",
             fluidRow(
-              plotly::plotlyOutput(ns("water_potassium")))),
-
-
-
-          )),
+              plotly::plotlyOutput(ns("water_potassium"))),
+            hr(),
+            fluidRow(
+              bs4Dash::valueBoxOutput(ns("k_per_kg_milk"), width = 6),
+              bs4Dash::valueBoxOutput(ns("k_per_hect"), width = 6)) ))),
 
       bs4Dash::bs4Card(
         title = "Economic Analysis",
@@ -158,21 +133,15 @@ mod_dashboard_ui <- function(id){
             "iofc_lac",
             "iofc_lac_dry",
             "iofc_dry",
-            "feed_cost_milk"
-          ) %>%
-            purrr::map(\(x) bs4Dash::valueBoxOutput(ns(x)))
-          ),
-
-
+            "feed_cost_milk") %>%
+            purrr::map(\(x) bs4Dash::valueBoxOutput(ns(x)))),
         column(offset = 10,
                1,
                downloadButton(ns("rmd_report"),
                               "Report.html",
                               style = "color: #fff; background-color: #007582; border-color: #007582; height:50px; width:140px"))
-
-        )
       )
-
+    )
   )
 }
 
@@ -186,6 +155,7 @@ mod_dashboard_server <- function(id,
                                  herd_inputs,
                                  diet_inputs,
                                  raw_animal_df,
+                                 farm_area,
 
                                  nh3_emissions,
                                  herd_methane,
@@ -194,6 +164,7 @@ mod_dashboard_server <- function(id,
                                  fac_ammonia,
                                  storage_ammonia,
                                  manure_inputs,
+                                 bedding_qnt,
 
                                  co2_eq_fuel_col_spread,
                                  fuel_inputs,
@@ -204,30 +175,34 @@ mod_dashboard_server <- function(id,
                                  crop_inputs,
                                  co2eq_purchased,
                                  purchased_feeds,
+                                 n_purchased_feeds,
+                                 k_purchased_feeds,
+                                 p_purchased_feeds,
+
                                  total_co2,
                                  total_nh3,
                                  total_n2o,
                                  total_ch4,
                                  n_fixed,
                                  n_leached,
+                                 k_from_fertilizers,
+                                 p_from_fertilizers,
+                                 p_losses,
+                                 k_losses,
+                                 n_extracted_crops,
                                  direct_n2o_storage){
   moduleServer( id, function(input, output, session){
     ns <- session$ns
 
     output$tabela_teste <- renderTable({
-      #nh3_emissions()
-      #animal_data()
-     # print(co2_eq_fuel_col_spread())
-     #c(herd_methane(), fac_methane(), storage_methane(), fac_ammonia()/0.82, storage_ammonia() / 0.82, total_co2(), total_nh3() / 0.82, total_n2o())
 
-
-      print(paste("fixad pode ser", n_fixed() ))
+      print(paste("Area da fazenda", farm_area() ))
 
     })
 
     milk_yield_fpc <- reactive({
 
-      print(paste("fixad pode ser", n_fixed() ))
+      print(paste("Area da fazenda", farm_area() ))
 
       animal_data() %>%
         dplyr::filter(Categories == "Cow") %>%
@@ -253,7 +228,13 @@ mod_dashboard_server <- function(id,
 
     total_co2_emmited <- reactive({
 
-      total_co2() + co2_eq_fuel_col_spread()
+      # co2 eq from organic bedding
+
+      co2_eq_bedding <- bedding_qnt() * 0.2 * 365
+
+      #print(paste("CO2eq bedding YY ", co2_eq_bedding))
+
+      total_co2() + co2_eq_fuel_col_spread() + co2_eq_bedding
 
     })
 
@@ -268,7 +249,6 @@ mod_dashboard_server <- function(id,
       crop <- total_n2o() * 264 + total_co2() + total_ch4() * 28
 
       herd + fac + storage + crop + co2_eq_fuel_col_spread()
-
 
     })
 
@@ -335,14 +315,11 @@ mod_dashboard_server <- function(id,
 
     })
 
-
+# -------------------------------------------------------------------------
+# Bar chart with CO2eq by farm process
 # -------------------------------------------------------------------------
 
-
-# -------------------------------------------------------------------------
-
-
-    output$bar_co2_eq <- plotly::renderPlotly({
+    df_bar_plot <- reactive({
 
       df <- tibble::tibble(
         Source = "Co2 eq.",
@@ -353,19 +330,23 @@ mod_dashboard_server <- function(id,
         "Fuel" = round(co2_eq_fuel_col_spread() / (methane_yield_and_intens()$milk_yield_kg_fpc * 365 * methane_yield_and_intens()$total_animals), 3)
       )
 
-      plotly::plot_ly(x = c(df$Herd, df$Barn, df$Manure, df$`Crop and purchased feeds`, df$Fuel),
-                      y = c("Herd", "Barn", "Manure Handling", "Crop/Purch. Feeds", "Fuel"),
-                      text = c(df$Herd, df$Barn, df$Manure, df$`Crop and purchased feeds`, df$Fuel),
-                      type = 'bar',
-                      orientation = 'h') %>%
-        plotly::layout(xaxis = list(title = "Co2eq/kgMilk")) %>%
-        plotly::layout(yaxis = list(categoryorder = "total ascending")) %>%
-        plotly::config(displayModeBar = FALSE) %>%
-        plotly::layout(showlegend = FALSE)
-
+      df
 
     })
 
+    output$bar_co2_eq <- plotly::renderPlotly({
+
+      plotly::plot_ly(x = c(df_bar_plot()$Herd, df_bar_plot()$Barn, df_bar_plot()$Manure, df_bar_plot()$`Crop and purchased feeds`, df_bar_plot()$Fuel),
+                      y = c("Herd", "Barn", "Manure Handling", "Crop/Purch. Feeds", "Fuel"),
+                      text = c(df_bar_plot()$Herd, df_bar_plot()$Barn, df_bar_plot()$Manure, df_bar_plot()$`Crop and purchased feeds`, df_bar_plot()$Fuel),
+                      type = 'bar',
+                      orientation = 'h') %>%
+        plotly::layout(xaxis = list(title = "Co2eq/kgMilk", tickangle = 45)) %>%
+        plotly::layout(yaxis = list(categoryorder = "total ascending", tickangle = -45)) %>%
+        plotly::config(displayModeBar = FALSE) %>%
+        plotly::layout(showlegend = FALSE)
+
+    })
 
 # -------------------------------------------------------------------------
 # Economics ---------------------------------------------------------------
@@ -538,8 +519,6 @@ mod_dashboard_server <- function(id,
 
     output$co2eq <- bs4Dash::renderValueBox({
 
-      req(total_co2e_q_emitted())
-
       value_box_spark(
         value    = round(total_co2e_q_emitted() / 1000, 1),
         title    = "Total Carbon Eq. (ton./year)",
@@ -572,30 +551,9 @@ mod_dashboard_server <- function(id,
 
     output$gauge_co2_eq <- plotly::renderPlotly({
 
-      req(total_co2e_q_emitted())
+      co2eq <- round(total_co2e_q_emitted() / milk_yield_fpc(), 3)
 
-      fig <- plotly::plot_ly(
-        domain = list(x = c(0, 1), y = c(0, 1)),
-        value = round(total_co2e_q_emitted() / milk_yield_fpc(), 3),
-        title = list(text = "CO2eq/kgMilk"),
-        type = "indicator",
-        mode = "gauge+number+delta",
-        delta = list(reference = 0.99),
-        gauge = list(
-          axis = list(range = list(NULL, 2)),
-          bar = list(color = "darkblue"),
-          steps = list(
-            list(range = c(0, 0.76),   color = "lightgreen"),
-            list(range = c(0.76, 1.37), color = "orange"),
-            list(range = c(1.37, 2), color = "red")),
-          threshold = list(
-            line = list(color = "black", width = 6),
-            thickness = 0.75,
-            value = 0.99))) %>%
-        plotly::config(displayModeBar = FALSE) %>%
-        plotly::layout(showlegend = FALSE)
-
-      fig
+      built_gauge_plotly(carbon_equivalent = co2eq)
 
     })
 
@@ -611,7 +569,7 @@ mod_dashboard_server <- function(id,
 
       values = c(herd, fac, storage, crop) / 1000
 
-      labels = c("Herd", "Barn", "Man. Storage", "Crop")
+      labels = c("Herd", "Barn", "Man. Storage", "Crop/Purch. Feeds")
 
       plotly::plot_ly(values = ~round(values, 1),
                       labels = ~labels,
@@ -625,8 +583,6 @@ mod_dashboard_server <- function(id,
     })
 
     output$pie_co2_eq2 <- plotly::renderPlotly({
-
-      req(fac_methane())
 
       methane <- round(herd_methane() * 28 + storage_methane() * 28 + fac_methane() * 28 + total_ch4() * 28, 1)
 
@@ -651,32 +607,6 @@ mod_dashboard_server <- function(id,
 
     })
 
-    methane_table <- reactive({
-
-      data <- animal_data() %>%
-        dplyr::group_by(Categories) %>%
-        dplyr::summarise(
-          "Methane" = (total_ch4_kg * 365),
-          "Total Methane (ton.)" = round(Methane / 1000, 1)
-        ) %>%
-        dplyr::ungroup() %>%
-        dplyr::mutate(
-          total_methane = sum(Methane)
-        ) %>%
-        dplyr::group_by(Categories) %>%
-        dplyr::mutate(
-          "Methane (%)" = round(Methane / total_methane * 100, 1),
-          Categories = ifelse(Categories == "Cow", "Milking cows",
-                              ifelse(Categories == "Hei", "Heifers",
-                                     ifelse(Categories == "Dry", "Dry cows", "Calves")))
-        ) %>%
-        dplyr::arrange(dplyr::desc(Methane)) %>%
-        dplyr::select(-total_methane, -Methane)
-
-      data
-
-    })
-
 # -------------------------------------------------------------------------
 # Nutrient balances
 # -------------------------------------------------------------------------
@@ -697,7 +627,7 @@ mod_dashboard_server <- function(id,
 
     nitrogen_from_milk <- reactive({
 
-      round(milk_yield_fpc() * 3.3 / 100 / 1000 / 6.25, 3)
+      round(milk_yield_fpc() * 3.3 / 100 / 1000 / 6.25, 2)
 
     })
 
@@ -707,10 +637,9 @@ mod_dashboard_server <- function(id,
 
     })
 
-
     nitrogen_from_barn <- reactive({
 
-      round(fac_ammonia() / 1000, 3)
+      round(fac_ammonia() / 1000, 2)
 
       #(fac_ammonia() / 100 / 0.82) + direct_n2o_storage() + (storage_ammonia() / 100 / 0.82) + total_n2o() + sum(animal_data()$total_n2o_kg)
 
@@ -718,12 +647,13 @@ mod_dashboard_server <- function(id,
 
     nitrogen_from_manure_storage <- reactive({
 
-      round((direct_n2o_storage() * 0.64 + storage_ammonia()) / 1000, 3)
+      round((direct_n2o_storage() * 0.64 + storage_ammonia()) / 1000, 2)
 
     })
 
     nitrogen_from_fertilizers <- reactive({
 
+      print(paste("The n extracted from crops is", typeof(n_extracted_crops()[[1]])))
 
       crop_inputs() %>%
         dplyr::mutate(
@@ -733,99 +663,276 @@ mod_dashboard_server <- function(id,
           total_n_ton = sum(total_n_kg) / 1000
         ) %>%
         dplyr::pull(total_n_ton) %>%
-        round(3)
+        round(2)
 
     })
 
+    nitrogen_from_bedding <- reactive({
+
+      round(bedding_qnt() * 1.4 / 100 / 1000 * 365, 2)
+
+    })
+
+    nitrogen_balance <- reactive({
+
+      n_balance <- round(n_purchased_feeds()[[1]] + nitrogen_from_fertilizers() + n_fixed()[[1]] - nitrogen_from_barn() - nitrogen_from_manure_storage() - nitrogen_from_culled_cows() - nitrogen_from_milk() - (n_leached() / 0.0075 / 1000) + nitrogen_from_bedding(), 2)
+
+      n_balance
+
+    })
 
     # Nitrogen
 
     output$water_nitrogen <- plotly::renderPlotly({
 
-      fixado <- ifelse(is.null(n_fixed()), 0, n_fixed())
+      data <- tibble::tribble(
+        ~source,            ~value,                                    ~measure,
+        "Purchased Feeds",   round(n_purchased_feeds()[[1]], 2),        "input",
+        "Fertilizers",       nitrogen_from_fertilizers(),               "input",
+        "Bedding",           nitrogen_from_bedding(),                   "input",
+        "Legumes",           round(n_fixed()[[1]],2),                   "input",
+        "Milk sold",         -nitrogen_from_milk(),                     "output",
+        "Culled Animals",    -nitrogen_from_culled_cows(),              "output",
+        "Barn",              -nitrogen_from_barn(),                     "output",
+        "Manure Storage",    -nitrogen_from_manure_storage(),           "output",
+        "Leached",           -round(n_leached() / 0.0075 / 1000, 2),    "output",
+        "Balance",           round(nitrogen_balance(), 2),              "total"
+      )
 
-      balance <- round(nitrogen_from_diet() + nitrogen_from_fertilizers() - nitrogen_from_barn() - nitrogen_from_manure_storage() - nitrogen_from_culled_cows() - nitrogen_from_milk() - (n_leached() / 0.0075 / 1000), 3)
+      data <- tibble::tibble(x       = data$value,
+                             y       = factor(data$source, levels = data$source),
+                             measure = data$measure)
 
-      x = c(nitrogen_from_diet(),   nitrogen_from_fertilizers(), -nitrogen_from_barn(), -nitrogen_from_manure_storage(),  -nitrogen_from_culled_cows(),       -nitrogen_from_milk(),          fixado, -round(n_leached() / 0.0075 / 1000, 3),  balance)
-      y = c("Diet",                               "Fertilizers", "barn",                               "Manure Storage",  "Culled Animals",                  "Milk Sold",                     "Legumes",           "Leached", "N balance")
-
-      measure = c("input",          "input",                     "output",                                     "output",   "output",                         "output",                         "input",             "output", "total")
-
-      data = data.frame(x, y = factor(y, levels = y), measure)
-
-      fig <- plotly::plot_ly(data, x = ~x,
-                             y = ~y,
-                             measure = ~measure,
-                             text = ~ x,
-                             type = "waterfall",
-                             orientation = "h",
-                             connector = list(mode = "between", line = list(width = 4, color = "rgb(0, 0, 0)", dash = 0)))
-      fig <- fig %>%
-        plotly::layout(#title = "Profit and loss statement 2018<br>waterfall chart displaying positive and negative",
-               xaxis = list(title = "N (Ton./year)", tickfont = "16", ticks = "outside"),
-               yaxis = list(title = "", type = "category", autorange = "reversed"),
-               xaxis = list(title = "", type = "linear"),
-               #margin = c(l = 150),
-               showlegend = FALSE) %>%
-        plotly::config(displayModeBar = FALSE)
+      built_waterfall_plot_plotly(data, nitrogen_balance(), "N (Ton./Year)")
 
       })
 
+    # Nitrogen card
+
+    output$n_per_kg_milk <- bs4Dash::renderValueBox({
+
+      n_bal <- as.numeric(signif(nitrogen_balance() * 1000 / milk_yield_fpc(), 1), scientific = FALSE)
+
+      color <- ifelse(n_bal <= 0.00785 & n_bal >= 0, "green", "red")
+
+      value_box_spark(
+        value    = format(n_bal, scientific = FALSE),
+        title    = "Nitrogen balance (Kg N/Kg milk)",
+        sparkobj = NULL,
+        subtitle = tagList(),
+        info     = " ",
+        icon     = " ",
+        width    = 12,
+        color    = color,
+        href     = NULL
+      )
+
+    })
+
+    output$n_per_hect <- bs4Dash::renderValueBox({
+
+      n_bal <- as.numeric(signif(nitrogen_balance() * 1000 / farm_area(), 1), scientific = FALSE)
+
+      color <- ifelse(n_bal >= 0 & n_bal <= 117.7, "green", "red")
+
+      value_box_spark(
+        value    = n_bal,
+        title    = "Nitrogen balance (Kg N/ha)",
+        sparkobj = NULL,
+        subtitle = tagList(),
+        info     = " ",
+        icon     = " ",
+        width    = 12,
+        color    = color,
+        href     = NULL
+      )
+
+    })
+
+    # Phosphorous
+
+    phosphorous_from_milk <- reactive({
+
+      round((0.996 * milk_yield_fpc())/ 1000000, 1)
+
+    })
+
+    phosphorous_from_culled_cows <- reactive({
+
+      round(herd_inputs()$`Cow Culling Rate (%)` * herd_inputs()$`Total Cows` / 100 * adult_cows_body_composition(body_weight = herd_inputs()$`Mature Body Weight (kg)`,
+                                                                                                                  BCS = herd_inputs()$`BCS at Culling`)$empty_body_weight_kg * 0.72 / 100 / 1000, 3)
+
+    })
+
+    phosphorous_from_bedding <- reactive({
+
+      round(bedding_qnt() * 0.3 / 100 / 1000 * 365, 2)
+
+    })
+
+    phosphorous_balance <- reactive({
+
+      p_balance <- p_purchased_feeds()[[1]] + p_from_fertilizers()[[1]] - phosphorous_from_milk() - phosphorous_from_culled_cows() - (p_losses() / 1000) + phosphorous_from_bedding()
+
+      p_balance
+
+    })
+
     output$water_phosphorous <- plotly::renderPlotly({
 
-      x = c(100,    20,           -5,         -30,    -20,       -15,        50)
-      y = c("Diet", "fertilizers", "Animals", "Milk", "Ammonia", "Leaching", "N balance")
+      data <- tibble::tribble(
+        ~source,            ~value,                                    ~measure,
+        "Purchased Feeds",   round(p_purchased_feeds()[[1]], 2),        "input",
+        "Bedding",           phosphorous_from_bedding(),                "input",
+        "Fertilizers",       round(p_from_fertilizers()[[1]], 2),       "input",
+        "Milk sold",         -phosphorous_from_milk(),                  "output",
+        "Culled Animals",    -phosphorous_from_culled_cows(),           "output",
+        "Soil losses",       -round(p_losses() / 1000, 2),              "output",
+        "Balance",           round(phosphorous_balance(), 2),           "total"
+      )
 
-      measure = c("input", "input", "output", "output", "output", "output", "total")
+      data <- tibble::tibble(x       = data$value,
+                             y       = factor(data$source, levels = data$source),
+                             measure = data$measure)
 
-      data = data.frame(x, y = factor(y, levels = y), measure)
 
-      fig <- plotly::plot_ly(data, x = ~x,
-                             y = ~y,
-                             measure = ~measure,
-                             text = ~ x,
-                             type = "waterfall",
-                             orientation = "h",
-                             connector = list(mode = "between", line = list(width = 4, color = "rgb(0, 0, 0)", dash = 0)))
-      fig <- fig %>%
-        plotly::layout(#title = "Profit and loss statement 2018<br>waterfall chart displaying positive and negative",
-          xaxis = list(title = "Phosphorous (Ton./year)", tickfont = "16", ticks = "outside"),
-          yaxis = list(title = "", type = "category", autorange = "reversed"),
-          xaxis = list(title = "", type = "linear"),
-          #margin = c(l = 150),
-          showlegend = FALSE) %>%
-        plotly::config(displayModeBar = FALSE)
+      built_waterfall_plot_plotly(data, phosphorous_balance(), "P (Ton./Year)")
+
+    })
+
+    # Phosphorous card
+
+    output$p_per_kg_milk <- bs4Dash::renderValueBox({
+
+      p_bal <- as.numeric(signif(phosphorous_balance() * 1000 / milk_yield_fpc(), 1), scientific = FALSE)
+
+      color <- ifelse(p_bal >= 0 & p_bal <= 0.00098, "green", "red")
+
+      value_box_spark(
+        value    = format(p_bal, scientific = FALSE),
+        title    = "Phosphorous balance (Kg N/Kg milk)",
+        sparkobj = NULL,
+        subtitle = tagList(),
+        info     = " ",
+        icon     = " ",
+        width    = 12,
+        color    = color,
+        href     = NULL
+      )
+
+    })
+
+    output$p_per_hect <- bs4Dash::renderValueBox({
+
+      p_bal <- as.numeric(signif(phosphorous_balance() * 1000 / farm_area(), 1), scientific = FALSE)
+
+      color <- ifelse(p_bal >= 0 & p_bal <= 13.45, "green", "red")
+
+      value_box_spark(
+        value    = p_bal,
+        title    = "Phosphorous balance (Kg P/ha)",
+        sparkobj = NULL,
+        subtitle = tagList(),
+        info     = " ",
+        icon     = " ",
+        width    = 12,
+        color    = color,
+        href     = NULL
+      )
+
+    })
+
+    # Potassium
+
+    potassium_from_milk <- reactive({
+
+      round(milk_k_excretion(milk_yield = milk_yield_fpc())/ 1000000, 1)
+
+    })
+
+    potassium_from_culled_cows <- reactive({
+
+      round(herd_inputs()$`Cow Culling Rate (%)` * herd_inputs()$`Total Cows` / 100 * adult_cows_body_composition(body_weight = herd_inputs()$`Mature Body Weight (kg)`,
+                                                                                                                  BCS = herd_inputs()$`BCS at Culling`)$empty_body_weight_kg * 0.20 / 100 / 1000, 3)
+
+    })
+
+    potassium_from_bedding <- reactive({
+
+      round(bedding_qnt() * 0.4 / 100 / 1000 * 365, 2)
+
+    })
+
+    potassium_balance <- reactive({
+
+      k_balance <- k_purchased_feeds()[[1]] + k_from_fertilizers()[[1]] - potassium_from_culled_cows() - potassium_from_milk() - k_losses() + potassium_from_bedding()
+
+      k_balance
 
     })
 
     output$water_potassium <- plotly::renderPlotly({
 
-      x = c(100,    20,           -5,         -30,    -20,       -15,        50)
-      y = c("Diet", "fertilizers", "Animals", "Milk", "Ammonia", "Leaching", "N balance")
+      data <- tibble::tribble(
+        ~source,            ~value,                                    ~measure,
+        "Purchased Feeds",   round(k_purchased_feeds()[[1]], 2),        "input",
+        "bedding",           potassium_from_bedding(),                  "input",
+        "Fertilizers",       k_from_fertilizers()[[1]],                 "input",
+        "Milk sold",         -potassium_from_milk(),                    "output",
+        "Culled Animals",    -potassium_from_culled_cows(),             "output",
+        "Soil lossses",      -round(k_losses(), 2),                     "output",
+        "Balance",           round(potassium_balance(), 2),             "total"
+      )
 
-      measure = c("input", "input", "output", "output", "output", "output", "total")
+      data <- tibble::tibble(x       = data$value,
+                             y       = factor(data$source, levels = data$source),
+                             measure = data$measure)
 
-      data = data.frame(x, y = factor(y, levels = y), measure)
-
-      fig <- plotly::plot_ly(data, x = ~x,
-                             y = ~y,
-                             measure = ~measure,
-                             text = ~ x,
-                             type = "waterfall",
-                             orientation = "h",
-                             connector = list(mode = "between", line = list(width = 4, color = "rgb(0, 0, 0)", dash = 0)))
-      fig <- fig %>%
-        plotly::layout(#title = "Profit and loss statement 2018<br>waterfall chart displaying positive and negative",
-          xaxis = list(title = "Potassium (Ton./year)", tickfont = "16", ticks = "outside"),
-          yaxis = list(title = "", type = "category", autorange = "reversed"),
-          xaxis = list(title = "", type = "linear"),
-          #margin = c(l = 150),
-          showlegend = FALSE) %>%
-        plotly::config(displayModeBar = FALSE)
+      built_waterfall_plot_plotly(data, potassium_balance(), "K (Ton./Year)")
 
     })
 
+    # Potassium card
 
+    output$k_per_kg_milk <- bs4Dash::renderValueBox({
+
+      k_bal <- as.numeric(signif(potassium_balance() * 1000 / milk_yield_fpc(), 1))
+
+      color <- ifelse(k_bal >= 0 & k_bal <= 0.002678, "green", "red")
+
+      value_box_spark(
+        value    = format(k_bal, scientific = FALSE),
+        title    = "Potassium balance (Kg N/Kg milk)",
+        sparkobj = NULL,
+        subtitle = tagList(),
+        info     = " ",
+        icon     = " ",
+        width    = 12,
+        color    = color,
+        href     = NULL
+      )
+
+    })
+
+    output$k_per_hect <- bs4Dash::renderValueBox({
+
+      k_bal <- as.numeric(signif(potassium_balance() * 1000 / farm_area(), 1), scientific = FALSE)
+
+      color <- ifelse(k_bal >= 0 & k_bal <= 41.47, "green", "red")
+
+      value_box_spark(
+        value    = format(k_bal),
+        title    = "Potassium balance (Kg K/ha)",
+        sparkobj = NULL,
+        subtitle = tagList(),
+        info     = " ",
+        icon     = " ",
+        width    = 12,
+        color    = color,
+        href     = NULL
+      )
+
+    })
 
 # -------------------------------------------------------------------------
 # Report generation -------------------------------------------------------
@@ -838,7 +945,6 @@ mod_dashboard_server <- function(id,
     })
 
     output$rmd_report <- downloadHandler(
-
 
       "DairyPrintModelReport.html",
 
@@ -859,7 +965,6 @@ mod_dashboard_server <- function(id,
               params = list(
                 total_co2e_q_emitted = total_co2e_q_emitted(),
                 co2eq_milk           = total_co2e_q_emitted() / milk_yield_fpc(),
-                methane_table        = methane_table(),
                 suma_table           = report(),
                 crop_inputs          = crop_inputs(),
                 co2eq_purchased      = co2eq_purchased(),
@@ -869,7 +974,48 @@ mod_dashboard_server <- function(id,
                 manure_inputs        = manure_inputs(),
                 herd_inputs          = herd_inputs(),
                 diet_inputs          = diet_inputs(),
-                raw_animal_df        = raw_animal_df()
+                animal_data          = animal_data(),
+                raw_animal_df        = raw_animal_df(),
+
+                # ghg emissions
+                total_ch4_emmited    = round(total_methane_emmited() / 1000, 2),
+                total_n2o_emmited    = round(total_n2o_emmited() / 1000, 2),
+                total_co2_emmited    = round(total_co2_emmited() / 1000, 2),
+                total_co2e_q_emitted = total_co2e_q_emitted() / 1000,
+                co2eq                = round(total_co2e_q_emitted() / milk_yield_fpc(), 3),
+
+                plot_by_sorce        = df_bar_plot(),
+
+                # nutrient balances
+
+                nitrogen_balance     = nitrogen_balance(),
+                n_purchased_feeds    = n_purchased_feeds()[[1]],
+                nitrogen_from_fertilizers = nitrogen_from_fertilizers(),
+                n_fixed              = n_fixed()[[1]],
+                nitrogen_from_barn   = nitrogen_from_barn(),
+                nitrogen_from_manure_storage = nitrogen_from_manure_storage(),
+                nitrogen_from_culled_cows = nitrogen_from_culled_cows(),
+                nitrogen_from_milk   = nitrogen_from_milk(),
+                n_leached            = n_leached() / 0.0075 / 1000,
+
+                phosphorous_balance  = phosphorous_balance(),
+                p_purchased_feeds    = p_purchased_feeds()[[1]],
+                p_from_fertilizers   = p_from_fertilizers()[[1]],
+                phosphorous_from_milk = phosphorous_from_milk(),
+                phosphorous_from_culled_cows = phosphorous_from_culled_cows(),
+                p_losses             = p_losses() / 1000,
+
+                potassium_balance    = potassium_balance(),
+                k_purchased_feeds = k_purchased_feeds()[[1]],
+                k_from_fertilizers = k_from_fertilizers()[[1]],
+                potassium_from_culled_cows = potassium_from_culled_cows(),
+                potassium_from_milk = potassium_from_milk(),
+                k_losses = k_losses(),
+
+                # economics
+
+                economics = economics()
+
               )
             )
 
@@ -888,8 +1034,3 @@ mod_dashboard_server <- function(id,
   })
 }
 
-## To be copied in the UI
-# mod_dashboard_ui("dashboard")
-
-## To be copied in the server
-# mod_dashboard_server("dashboard")

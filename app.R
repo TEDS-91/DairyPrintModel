@@ -4,4 +4,4 @@
 
 pkgload::load_all(export_all = FALSE, helpers = FALSE, attach_testthat = FALSE)
 options( "golem.app.prod" = TRUE)
-DairyPrintModel::run_app(DairyPrintModel::wi_weather) # add parameters here (if any)
+DairyPrintModel::run_app()
