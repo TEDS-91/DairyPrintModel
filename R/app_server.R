@@ -108,6 +108,7 @@ app_server <- function(input, output, session) {
                        fac_ammonia        = ghg_emissions[["fac_ammonia"]],
                        storage_ammonia    = ghg_emissions[["storage_ammonia"]],
                        bedding_qnt        = ghg_emissions[["bedding_quant"]],
+                       direct_storage_n2o = ghg_emissions[["direct_storage_n2o"]],
 
                        # All the inputs bellow are coming from the miscellaneous module
 
@@ -132,6 +133,7 @@ app_server <- function(input, output, session) {
                        total_nh3          = ghg_crop[["total_nh3"]],
                        total_n2o          = ghg_crop[["total_n2o"]],
                        total_ch4          = ghg_crop[["total_ch4"]],
+
                        n_fixed            = ghg_crop[["n_fixed"]],
                        n_leached          = ghg_crop[["n_leached"]],
                        k_from_fertilizers = ghg_crop[["k_from_fertilizers"]],

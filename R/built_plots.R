@@ -1,5 +1,13 @@
 
 
+#' Built waterfall plot using ggplot2.
+#'
+#' @param data_frame Data frame.
+#' @param x_axis X axis title.
+#' @param y_axis Y axis title.
+#'
+#' @return Waterfall plot.
+#'
 built_waterfall_plot <- function(data_frame, x_axis, y_axis) {
 
   data_frame$desc <- factor(data_frame$desc, levels = data_frame$desc)
@@ -22,14 +30,27 @@ built_waterfall_plot <- function(data_frame, x_axis, y_axis) {
     ggplot2::scale_y_continuous(" ") +
     ggplot2::scale_x_discrete(" ", breaks = levels(data_frame$desc), labels = strwr(levels(data_frame$desc))) +
     ggplot2::theme(legend.position = "none",
-                   axis.text.x = ggplot2::element_text(angle = 45, vjust = 0.5, hjust = 1)) +
-    ggplot2::geom_text(ggplot2::aes(x = desc, y = end, label = round(amount, 1)), position = ggplot2::position_dodge(2)) +
-    ggplot2::xlab(x_axis) + ggplot2::ylab(y_axis)
+                   title = ggplot2::element_text(size = 9),
+                   axis.text.y = ggplot2::element_text(size = 8),
+                   axis.title.x = ggplot2::element_text(size = 8),
+                   axis.title.y = ggplot2::element_text(size = 8),
+                   strip.text.x = ggplot2::element_text(size = 8),
+                   strip.text.y = ggplot2::element_text(size = 8),
+                   axis.text.x = ggplot2::element_text(angle = 45, vjust = 0.5, hjust = 1, size = 8)) +
+    ggplot2::geom_text(ggplot2::aes(x = desc, y = end, label = round(amount, 1)), position = ggplot2::position_dodge(2), size = 3) +
+    ggplot2::xlab(x_axis) + ggplot2::ylab(y_axis) + ggplot2::ggtitle(y_axis)
 
   return(waterfall_plot)
 
 }
 
+#' Built waterfall plot using plotly.
+#'
+#' @param data_frame Data frame.
+#' @param nutrient_balance Nutrient balance.
+#' @param x_axis_title X axis title.
+#'
+#' @return Waterfall plot Plotly.
 
 built_waterfall_plot_plotly <- function(data_frame, nutrient_balance, x_axis_title) {
 
@@ -50,7 +71,15 @@ built_waterfall_plot_plotly <- function(data_frame, nutrient_balance, x_axis_tit
       showlegend = FALSE) %>%
     plotly::config(displayModeBar = FALSE)
 
+  return(fig)
+
 }
+
+#' Built gauge using plotly.
+#'
+#' @param carbon_equivalent Carbon equivalent.
+#'
+#' @return Gauge.
 
 built_gauge_plotly <- function(carbon_equivalent) {
 
@@ -77,9 +106,56 @@ built_gauge_plotly <- function(carbon_equivalent) {
     plotly::config(displayModeBar = FALSE) %>%
     plotly::layout(showlegend = FALSE)
 
-  fig
+  return(fig)
 
 }
+
+#' Built ggplot2 plot for variables over the lactation.
+#'
+#' @param data_frame Data frame.
+#' @param x_variable X axis variable.
+#' @param y_variable Y axis variable.
+#' @param col_variable Color variable.
+#' @param y_title Y axis title.
+#'
+#' @return Ggplot2 plot.
+
+built_variable_over_lactation_plot <- function(data_frame, x_variable, y_variable, col_variable, y_title) {
+
+  plot <- ggplot2::ggplot(data_frame, ggplot2::aes(x = .data[[x_variable]], y = .data[[y_variable]], col = .data[[col_variable]])) +
+    ggplot2::theme_minimal() +
+    ggplot2::geom_line() +
+    ggplot2::geom_point() +
+    ggplot2::xlab("Months in lactation") + ggplot2::ylab(" ") + ggplot2::ggtitle(y_title) +
+    ggplot2::theme(legend.position = "none") +
+    ggplot2::theme(plot.title = ggplot2::element_text(size = 10))
+
+  return(plot)
+
+}
+
+#' Built ggplot2 over the year.
+#'
+#' @param data_frame Data frame.
+#' @param x_variable X axis variable.
+#' @param y_variable Y xis variable.
+#' @param y_title Y axis title.
+#' @param plot_title Plot title.
+#'
+#' @return Ggplor2 plot.
+
+built_variable_over_year_plot <- function(data_frame, x_variable, y_variable, y_title, plot_title) {
+
+  ggplot2::ggplot( data_frame, ggplot2::aes( x = .data[[x_variable]], y = .data[[y_variable]]) ) +
+    ggplot2::theme_bw() +
+    ggplot2::geom_point(col = "blue") +
+    ggplot2::geom_line(ggplot2::aes( x = .data[[x_variable]], y = .data[[y_variable]]), col = "black") +
+    ggplot2::xlab("Year days") + ggplot2::ylab(y_title) + ggplot2::ggtitle(plot_title) +
+    ggplot2::theme(plot.title = ggplot2::element_text(size = 10))
+
+}
+
+
 
 
 

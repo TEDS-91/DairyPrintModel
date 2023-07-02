@@ -108,9 +108,6 @@ utils::globalVariables(
     "Crop production and purchased feeds",
     "Fuel",
 
-
-
-
     "milk_intake",
     "age",
     "dmi",
@@ -163,7 +160,14 @@ utils::globalVariables(
     "potash_applied",
     "precip_mm",
     "total_k_fert_ton",
-    "total_p_fert_ton"
+    "total_p_fert_ton",
+    "type",
+    "desc",
+    "id",
+    "end",
+    "start",
+    "amount",
+    ".data"
 
   )
 )

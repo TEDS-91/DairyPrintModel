@@ -16,8 +16,15 @@ params:
   purchased_feeds: 'NULL'
   animal_data: 'NULL'
   raw_animal_df: 'NULL'
+  farm_area: 'NULL'
   manure_inputs: 'NULL'
   diet_inputs: 'NULL'
+  direct_storage_n2o: 'NULL'
+  
+  crop_n2o: 'NULL'
+  crop_ammonia: 'NULL'
+  crop_methane: 'NULL'
+  crop_co2: 'NULL'
   
   total_ch4_emmited: 'NULL'
   total_n2o_emmited: 'NULL'
@@ -25,9 +32,11 @@ params:
   total_co2e_q_emitted: 'NULL'
   co2eq: 'NULL'
   plot_by_sorce: 'NULL'
+  pie2_ghg_source: 'NULL'
   
   nitrogen_balance: 'NULL'
   n_purchased_feeds:  'NULL'
+  nitrogen_from_bedding: 'NULL'
   nitrogen_from_fertilizers:  'NULL'
   n_fixed:  'NULL'
   nitrogen_from_barn:  'NULL'
@@ -35,24 +44,26 @@ params:
   nitrogen_from_culled_cows:  'NULL'
   nitrogen_from_milk:  'NULL'
   n_leached:  'NULL'
-  
   phosphorous_balance: 'NULL'
   p_purchased_feeds: 'NULL'
+  phosphorous_from_bedding: 'NULL'
   p_from_fertilizers: 'NULL'
   phosphorous_from_milk: 'NULL'
   phosphorous_from_culled_cows: 'NULL'
   p_losses: 'NULL'
-
+  
+  
+  
   potassium_balance: 'NULL'
   k_purchased_feeds: 'NULL'
+  potassium_from_bedding: 'NULL'
   k_from_fertilizers: 'NULL'
   potassium_from_culled_cows: 'NULL'
   potassium_from_milk: 'NULL'
   k_losses: 'NULL'
-  
   economics: 'NULL'
-  
-  
+editor_options: 
+  chunk_output_type: console
 ---
 
 <style type = "text/css">
@@ -137,8 +148,7 @@ pre { /* Code block - determines code spacing between lines */
 <div class="alert alert-info" <strong> Disclaimer: </strong> DairyPrint model is a high-level, simple, minimalistic, user-friendly,
                                still powerful, and scientifically sound whole-farm decision support
                                model to assess economic and environmental tradeoffs of dairy farming
-                               for strategic nutrient management decisions. For more information, access: 
-                               <a href="https://andysci.wisc.edu/directory/victor-cabrera/">linkToPaper</a>.
+                               for strategic nutrient management decisions.
 </div>
 
 ## **1. Farm Inputs:**
@@ -213,7 +223,7 @@ purchased_feeds <- params$purchased_feeds %>%
     "Quantitity (ton.)"             = "Qntdds",
     "Carbon Footprint (Carbon eq.)" = "carbon_foot"
   ) %>% 
-  dplyr::select(-cp_content, k_content, p_content, `source - co2eq`)
+  dplyr::select(-cp_content, -k_content, -p_content, -`source - co2eq`)
 
 kableExtra::kbl(purchased_feeds, escape = FALSE) %>%
   kableExtra::kable_paper("hover", full_width = TRUE) %>% 
@@ -241,13 +251,15 @@ kableExtra::kbl(params$fuel_inputs, escape = FALSE) %>%
 
 ```{r, warning = FALSE, echo = FALSE,  echo = FALSE, message = FALSE}
 
-params$animal_data %>% 
+herd_inventory <- params$animal_data %>% 
   dplyr::group_by(Categories) %>% 
   dplyr::select(Categories, total_animals) %>% 
   tidyr::pivot_wider(names_from = Categories, 
                      values_from = total_animals) %>% 
   dplyr::rename(Calves = Cal, "Lactating cows" = Cow, "Dry cows" = Dry, "Heifers" = Hei) %>% 
-  dplyr::relocate("Lactating cows", "Dry cows", "Heifers", "Calves") %>% 
+  dplyr::relocate("Lactating cows", "Dry cows", "Heifers", "Calves") 
+
+herd_inventory %>% 
   kableExtra::kbl(escape = FALSE) %>%
   kableExtra::kable_paper("hover", full_width = TRUE) %>% 
   kableExtra::row_spec(0, bold = TRUE, color = "white", background = "#007582")
@@ -274,12 +286,14 @@ animal_perfomance <- params$animal_data %>%
   dplyr::rename("Variables" = values, Calves = Cal, "Lactating cows" = Cow, "Dry cows" = Dry, "Heifers" = Hei) %>%
   dplyr::select(-Calves)
 
+animal_perfomance[3, 3] <- 0
+animal_perfomance[3, 4] <- 0
+
 animal_perfomance %>% 
   kableExtra::kbl(escape = FALSE) %>%
   kableExtra::kable_paper("hover", full_width = TRUE) %>% 
   kableExtra::row_spec(0, bold = TRUE, color = "white", background = "#007582")
   
-
 ```
 
 ```{r, warning = FALSE, echo = FALSE, fig.width = 10, fig.height = 3, fig.fullwidth = TRUE}
@@ -291,95 +305,96 @@ animal_data_plots <- params$raw_animal_df %>%
     Phase = dplyr::if_else(Phase == "Lac1", "Primip", dplyr::if_else(Phase == "Lac2", "Second", "Multi"))
   )
 
-milk_yield <- animal_data_plots %>%
-  ggplot2::ggplot( ggplot2::aes(x = Month, y = milk_yield_kg_cow2, col = Phase)) +
-  ggplot2::theme_minimal() +
-  ggplot2::geom_line() +
-  ggplot2::geom_point() +
-  ggplot2::xlab("Months in lactation") + ggplot2::ylab(" ") + ggplot2::ggtitle("Milk Yield (kg/day)") +
-  ggplot2::theme(legend.position = "none") +
-  ggplot2::theme(plot.title = ggplot2::element_text(size = 10))
+plots <- list(
+  y_variable = c("milk_yield_kg_cow2", "dry_matter_intake_kg_animal"),
+  y_title = c("Milk Yield (kg/day)", "Dry Matter Intake (kg/day)")
+) %>% 
+  purrr::pmap(built_variable_over_lactation_plot, data_frame = animal_data_plots, x_variable = "Month", col_variable = "Phase")
 
-DMI <- animal_data_plots %>%
-  ggplot2::ggplot( ggplot2::aes(x = Month, y = dry_matter_intake_kg_animal, col = Phase)) +
-  ggplot2::theme_minimal() +
-  ggplot2::geom_line() +
-  ggplot2::geom_point() +
-  ggplot2::xlab("Months in lactation") + ggplot2::ylab(" ") + ggplot2::ggtitle("Dry Matter Intake (kg/day)") +
-  ggplot2::theme(legend.position = "bottom") +
-  ggplot2::theme(plot.title = ggplot2::element_text(size = 10))
-
-# water_intake <- animal_data_plots %>% 
-#   ggplot2::ggplot( ggplot2::aes(x = Month, y = water_intake_l_animal, col = Phase)) +
-#   ggplot2::theme_minimal() +
-#   ggplot2::geom_line() +
-#   ggplot2::geom_point() +
-#   ggplot2::xlab("Months in lactation") + ggplot2::ylab(" ") + ggplot2::ggtitle("Water Intake (l/day)") +
-#   ggplot2::theme(legend.position = "none") +
-#   ggplot2::theme(plot.title = ggplot2::element_text(size = 10))
-# 
-patchwork::wrap_plots(milk_yield, DMI, ncol = 2)
+patchwork::wrap_plots(plots[[1]], plots[[2]], ncol = 2)
 
 ```
 
-### **2.2 Greenhouse gas emissions **
+### **2.3 Greenhouse gas emissions **
 
 ```{r, warning = FALSE, echo = FALSE, fig.width = 10, fig.height = 3, fig.fullwidth = TRUE}
 
-manure_excretion <- animal_data_plots %>%
-  ggplot2::ggplot( ggplot2::aes(x = Month, y = fresh_manure_output_kg_day, col = Phase)) +
-  ggplot2::theme_minimal() +
-  ggplot2::geom_line() +
-  ggplot2::geom_point() +
-  ggplot2::xlab("Months in lactation") + ggplot2::ylab(" ") + ggplot2::ggtitle("Manure Excretion (kg/day)") +
-  ggplot2::theme(legend.position = "none") +
-  ggplot2::theme(plot.title = ggplot2::element_text(size = 10))
+animal_ghg_emissions <- params$animal_data %>% 
+  dplyr::select(Categories, total_animals, milk_yield_kg_fpc, dmi_kg, total_manure_kg, total_ch4_kg, total_n2o_kg) %>% 
+  dplyr::mutate(
+    total_manure_kg = total_manure_kg / total_animals,
+    total_ch4_kg = total_ch4_kg / total_animals,
+    total_n2o_kg = total_n2o_kg / total_animals,
+    "Methane yield (g/kg DM)" = total_ch4_kg * 1000 / dmi_kg,
+    "Methane Intensity (g/kg Milk)" = total_ch4_kg * 1000 / milk_yield_kg_fpc
+  ) %>% 
+  dplyr::select(-total_animals, -milk_yield_kg_fpc, -dmi_kg) %>% 
+  dplyr::rename("Manure excretion (kg/day)"              = total_manure_kg,
+                "Enteric methane (kg/day)"               = total_ch4_kg,
+                "Enteric nitrous oxide (kg/day)"         = total_n2o_kg) %>% 
+  dplyr::mutate_if(is.numeric, round, 2) %>% 
+  tidyr::pivot_longer(cols = c("Manure excretion (kg/day)", 
+                               "Enteric methane (kg/day)",
+                               "Enteric nitrous oxide (kg/day)",
+                               "Methane yield (g/kg DM)",
+                               "Methane Intensity (g/kg Milk)"), 
+                      names_to = "values") %>% 
+  tidyr::pivot_wider(names_from = Categories) %>% 
+  dplyr::relocate(values, Cow, Dry, Hei, Cal) %>% 
+  dplyr::rename("Variables" = values, Calves = Cal, "Lactating cows" = Cow, "Dry cows" = Dry, "Heifers" = Hei) %>%
+  dplyr::select(-Calves)
 
-enteric_methane <- animal_data_plots %>%
-  ggplot2::ggplot( ggplot2::aes(x = Month, y = enteric_methane_g_animal_day, col = Phase)) +
-  ggplot2::theme_minimal() +
-  ggplot2::geom_line() +
-  ggplot2::geom_point() +
-  ggplot2::xlab("Months in lactation") + ggplot2::ylab(" ") + ggplot2::ggtitle("Enteric Methane (kg/day)") +
-  ggplot2::theme(legend.position = "bottom") +
-  ggplot2::theme(plot.title = ggplot2::element_text(size = 10))
+animal_ghg_emissions[5, 3] <- 0
+animal_ghg_emissions[5, 4] <- 0
 
-patchwork::wrap_plots(manure_excretion, enteric_methane, ncol = 2)
+animal_ghg_emissions %>% 
+  kableExtra::kbl(escape = FALSE) %>%
+  kableExtra::kable_paper("hover", full_width = TRUE) %>% 
+  kableExtra::row_spec(0, bold = TRUE, color = "white", background = "#007582")
+
+plots <- list(
+  y_variable = c("fresh_manure_output_kg_day", "enteric_methane_g_animal_day"),
+  y_title = c("Manure Excretion (kg/day)", "Enteric Methane (kg/day)")
+) %>% 
+  purrr::pmap(built_variable_over_lactation_plot, data_frame = animal_data_plots, x_variable = "Month", col_variable = "Phase")
+
+patchwork::wrap_plots(plots[[1]], plots[[2]], ncol = 2)
 
 ```
 
-### **2.2 Nutrient excretion **
+### **2.4 Nutrient excretion **
 
 ```{r, warning = FALSE, echo = FALSE, fig.width = 10, fig.height = 3, fig.fullwidth = TRUE, fig.retina=3}
 
-nit_excretion <- animal_data_plots %>%
-  ggplot2::ggplot( ggplot2::aes(x = Month, y = total_nitrogen_excreted_g, col = Phase)) +
-  ggplot2::theme_minimal() +
-  ggplot2::geom_line() +
-  ggplot2::geom_point() +
-  ggplot2::xlab("Months in lactation") + ggplot2::ylab(" ") + ggplot2::ggtitle("Nitrogen Excretion (kg/day)") +
-  ggplot2::theme(legend.position = "none") +
-  ggplot2::theme(plot.title = ggplot2::element_text(size = 10))
+animal_nutrient_excretion <- params$animal_data %>% 
+  dplyr::select(Categories, total_n_excreted_g, total_p_excreted_g, total_k_excreted_g) %>% 
+  dplyr::rename("Nitrogen excretion (kg/day)"        = total_n_excreted_g,
+                "Phosphorous excretion (kg/day)"     = total_p_excreted_g,
+                "Potassium excretion (kg/day)"       = total_k_excreted_g) %>% 
+  dplyr::mutate_if(is.numeric, \(x) x / 1000) %>% 
+  dplyr::mutate_if(is.numeric, round, 2) %>% 
+  tidyr::pivot_longer(cols = c("Nitrogen excretion (kg/day)", 
+                               "Phosphorous excretion (kg/day)",
+                               "Potassium excretion (kg/day)"), 
+                      names_to = "values") %>% 
+  tidyr::pivot_wider(names_from = Categories) %>% 
+  dplyr::relocate(values, Cow, Dry, Hei, Cal) %>% 
+  dplyr::rename("Variables" = values, Calves = Cal, "Lactating cows" = Cow, "Dry cows" = Dry, "Heifers" = Hei) %>%
+  dplyr::select(-Calves)
 
-phos_excretion <- animal_data_plots %>%
-  ggplot2::ggplot( ggplot2::aes(x = Month, y = total_phosphorus_excretion_g, col = Phase)) +
-  ggplot2::theme_minimal() +
-  ggplot2::geom_line() +
-  ggplot2::geom_point() +
-  ggplot2::xlab("Months in lactation") + ggplot2::ylab(" ") + ggplot2::ggtitle("Phosphorous Excretion (kg/day)") +
-  ggplot2::theme(legend.position = "bottom") +
-  ggplot2::theme(plot.title = ggplot2::element_text(size = 10))
+animal_nutrient_excretion %>% 
+  kableExtra::kbl(escape = FALSE) %>%
+  kableExtra::kable_paper("hover", full_width = TRUE) %>% 
+  kableExtra::row_spec(0, bold = TRUE, color = "white", background = "#007582")
 
-pot_excretion <- animal_data_plots %>%
-  ggplot2::ggplot( ggplot2::aes(x = Month, y = total_potassium_excretion_g, col = Phase)) +
-  ggplot2::theme_minimal() +
-  ggplot2::geom_line() +
-  ggplot2::geom_point() +
-  ggplot2::xlab("Months in lactation") + ggplot2::ylab(" ") + ggplot2::ggtitle("Potassium Excretion (kg/day)") +
-  ggplot2::theme(legend.position = "none") +
-  ggplot2::theme(plot.title = ggplot2::element_text(size = 10))
 
-patchwork::wrap_plots(nit_excretion, phos_excretion, pot_excretion, ncol = 3)
+plots <- list(
+  y_variable = c("total_nitrogen_excreted_g", "total_phosphorus_excretion_g", "total_potassium_excretion_g"),
+  y_title = c("Nitrogen Excretion (kg/day)", "Phosphorous Excretion (kg/day)", "Potassium Excretion (kg/day)")
+) %>% 
+  purrr::pmap(built_variable_over_lactation_plot, data_frame = animal_data_plots, x_variable = "Month", col_variable = "Phase")
+
+patchwork::wrap_plots(plots[[1]], plots[[2]], plots[[3]], ncol = 3)
 
 ```
 
@@ -393,52 +408,54 @@ patchwork::wrap_plots(nit_excretion, phos_excretion, pot_excretion, ncol = 3)
 
 ```{r, warning = FALSE, echo = FALSE, fig.width = 10, fig.height = 3, fig.fullwidth = TRUE}
 
-barn <- params$nh3_emissions %>%
-  dplyr::filter(year_day > 365) %>%
-  ggplot2::ggplot( ggplot2::aes( x = year_day, y = barn_ch4_emissions_kg)) +
-  ggplot2::theme_bw() +
-  ggplot2::geom_point(col = "blue") +
-  ggplot2::geom_line(ggplot2::aes( x = year_day, y = barn_ch4_emissions_kg), col = "black") +
-  ggplot2::xlab("Year days") + ggplot2::ylab("Methane Emissions") + ggplot2::ggtitle("Barn") +
-  ggplot2::theme(plot.title = ggplot2::element_text(size = 10))
+methane <- params$nh3_emissions %>%
+  dplyr::filter(year_day > 365) 
 
-storage <- params$nh3_emissions %>%
-  dplyr::filter(year_day > 365) %>%
-  ggplot2::ggplot( ggplot2::aes( x = year_day, y = storage_ch4_emissions_kg)) +
-  ggplot2::theme_bw() +
-  ggplot2::geom_point(col = "blue") +
-  ggplot2::geom_line(ggplot2::aes( x = year_day, y = storage_ch4_emissions_kg), col = "blue") +
-  ggplot2::xlab("Year days") + ggplot2::ylab("Methane Emissions") + ggplot2::ggtitle("Storage") +
-  ggplot2::theme(plot.title = ggplot2::element_text(size = 10))
+methane %>% 
+  dplyr::select(barn_ch4_emissions_kg, storage_ch4_emissions_kg) %>% 
+  dplyr::summarise(
+    "Total Barn Methane Emissions (Ton./Year)" = round(sum(barn_ch4_emissions_kg) / 1000, 1),
+    "Total Storage Methane Emissions (Ton./Year)" = round(sum(storage_ch4_emissions_kg) / 1000, 1)
+  ) %>% 
+  kableExtra::kbl(escape = FALSE) %>%
+  kableExtra::kable_paper("hover", full_width = TRUE) %>% 
+  kableExtra::row_spec(0, bold = TRUE, color = "white", background = "#007582")
 
-patchwork::wrap_plots(barn, storage, ncol = 2)
+plots <- list(
+  y_variable = c("barn_ch4_emissions_kg", "storage_ch4_emissions_kg"),
+  y_title = c("Methane Emissions", "Methane Emissions"),
+  plot_title = c("Barn", "Storage")
+) %>% 
+  purrr::pmap(built_variable_over_year_plot, data_frame = methane, x_variable = "year_day")
+
+patchwork::wrap_plots(plots[[1]], plots[[2]], ncol = 2)
 
 ```
 
-
-### **3.1 Ammonia **
+### **3.2 Ammonia and Nitrous Oxide **
 
 ```{r, warning = FALSE, echo = FALSE, fig.width = 10, fig.height = 3, fig.fullwidth = TRUE}
 
-barn <- params$nh3_emissions %>%
-  dplyr::filter(year_day > 365) %>%
-  ggplot2::ggplot( ggplot2::aes( x = year_day, y = loss_animal_kg) ) +
-  ggplot2::theme_bw() +
-  ggplot2::geom_point(col = "blue") +
-  ggplot2::geom_line(ggplot2::aes( x = year_day, y = loss_animal_kg), col = "black") +
-  ggplot2::xlab("Year days") + ggplot2::ylab("Ammonia Emissions") + ggplot2::ggtitle("Barn") +
-  ggplot2::theme(plot.title = ggplot2::element_text(size = 10))
+methane %>% 
+  dplyr::select(loss_animal_kg, total_storage_N_loss) %>% 
+  dplyr::summarise(
+    "Total Barn Ammonia Emissions (Ton./Year)" = round(sum(loss_animal_kg) / 1000, 1),
+    "Total Storage Ammonia Emissions (Ton./Year)" = round(sum(total_storage_N_loss) / 1000, 1),
+    "Nitrous Oxide (Ton.Year)" = round(params$direct_storage_n2o / 1000 + `Total Storage Ammonia Emissions (Ton./Year)`/100/0.64 + `Total Barn Ammonia Emissions (Ton./Year)`/100/0.64 , 2)
+  ) %>% 
+  kableExtra::kbl(escape = FALSE) %>%
+  kableExtra::kable_paper("hover", full_width = TRUE) %>% 
+  kableExtra::row_spec(0, bold = TRUE, color = "white", background = "#007582")
 
-storage <- params$nh3_emissions %>%
-  dplyr::filter(year_day > 365) %>%
-  ggplot2::ggplot( ggplot2::aes( x = year_day, y = total_storage_N_loss)) +
-  ggplot2::theme_bw() +
-  ggplot2::geom_point(col = "blue") +
-  ggplot2::geom_line(ggplot2::aes( x = year_day, y = total_storage_N_loss), col = "blue") +
-  ggplot2::xlab("Year days") + ggplot2::ylab("Ammonia Emissions") + ggplot2::ggtitle("Storage") +
-  ggplot2::theme(plot.title = ggplot2::element_text(size = 10))
 
-patchwork::wrap_plots(barn, storage, ncol = 2)
+plots <- list(
+  y_variable = c("loss_animal_kg", "total_storage_N_loss"),
+  y_title = c("Ammonia Emissions", "Ammonia Emissions"),
+  plot_title = c("Barn", "Storage")
+) %>% 
+  purrr::pmap(built_variable_over_year_plot, data_frame = methane, x_variable = "year_day")
+
+patchwork::wrap_plots(plots[[1]], plots[[2]], ncol = 2)
 
 ```
 
@@ -448,7 +465,22 @@ patchwork::wrap_plots(barn, storage, ncol = 2)
 
 ## {.tabset}
 
-### **4.1 Methane, Ammonia and Nitrous Oxide emissions **
+### **4.1 Methane, Ammonia, and Nitrous Oxide emissions **
+
+```{r, warning = FALSE, echo = FALSE, fig.width = 10, fig.height = 3, fig.fullwidth = TRUE, fig.retina = 3}
+
+tibble::tibble(
+  "Variable" = c("Methane (Ton./Year)", "Ammonia (Ton./Year)", "Nitrous Oxide (Ton./Year)", "Carbon Dioxide (Ton./Year)"),
+  "Values"   = c(params$crop_methane, params$crop_ammonia, params$crop_n2o, params$crop_co2)
+) %>%
+  dplyr::mutate_if(is.numeric, \(x) x / 1000) %>% 
+  dplyr::mutate_if(is.numeric, round, 1) %>% 
+  tidyr::pivot_wider(names_from = c("Variable"), values_from = "Values") %>% 
+  kableExtra::kbl(escape = FALSE) %>%
+  kableExtra::kable_paper("hover", full_width = TRUE) %>% 
+  kableExtra::row_spec(0, bold = TRUE, color = "white", background = "#007582")
+  
+```
 
 ## {-}
 
@@ -471,15 +503,18 @@ tibble::tibble(
   kableExtra::row_spec(0, bold = TRUE, color = "white", background = "#007582")
 
 
-params$plot_by_sorce %>% 
-  tidyr::pivot_longer(cols = c(Herd, Barn, Manure, `Crop and purchased feeds`, Fuel), values_to = "Co2eq") %>% 
+bar_plot <- params$plot_by_sorce %>% 
+  dplyr::rename("Crop/Purc. Feeds" = `Crop and purchased feeds`) %>% 
+  tidyr::pivot_longer(cols = c(Herd, Barn, Manure, `Crop/Purc. Feeds`, Fuel), values_to = "Co2eq") %>% 
   ggplot2::ggplot(ggplot2::aes(x = reorder(name, -Co2eq), y = Co2eq, fill = name)) +
-  ggplot2::geom_bar(stat = "identity", fill="steelblue")+
-  ggplot2::geom_text(ggplot2::aes(label = Co2eq), vjust = 1.6, color = "black", size = 3.5)+
-  ggplot2::theme_minimal() + ggplot2::ylab("Co2eq/kgMilk") + ggplot2::xlab(" ")
+  ggplot2::geom_bar(stat = "identity", fill = "steelblue")+
+  ggplot2::geom_text(ggplot2::aes(label = Co2eq), vjust = 1.6, color = "black", size = 3)+
+  ggplot2::theme_minimal() + 
+  ggplot2::ylab("Co2eq/kgMilk") + ggplot2::xlab(" ") 
 
 data <- params$plot_by_sorce %>% 
-  tidyr::pivot_longer(cols = c(Herd, Barn, Manure, `Crop and purchased feeds`, Fuel), values_to = "Co2eq", names_to = "Sources")
+  dplyr::rename("Crop/Purc. Feeds" = `Crop and purchased feeds`) %>%
+  tidyr::pivot_longer(cols = c(Herd, Barn, Manure, `Crop/Purc. Feeds`, Fuel), values_to = "Co2eq", names_to = "Sources")
 
 # Compute percentages
 data$fraction = data$Co2eq / sum(data$Co2eq)
@@ -488,16 +523,16 @@ data$fraction = data$Co2eq / sum(data$Co2eq)
 data$ymax = cumsum(data$fraction)
 
 # Compute the bottom of each rectangle
-data$ymin = c(0, head(data$ymax, n=-1))
+data$ymin = c(0, head(data$ymax, n = -1))
 
 # Compute label position
 data$labelPosition <- (data$ymax + data$ymin) / 2
 
 # Compute a good label
-data$label <- paste0(data$Sources, "\n value: ", data$Co2eq)
+data$label <- paste0(data$Sources, " ", round(data$fraction * 100, 2), "\n %")
 
 # Make the plot
-ggplot2::ggplot(data, ggplot2::aes(ymax = ymax, ymin = ymin, xmax = 4, xmin = 3, fill = Sources)) +
+pie_chart <- ggplot2::ggplot(data, ggplot2::aes(ymax = ymax, ymin = ymin, xmax = 4, xmin = 3, fill = Sources)) +
   ggplot2::geom_rect() +
   ggplot2::geom_label( x = 3.5, ggplot2::aes(y = labelPosition, label = label), size = 2) +
   ggplot2::scale_fill_brewer(palette = 4) +
@@ -506,32 +541,78 @@ ggplot2::ggplot(data, ggplot2::aes(ymax = ymax, ymin = ymin, xmax = 4, xmin = 3,
   ggplot2::theme_void() +
   ggplot2::theme(legend.position = "none")
 
- 
-```
+data2 <- params$pie2_ghg_source
 
+# Compute percentages
+data2$fraction = data2$values / sum(data2$values)
+
+# Compute the cumulative percentages (top of each rectangle)
+data2$ymax = cumsum(data2$fraction)
+
+# Compute the bottom of each rectangle
+data2$ymin = c(0, head(data2$ymax, n = -1))
+
+# Compute label position
+data2$labelPosition <- (data2$ymax + data2$ymin) / 2
+
+# Compute a good label
+data2$label <- paste0(data2$ghg, " ", round(data2$fraction * 100, 1), "\n %")
+
+# Make the plot
+pie_chart2 <- ggplot2::ggplot(data2, ggplot2::aes(ymax = ymax, ymin = ymin, xmax = 4, xmin = 3, fill = ghg)) +
+  ggplot2::geom_rect() +
+  ggplot2::geom_label( x = 3.5, ggplot2::aes(y = labelPosition, label = label), size = 2) +
+  ggplot2::scale_fill_brewer(palette = 4) +
+  ggplot2::coord_polar(theta = "y") +
+  ggplot2::xlim(c(2, 4)) +
+  ggplot2::theme_void() +
+  ggplot2::theme(legend.position = "none")
+
+patchwork::wrap_plots(bar_plot, pie_chart, pie_chart2, ncol = 3) 
+
+```
 
 ### **5.2 Nutrient Balances **
 
 ```{r, warning = FALSE, echo = FALSE, fig.width = 10, fig.height = 3, fig.fullwidth = TRUE}
-
 balance_n <- data.frame(
-  amount =  c(params$n_purchased_feeds, params$nitrogen_from_fertilizers, params$n_fixed, -params$nitrogen_from_milk, -params$nitrogen_from_culled_cows, -params$nitrogen_from_barn, -params$nitrogen_from_manure_storage, -params$n_leached, params$nitrogen_balance),
-  desc = c("Purchased Feeds", "Fertilizers", "Legumes", "Milk sold", "Culled Animals", "Barn", "Manure Storage", "Leached", "Balance")
+  amount =  c(params$n_purchased_feeds, params$nitrogen_from_bedding, params$nitrogen_from_fertilizers, params$n_fixed, -params$nitrogen_from_milk, -params$nitrogen_from_culled_cows, -params$nitrogen_from_barn, -params$nitrogen_from_manure_storage, -params$n_leached, params$nitrogen_balance),
+  desc = c("Purchased Feeds", "Bedding", "Fertilizers", "Legumes", "Milk sold", "Culled Animals", "Barn", "Manure Storage", "Leached", "Balance")
 )
 
 balance_p <- data.frame(
-  amount =  c(params$p_purchased_feeds, params$p_from_fertilizers,  -params$phosphorous_from_milk, -params$phosphorous_from_culled_cows, -params$p_losses, params$phosphorous_balance),
-  desc = c("Purchased Feeds", "Fertilizers", "Milk sold", "Culled Animals", "Soil losses", "Balance")
+  amount =  c(params$p_purchased_feeds, params$phosphorous_from_bedding, params$p_from_fertilizers,  -params$phosphorous_from_milk, -params$phosphorous_from_culled_cows, -params$p_losses, params$phosphorous_balance),
+  desc = c("Purchased Feeds", "Bedding", "Fertilizers", "Milk sold", "Culled Animals", "Soil losses", "Balance")
 )
 
 balance_k <- data.frame(
-  amount =  c(params$k_purchased_feeds, params$k_from_fertilizers,  -params$potassium_from_milk, -params$potassium_from_culled_cows, -params$k_losses, params$potassium_balance),
-  desc = c("Purchased Feeds", "Fertilizers", "Milk sold", "Culled Animals", "Soil losses", "Balance")
+  amount =  c(params$k_purchased_feeds, params$potassium_from_bedding, params$k_from_fertilizers,  -params$potassium_from_milk, -params$potassium_from_culled_cows, -params$k_losses, params$potassium_balance),
+  desc = c("Purchased Feeds", "Bedding", "Fertilizers", "Milk sold", "Culled Animals", "Soil losses", "Balance")
 )
 
-built_waterfall_plot(balance_n, x_axis = " ", y_axis = "N (ton./ha)")
-built_waterfall_plot(balance_p, x_axis = " ", y_axis = "P (ton./ha)") 
-built_waterfall_plot(balance_k, x_axis = " ", y_axis = "P (ton./ha)") 
+total_annual_milk_yield_kg <- as.numeric(animal_perfomance[4, 2]) * 365 * herd_inventory[1, 1]
+
+tibble::tibble(
+  "Nutrient" = c("Nitrogen", "Phosphorous", "Potassium"),
+  "Nutrient Balance (Ton./Year)"   = c(params$nitrogen_balance, params$phosphorous_balance, params$potassium_balance),
+  "Nutrient Balance/Milk (kg/kg)"   = c(params$nitrogen_balance / total_annual_milk_yield_kg, params$phosphorous_balance / total_annual_milk_yield_kg, params$potassium_balance / total_annual_milk_yield_kg),
+  "Nutrient Balance/area (kg/ha)" = c(params$nitrogen_balance * 1000 / params$farm_area, params$phosphorous_balance * 1000 / params$farm_area, params$potassium_balance * 1000 / params$farm_area)
+ ) %>%
+  dplyr::mutate(
+    "Nutrient Balance (Ton./Year)" = round(`Nutrient Balance (Ton./Year)`, 1),
+    "Nutrient Balance/Milk (kg/kg)" = round(as.numeric(`Nutrient Balance/Milk (kg/kg)`), 4),
+    "Nutrient Balance/area (kg/ha)" = round(`Nutrient Balance/area (kg/ha)`, 1)
+  ) %>%
+  kableExtra::kbl(escape = FALSE) %>%
+  kableExtra::kable_paper("hover", full_width = TRUE) %>% 
+  kableExtra::row_spec(0, bold = TRUE, color = "white", background = "#007582")
+
+```
+
+
+```{r, warning = FALSE, echo = FALSE, fig.width = 10, fig.height = 3, fig.fullwidth = TRUE}
+
+patchwork::wrap_plots(built_waterfall_plot(balance_n, x_axis = " ", y_axis = "N (Ton./ha)"), built_waterfall_plot(balance_p, x_axis = " ", y_axis = "P (Ton./ha)"), built_waterfall_plot(balance_k, x_axis = " ", y_axis = "P (Ton./ha)"), ncol = 3)
 
 ```
 
@@ -558,17 +639,6 @@ params$economics %>%
 
 ## {-}
 
-### **Comments:**
-<style>
-div.blue { background-color:#e6f0ff; border-radius: 5px; padding: 20px;}
-</style>
-<div class = "blue">
-
-Here are the comments
-
-</div>
-
-&nbsp;
 <hr />
 <p style = "text-align: center; color: #007582;"> All rights reserved - University of Wisconsin-Madison </p>
 <center>
