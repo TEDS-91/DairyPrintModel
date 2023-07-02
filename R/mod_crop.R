@@ -493,12 +493,12 @@ mod_crop_server <- function(id,
 
     })
 
-    # Total CH4 emmited from field
+    # Total CH4 emitted from field
 
     output$ch4_field <- bs4Dash::renderValueBox({
 
       value_box_spark(
-        value    = round(ch4_field_kg() / 1000, 2),
+        value    = round(ch4_field_kg() / 1000, 1),
         title    = "CH4 emitted (Ton./year)",
         sparkobj = NULL,
         subtitle = tagList(),

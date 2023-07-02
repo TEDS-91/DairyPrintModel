@@ -240,13 +240,13 @@ mod_purchased_feeds_server <- function(id){
 
     output$teste <- renderTable({
 
-      print(paste(
-        "Nitrogenio: " , n_from_purchased_feeds(),
-        "Fosforo:" , p_from_purchased_feeds(),
-        "Potassio:", k_from_purchased_feeds()
-      ))
-
-       #CO2eq_calculations()
+      # print(paste(
+      #   "Nitrogenio: " , n_from_purchased_feeds(),
+      #   "Fosforo:" , p_from_purchased_feeds(),
+      #   "Potassio:", k_from_purchased_feeds()
+      # ))
+      #
+      #  #CO2eq_calculations()
 
     })
 

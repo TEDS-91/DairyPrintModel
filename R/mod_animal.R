@@ -1047,7 +1047,7 @@ mod_animal_server <- function(id){
     output$hei_dmi <- bs4Dash::renderValueBox({
 
       value_box_spark(
-        value    = round(df_sum()$dmi_kg[4], 2),
+        value    = round(df_sum()$dmi_kg[4], 1),
         title    = "Heifer DMI (kg/d)",
         sparkobj = NULL,
         subtitle = tagList(),
@@ -1062,7 +1062,7 @@ mod_animal_server <- function(id){
     output$dry_dmi <- bs4Dash::renderValueBox({
 
       value_box_spark(
-        value    = round(df_sum()$dmi_kg[3], 2),
+        value    = round(df_sum()$dmi_kg[3], 1),
         title    = "Dry Cows DMI (kg/d)",
         sparkobj = NULL,
         subtitle = tagList(),
@@ -1078,7 +1078,7 @@ mod_animal_server <- function(id){
     output$lac_dmi <- bs4Dash::renderValueBox({
 
       value_box_spark(
-        value    = round(df_sum()$dmi_kg[2], 2),
+        value    = round(df_sum()$dmi_kg[2], 1),
         title    = "Milking Cows DMI (kg/d)",
         sparkobj = NULL,
         subtitle = tagList(),
@@ -1096,7 +1096,7 @@ mod_animal_server <- function(id){
     output$hei_water <- bs4Dash::renderValueBox({
 
       value_box_spark(
-        value    = round(df_sum()$water_l[4], 2),
+        value    = round(df_sum()$water_l[4], 1),
         title    = "Heifer Water Intake (l/d)",
         sparkobj = NULL,
         subtitle = tagList(),
@@ -1111,7 +1111,7 @@ mod_animal_server <- function(id){
     output$dry_water <- bs4Dash::renderValueBox({
 
       value_box_spark(
-        value    = round(df_sum()$water_l[3], 2),
+        value    = round(df_sum()$water_l[3], 1),
         title    = "Dry Cows Water Intake (l/d)",
         sparkobj = NULL,
         subtitle = tagList(),
@@ -1127,7 +1127,7 @@ mod_animal_server <- function(id){
     output$lac_water <- bs4Dash::renderValueBox({
 
       value_box_spark(
-        value    = round(df_sum()$water_l[2], 2),
+        value    = round(df_sum()$water_l[2], 1),
         title    = "Milking Cows Water Intake (l/d)",
         sparkobj = NULL,
         subtitle = tagList(),
@@ -1358,7 +1358,7 @@ mod_animal_server <- function(id){
     output$hei_manure <- bs4Dash::renderValueBox({
 
       value_box_spark(
-        value    = round(df_sum()$total_manure_kg[4] / df_sum()$total_animals[4], 2),
+        value    = round(df_sum()$total_manure_kg[4] / df_sum()$total_animals[4], 1),
         title    = "Heifer Manure Excretion (kg/d)",
         sparkobj = NULL,
         subtitle = tagList(),
@@ -1374,7 +1374,7 @@ mod_animal_server <- function(id){
     output$dry_manure <- bs4Dash::renderValueBox({
 
       value_box_spark(
-        value    = round(df_sum()$total_manure_kg[3] / df_sum()$total_animals[3], 2),
+        value    = round(df_sum()$total_manure_kg[3] / df_sum()$total_animals[3], 1),
         title    = "Dry Cows Manure Excretion (kg/d)",
         sparkobj = NULL,
         subtitle = tagList(),
@@ -1390,7 +1390,7 @@ mod_animal_server <- function(id){
     output$lac_manure <- bs4Dash::renderValueBox({
 
       value_box_spark(
-        value    = round(df_sum()$total_manure_kg[2] / df_sum()$total_animals[2], 2),
+        value    = round(df_sum()$total_manure_kg[2] / df_sum()$total_animals[2], 1),
         title    = "Milking Cows Manure Excretion (kg/d)",
         sparkobj = NULL,
         subtitle = tagList(),

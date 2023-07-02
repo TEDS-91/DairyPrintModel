@@ -271,7 +271,7 @@ mod_dashboard_server <- function(id,
     output$total_methane <- bs4Dash::renderValueBox({
 
       value_box_spark(
-        value    = round(total_methane_emmited() / 1000, 2),
+        value    = round(total_methane_emmited() / 1000, 1),
         title    = "Total Methane (Ton./year)",
         sparkobj = NULL,
         subtitle = tagList(),
@@ -287,7 +287,7 @@ mod_dashboard_server <- function(id,
     output$total_n2o <- bs4Dash::renderValueBox({
 
       value_box_spark(
-        value    = round(total_n2o_emmited() / 1000, 2),
+        value    = round(total_n2o_emmited() / 1000, 1),
         title    = "Total Nitrous Oxide (Ton./year)",
         sparkobj = NULL,
         subtitle = tagList(),
@@ -303,7 +303,7 @@ mod_dashboard_server <- function(id,
     output$total_co2 <- bs4Dash::renderValueBox({
 
       value_box_spark(
-        value    = round(total_co2_emmited() / 1000, 2),
+        value    = round(total_co2_emmited() / 1000, 1),
         title    = "Total Carbon Dioxide (Ton./year)",
         sparkobj = NULL,
         subtitle = tagList(),
@@ -421,7 +421,7 @@ mod_dashboard_server <- function(id,
     output$milk_income <- bs4Dash::renderValueBox({
 
       value_box_spark(
-        value    = round(economics()$`Total Milk Income ($/cow)`, 2),
+        value    = round(economics()$`Total Milk Income ($/cow)`, 1),
         title    = "Milk Income ($/cow)",
         sparkobj = NULL,
         subtitle = tagList(),
@@ -437,7 +437,7 @@ mod_dashboard_server <- function(id,
     output$feed_cost <- bs4Dash::renderValueBox({
 
       value_box_spark(
-        value    = round(economics()$`Feed Cost ($/cow)`, 2),
+        value    = round(economics()$`Feed Cost ($/cow)`, 1),
         title    = "Feed Cost ($/cow)",
         sparkobj = NULL,
         subtitle = tagList(),
@@ -453,7 +453,7 @@ mod_dashboard_server <- function(id,
     output$iofc_lac <- bs4Dash::renderValueBox({
 
       value_box_spark(
-        value    = round(economics()$`Income Over Feed Cost Lac ($/cow)`, 2),
+        value    = round(economics()$`Income Over Feed Cost Lac ($/cow)`, 1),
         title    = "IOFC Lactating Cows ($/cow)",
         sparkobj = NULL,
         subtitle = tagList(),
@@ -469,7 +469,7 @@ mod_dashboard_server <- function(id,
     output$iofc_lac_dry <- bs4Dash::renderValueBox({
 
       value_box_spark(
-        value    = round(economics()$`Income Over Feed Cost Lac + Dry ($/cow)`, 2),
+        value    = round(economics()$`Income Over Feed Cost Lac + Dry ($/cow)`, 1),
         title    = "IOFC Lactating and Dry Cows ($/cow)",
         sparkobj = NULL,
         subtitle = tagList(),
@@ -485,7 +485,7 @@ mod_dashboard_server <- function(id,
     output$iofc_dry <- bs4Dash::renderValueBox({
 
       value_box_spark(
-        value    = round(economics()$`Income Over feed Cost Dry ($/cow)`, 2),
+        value    = round(economics()$`Income Over feed Cost Dry ($/cow)`, 1),
         title    = "IOFC Dry Cows ($/cow)",
         sparkobj = NULL,
         subtitle = tagList(),
@@ -501,7 +501,7 @@ mod_dashboard_server <- function(id,
     output$feed_cost_milk <- bs4Dash::renderValueBox({
 
       value_box_spark(
-        value    = round(economics()$`Feed Cost per Kg Milk ($)`, 2),
+        value    = round(economics()$`Feed Cost per Kg Milk ($)`, 1),
         title    = "Feed Cost per Kg Milk ($)",
         sparkobj = NULL,
         subtitle = tagList(),

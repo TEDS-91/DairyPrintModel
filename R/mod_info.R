@@ -22,12 +22,12 @@ mod_info_ui <- function(id){
       in monthly steps, outputting annual herd demographics. Moreover, milk yield curves and milk composition, body weight, dry matter intake, and feed efficiency are
       estimated. These variables, in turn, are used to estimate the total excreted manure, urine, feces, nitrogen, phosphorus, and potassium, in addition to enteric
       methane emissions. From the herd module, there is a distribution of the produced outputs into other modules, in addition to the specific user inputs for each
-      module. The barn module receives all the manure produced and from it, along with information from weather data and type of facility (free-stall or tie-stall),
+      module. The barn module receives all the manure produced and from it, along with information from weather data and type of facility (freestall or tie-stall),
       methane, ammonia, and nitrous oxide emissions are estimated. Once the manure in the barn is transferred to the manure module, the manure is handled and processed
       according to the practices adopted by the farm. After manure processing, the processed material is distributed to the crop fields in the crop module. In the crop
       module, all GHG emissions are accounted for due to the application of manure, fertilizers, and limestone. Additionally, nutrient balances are estimated. Therefore,
       the DairyPrint Model is capable of helping farmers move toward higher sustainability, providing a user-friendly and intuitive graphical user interface allowing the
-      user to respond to “what-if” questions.",
+      user to respond to 'what-if' questions.",
 
       status = "info",
       btnName = "To get more information check this out!",
@@ -109,8 +109,3 @@ mod_info_server <- function(id){
   })
 }
 
-## To be copied in the UI
-# mod_info_ui("info_1")
-
-## To be copied in the server
-# mod_info_server("info_1")
