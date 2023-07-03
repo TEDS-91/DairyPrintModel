@@ -609,7 +609,6 @@ tibble::tibble(
 
 ```
 
-
 ```{r, warning = FALSE, echo = FALSE, fig.width = 10, fig.height = 3, fig.fullwidth = TRUE}
 
 patchwork::wrap_plots(built_waterfall_plot(balance_n, x_axis = " ", y_axis = "N (Ton./ha)"), built_waterfall_plot(balance_p, x_axis = " ", y_axis = "P (Ton./ha)"), built_waterfall_plot(balance_k, x_axis = " ", y_axis = "P (Ton./ha)"), ncol = 3)
@@ -617,7 +616,6 @@ patchwork::wrap_plots(built_waterfall_plot(balance_n, x_axis = " ", y_axis = "N 
 ```
 
 ### **5.3 Economics (per day)**
-
 
 ```{r, warning = FALSE, echo = FALSE, fig.width = 10, fig.height = 3, fig.fullwidth = TRUE}
 
@@ -636,7 +634,6 @@ params$economics %>%
 
 ```
 
-
 ## {-}
 
 <hr />
@@ -654,5 +651,3 @@ htmltools::img(
 ```
 </center>
 &nbsp;
-
-

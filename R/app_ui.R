@@ -8,7 +8,7 @@ app_ui <- function(request) {
   tagList(
     # Leave this function for adding external resources
 
-    #shiny.telemetry::use_telemetry(), # 2. Add necessary Javascript to Shiny
+    shiny.telemetry::use_telemetry(), # 2. Add necessary Javascript to Shiny
 
     golem_add_external_resources(),
 
@@ -97,23 +97,7 @@ app_ui <- function(request) {
 
           bs4Dash::bs4TabItem(
             tabName = "herd_calibration",
-            mod_animal_ui("animal")
-
-            # modalDialog(
-            #   h5("To run the model, first you have to calibrate it according to your own farm inputs."),
-            #
-            #   h5("After filling up all inputs in the herd calibration page, you're ready to run the model:
-            #
-            #      just hit 'Run!' and have fun!"),
-            #
-            #   h5("The other tabs will respond imediately after input changes without the need to hit any button."),
-            #   title = "Fisrt-steps with DairyPrint Model:",
-            #   size = "m",
-            #   easyClose = FALSE
-            # )
-
-
-            ),
+            mod_animal_ui("animal")),
 
           bs4Dash::bs4TabItem(
             tabName = "manure",
