@@ -119,7 +119,7 @@ mod_dashboard_ui <- function(id){
               bs4Dash::valueBoxOutput(ns("k_per_hect"), width = 6)) ))),
 
       bs4Dash::bs4Card(
-        title = "Economic Analysis",
+        title = "Economic Analysis (per day)",
         elevation = 1,
         width = 12,
         solidHeader = TRUE,

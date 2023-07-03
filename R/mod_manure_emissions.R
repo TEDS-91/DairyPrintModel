@@ -788,7 +788,6 @@ mod_manure_ghg_emissions_server <- function(id,
 
         }
 
-
         tabela_outputs <- tibble::tibble(
           year_day                 = yday,
           temp_c                   = temp_c,
@@ -966,7 +965,7 @@ mod_manure_ghg_emissions_server <- function(id,
                  zerolinecolor = '#ffff',
                  zerolinewidth = 2,
                  gridcolor     = 'ffff',
-                 range = c(0, 5)
+                 range = c(0, max(emissions$barn_ch4_emissions_kg) + 1)
         )) %>%
         plotly::layout(legend = list(itemsizing = 'constant'))
 
@@ -1021,7 +1020,8 @@ mod_manure_ghg_emissions_server <- function(id,
                        yaxis = list(
                          zerolinecolor = '#ffff',
                          zerolinewidth = 2,
-                         gridcolor = 'ffff')
+                         gridcolor = 'ffff',
+                         range = c(0, max(emissions$total_storage_kg) + 1))
         ) %>%
         plotly::layout(legend = list(itemsizing = 'constant'))
 
@@ -1364,10 +1364,10 @@ mod_manure_ghg_emissions_server <- function(id,
                        yaxis = list(
                          zerolinecolor = '#ffff',
                          zerolinewidth = 2,
-                         gridcolor     = 'ffff')
+                         gridcolor     = 'ffff',
+                         range = c(0, max(emissions$loss_animal_kg) + 1))
         ) %>%
         plotly::layout(legend = list(itemsizing = 'constant'))
-
 
       })
 
@@ -1418,7 +1418,8 @@ mod_manure_ghg_emissions_server <- function(id,
                        yaxis = list(
                          zerolinecolor = '#ffff',
                          zerolinewidth = 2,
-                         gridcolor     = 'ffff')
+                         gridcolor     = 'ffff',
+                         range = c(0, max(emissions$total_storage_N_loss) + 1))
         ) %>%
         plotly::layout(legend = list(itemsizing = 'constant'))
 

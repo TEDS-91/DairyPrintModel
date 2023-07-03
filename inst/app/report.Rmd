@@ -616,7 +616,7 @@ patchwork::wrap_plots(built_waterfall_plot(balance_n, x_axis = " ", y_axis = "N 
 
 ```
 
-### **5.3 Economics **
+### **5.3 Economics (per day)**
 
 
 ```{r, warning = FALSE, echo = FALSE, fig.width = 10, fig.height = 3, fig.fullwidth = TRUE}
