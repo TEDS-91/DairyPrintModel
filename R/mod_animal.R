@@ -317,7 +317,7 @@ mod_animal_server <- function(id){
 
           condition = paste0("input['", ns("is_nop"), "'] == 'yes' "),
 
-          numericInput(ns("nop_dose"), label = "Dose (mg/cow/day): ", value = 70, min = 0, max = 100)
+          numericInput(ns("nop_dose"), label = "Dose (mgDM/cow/day): ", value = 70, min = 0, max = 100)
 
         ),
         conditionalPanel(

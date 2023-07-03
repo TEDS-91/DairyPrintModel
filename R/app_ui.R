@@ -8,7 +8,7 @@ app_ui <- function(request) {
   tagList(
     # Leave this function for adding external resources
 
-    shiny.telemetry::use_telemetry(), # 2. Add necessary Javascript to Shiny
+    #shiny.telemetry::use_telemetry(), # 2. Add necessary Javascript to Shiny
 
     golem_add_external_resources(),
 

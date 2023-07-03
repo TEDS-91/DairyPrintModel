@@ -6,9 +6,9 @@
 #' @noRd
 app_server <- function(input, output, session) {
 
-  telemetry <- shiny.telemetry::Telemetry$new() # 1. Initialize telemetry with default options) # add parameters here (if any)
+  #telemetry <- shiny.telemetry::Telemetry$new() # 1. Initialize telemetry with default options) # add parameters here (if any)
 
-  telemetry$start_session(track_values = TRUE) # 3. Minimal setup to track events
+  #telemetry$start_session(track_values = TRUE) # 3. Minimal setup to track events
 
   # Your application server logic
 
